@@ -1,0 +1,105 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  exams      ExamInstance[]
+  studyPlans StudyPlan[]
+  studyLogs  StudyLog[]
+}
+
+model ExamDefinition {
+  id     String                @id @default(cuid())
+  slug   String                @unique
+  name   String
+  topics ExamTopicDefinition[]
+}
+
+model ExamTopicDefinition {
+  id               String @id @default(cuid())
+  examDefinitionId String
+  name             String
+  recommendedHours Int
+
+  examDefinition ExamDefinition  @relation(fields: [examDefinitionId], references: [id])
+  planItems      PlanItem[]
+  studyLogs      StudyLog[]
+}
+
+model ExamInstance {
+  id               String   @id @default(cuid())
+  userId           String
+  examDefinitionId String
+  examDate         DateTime
+  weeklyHours      Int
+  createdAt        DateTime @default(now())
+
+  user           User           @relation(fields: [userId], references: [id])
+  examDefinition ExamDefinition @relation(fields: [examDefinitionId], references: [id])
+  studyPlans     StudyPlan[]
+}
+
+model StudyPlan {
+  id             String   @id @default(cuid())
+  userId         String
+  examInstanceId String
+  generatedAt    DateTime @default(now())
+  totalWeeks     Int
+  totalHours     Int
+  version        Int      @default(1)
+
+  user         User         @relation(fields: [userId], references: [id])
+  examInstance ExamInstance @relation(fields: [examInstanceId], references: [id])
+  weeks        PlanWeek[]
+  studyLogs    StudyLog[]
+}
+
+model PlanWeek {
+  id           String   @id @default(cuid())
+  studyPlanId  String
+  weekIndex    Int
+  startDate    DateTime
+  endDate      DateTime
+  plannedHours Int
+
+  studyPlan StudyPlan @relation(fields: [studyPlanId], references: [id])
+  items     PlanItem[]
+}
+
+model PlanItem {
+  id                    String   @id @default(cuid())
+  planWeekId            String
+  examTopicDefinitionId String
+  plannedHours          Int
+
+  planWeek PlanWeek            @relation(fields: [planWeekId], references: [id])
+  topic    ExamTopicDefinition @relation(fields: [examTopicDefinitionId], references: [id])
+  studyLogs StudyLog[]
+}
+
+model StudyLog {
+  id                    String   @id @default(cuid())
+  userId                String
+  studyPlanId           String
+  planItemId            String?
+  examTopicDefinitionId String
+  date                  DateTime
+  actualHours           Int
+
+  user      User                @relation(fields: [userId], references: [id])
+  studyPlan StudyPlan           @relation(fields: [studyPlanId], references: [id])
+  planItem  PlanItem?           @relation(fields: [planItemId], references: [id])
+  topic     ExamTopicDefinition @relation(fields: [examTopicDefinitionId], references: [id])
+}
+
