@@ -327,9 +327,6 @@ const TOPIC_EXAM_WEIGHT: Record<string, number> = {
 
 const isEthicsTopic = (name: string) => name.toLowerCase().includes("ethics");
 
-const isReviewTopic = (name: string) =>
-  /review|mocks|weak areas/i.test(name);
-
 /**
  * Place a value in the nearest empty slot to `target`.
  * Returns true if placed successfully.
@@ -550,6 +547,47 @@ const weekStatusPill = (status: WeekStatus) => {
 const WEEKDAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const VISIBLE_WEEKS_DEFAULT = 4;
 
+type StudyPlanAnchorMode = "progress" | "calendar";
+
+/** Week index containing today, else first future week, else last week (calendar anchor). */
+const getCalendarWeekIndex = (plan: WeekPlan[]): number => {
+  if (plan.length === 0) return 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const inside = plan.findIndex(
+    (w) => w.startDate <= today && today <= w.endDate
+  );
+  if (inside !== -1) return inside;
+  const firstFuture = plan.findIndex((w) => w.startDate > today);
+  if (firstFuture !== -1) return firstFuture;
+  return plan.length - 1;
+};
+
+/** First week not yet complete (progress anchor); if all complete, end of plan. */
+const getProgressWeekIndex = (
+  plan: WeekPlan[],
+  actuals: (number | null)[]
+): number => {
+  if (plan.length === 0) return 0;
+  const incomplete = plan.findIndex((w, i) => {
+    const a = actuals[i] ?? null;
+    return getWeekStatus(a, w.plannedHours) !== "complete";
+  });
+  if (incomplete !== -1) return incomplete;
+  return plan.length - 1;
+};
+
+/** Start index for collapsed list so the window includes `focusIdx` (focus first when possible). */
+const getVisibleWeekSliceStart = (
+  planLength: number,
+  windowSize: number,
+  focusIdx: number
+): number => {
+  if (planLength <= windowSize) return 0;
+  if (focusIdx + windowSize <= planLength) return focusIdx;
+  return Math.max(0, planLength - windowSize);
+};
+
 /**
  * Single source of truth for building / recomputing the summary.
  * Called by handleSubmit (initial build) and after rebalance / undo / reset.
@@ -640,8 +678,20 @@ export default function HomePage() {
   const [levelIIIPathway, setLevelIIIPathway] =
     useState<LevelIIIPathway>("portfolioManagement");
   const [showAllWeeks, setShowAllWeeks] = useState(false);
+  const [studyPlanAnchor, setStudyPlanAnchor] =
+    useState<StudyPlanAnchorMode>("progress");
 
   const examWindows = useMemo(() => getExamWindowsSorted(examLevel), [examLevel]);
+
+  const examMetadata = useMemo(() => {
+    const selectedWindow = examWindows.find((w) => w.startISO === examDate);
+    const nextWin = getNextExamWindow(examLevel, examDate);
+    return {
+      examWindowLabel: selectedWindow?.label ?? "Selected exam window",
+      suggestedNextWindowLabel: nextWin?.label ?? null,
+      finalReviewWeekLabel: getFinalReviewWeekLabel(examDate, weekStartDay)
+    };
+  }, [examWindows, examLevel, examDate, weekStartDay]);
 
   const makeSummaryInput = (plan: WeekPlan[], actuals: (number | null)[]): BuildSummaryInput => ({
     plan,
@@ -650,9 +700,7 @@ export default function HomePage() {
     targetHours: CFA_LEVEL_BENCHMARK[examLevel],
     cfaLevel: examLevel,
     levelIIIPathway: examLevel === "III" ? levelIIIPathway : null,
-    examWindowLabel: summary?.examWindowLabel ?? "Selected exam window",
-    suggestedNextWindowLabel: summary?.suggestedNextWindowLabel ?? null,
-    finalReviewWeekLabel: summary?.finalReviewWeekLabel ?? ""
+    ...examMetadata
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -692,22 +740,8 @@ export default function HomePage() {
     });
 
     const freshActuals: (number | null)[] = new Array(newWeekPlan.length).fill(null);
-    const selectedWindow = examWindows.find((w) => w.startISO === examDate);
-    const nextWin = getNextExamWindow(examLevel, examDate);
 
-    setSummary(
-      buildSummary({
-        plan: newWeekPlan,
-        actuals: freshActuals,
-        weeklyHoursAvail: weeklyHoursNum,
-        targetHours: CFA_LEVEL_BENCHMARK[examLevel],
-        cfaLevel: examLevel,
-        levelIIIPathway: examLevel === "III" ? levelIIIPathway : null,
-        examWindowLabel: selectedWindow?.label ?? "Selected exam window",
-        suggestedNextWindowLabel: nextWin?.label ?? null,
-        finalReviewWeekLabel: getFinalReviewWeekLabel(examDate, weekStartDay)
-      })
-    );
+    setSummary(buildSummary(makeSummaryInput(newWeekPlan, freshActuals)));
 
     setBaseWeekPlan(newWeekPlan);
     setWeekPlan(newWeekPlan);
@@ -723,6 +757,31 @@ export default function HomePage() {
     if (future.length === 0) return null;
     return Math.round(future.reduce((s, w) => s + w.plannedHours, 0) / future.length);
   })();
+
+  const studyPlanFocusIndex = useMemo(() => {
+    if (!weekPlan?.length) return 0;
+    return studyPlanAnchor === "calendar"
+      ? getCalendarWeekIndex(weekPlan)
+      : getProgressWeekIndex(weekPlan, actualHours);
+  }, [weekPlan, actualHours, studyPlanAnchor]);
+
+  const { visibleWeekPlan, sliceStart } = useMemo(() => {
+    if (!weekPlan?.length) {
+      return { visibleWeekPlan: [] as WeekPlan[], sliceStart: 0 };
+    }
+    if (showAllWeeks || weekPlan.length <= VISIBLE_WEEKS_DEFAULT) {
+      return { visibleWeekPlan: weekPlan, sliceStart: 0 };
+    }
+    const start = getVisibleWeekSliceStart(
+      weekPlan.length,
+      VISIBLE_WEEKS_DEFAULT,
+      studyPlanFocusIndex
+    );
+    return {
+      visibleWeekPlan: weekPlan.slice(start, start + VISIBLE_WEEKS_DEFAULT),
+      sliceStart: start
+    };
+  }, [weekPlan, showAllWeeks, studyPlanFocusIndex]);
 
   return (
     <div className="space-y-8">
@@ -1037,24 +1096,68 @@ export default function HomePage() {
 
           {weekPlan ? (
             <div className="mt-6 space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  Study plan{" "}
-                  <span className="ml-1 text-xs font-normal text-slate-500 dark:text-slate-400">
-                    {showAllWeeks || weekPlan.length <= VISIBLE_WEEKS_DEFAULT
-                      ? `${weekPlan.length} week${weekPlan.length === 1 ? "" : "s"}`
-                      : `Weeks 1–${VISIBLE_WEEKS_DEFAULT} of ${weekPlan.length}`}
-                  </span>
-                </h3>
-                {weekPlan.length > VISIBLE_WEEKS_DEFAULT && (
-                  <button
-                    type="button"
-                    onClick={() => setShowAllWeeks(!showAllWeeks)}
-                    className="text-xs font-medium text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300"
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    Study plan{" "}
+                    <span className="ml-1 text-xs font-normal text-slate-500 dark:text-slate-400">
+                      {showAllWeeks || weekPlan.length <= VISIBLE_WEEKS_DEFAULT
+                        ? `${weekPlan.length} week${weekPlan.length === 1 ? "" : "s"}`
+                        : `Weeks ${weekPlan[sliceStart]!.week}–${
+                            weekPlan[sliceStart + visibleWeekPlan.length - 1]!.week
+                          } of ${weekPlan.length}`}
+                    </span>
+                  </h3>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    Window follows{" "}
+                    {studyPlanAnchor === "progress"
+                      ? "your progress (first incomplete week)."
+                      : "the calendar (week containing today)."}
+                  </p>
+                </div>
+                <div className="flex flex-shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+                  <div
+                    role="group"
+                    aria-label="Study plan window focus"
+                    className="inline-flex rounded-md border border-slate-300 bg-slate-50 p-0.5 dark:border-slate-600 dark:bg-slate-900/80"
                   >
-                    {showAllWeeks ? "Show less" : `View all ${weekPlan.length} weeks`}
-                  </button>
-                )}
+                    <button
+                      type="button"
+                      onClick={() => setStudyPlanAnchor("progress")}
+                      aria-pressed={studyPlanAnchor === "progress"}
+                      className={
+                        "rounded px-2 py-1 text-xs font-medium transition-colors " +
+                        (studyPlanAnchor === "progress"
+                          ? "bg-sky-500 text-slate-950"
+                          : "text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800")
+                      }
+                    >
+                      Progress
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStudyPlanAnchor("calendar")}
+                      aria-pressed={studyPlanAnchor === "calendar"}
+                      className={
+                        "rounded px-2 py-1 text-xs font-medium transition-colors " +
+                        (studyPlanAnchor === "calendar"
+                          ? "bg-sky-500 text-slate-950"
+                          : "text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800")
+                      }
+                    >
+                      Calendar
+                    </button>
+                  </div>
+                  {weekPlan.length > VISIBLE_WEEKS_DEFAULT && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllWeeks(!showAllWeeks)}
+                      className="text-xs font-medium text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300"
+                    >
+                      {showAllWeeks ? "Show less" : `View all ${weekPlan.length} weeks`}
+                    </button>
+                  )}
+                </div>
               </div>
 
               <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -1066,23 +1169,31 @@ export default function HomePage() {
               </p>
 
               <div className="grid gap-3 md:grid-cols-2">
-                {(showAllWeeks
-                  ? weekPlan
-                  : weekPlan.slice(0, VISIBLE_WEEKS_DEFAULT)
-                ).map((week) => {
+                {visibleWeekPlan.map((week) => {
                   const idx = week.week - 1;
                   const wStatus = getWeekStatus(actualHours[idx] ?? null, week.plannedHours);
                   const pill = weekStatusPill(wStatus);
+                  const isFocusWeek = idx === studyPlanFocusIndex;
                   return (
                     <div
                       key={week.week}
-                      className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-3"
+                      className={
+                        "rounded-lg border border-slate-200 bg-slate-100 p-3 dark:border-slate-800 dark:bg-slate-950/40 " +
+                        (isFocusWeek
+                          ? "ring-2 ring-sky-500/45 ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-950"
+                          : "")
+                      }
                     >
                       <div className="flex items-baseline justify-between gap-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
                             Week {week.week}
                           </span>
+                          {isFocusWeek ? (
+                            <span className="rounded bg-sky-500/15 px-1.5 py-0.5 text-[10px] font-medium text-sky-800 dark:text-sky-300">
+                              {studyPlanAnchor === "calendar" ? "This week" : "Focus"}
+                            </span>
+                          ) : null}
                           <span
                             className={
                               "rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none " +
