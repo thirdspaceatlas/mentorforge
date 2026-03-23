@@ -40,3 +40,8 @@ Thumbs.db
 # Prisma local SQLite (do not commit dev databases)
 prisma/*.db
 prisma/*.db-journal
+
+# Root-level working brand PNGs (use public/brand/ for tracked assets)
+/brandIcon.PNG
+/brand_Icon_and_workdmark.PNG
+/brandwordmark.PNG
