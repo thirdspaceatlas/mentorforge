@@ -1,6 +1,6 @@
-# StudyForge
+# MentorForge
 
-CFA study planning app built with [Next.js](https://nextjs.org/).
+CFA study planning and pacing app built with [Next.js](https://nextjs.org/). Plan, pace, and rebalance your study path—not a tutoring marketplace.
 
 ## Local development
 
@@ -12,6 +12,8 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000).
 
 ## Deploy to GitHub
+
+These steps assume your GitHub remote is still named `studyforge`; rename the repo on GitHub anytime without changing the app branding.
 
 1. Install [Git for Windows](https://git-scm.com/download/win) (or use [GitHub Desktop](https://desktop.github.com/)).
 2. Create an empty repo on GitHub (no README/license if you’ll push existing code): [github.com/dblackwealth/studyforge](https://github.com/dblackwealth/studyforge).

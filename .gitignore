@@ -37,6 +37,6 @@ Thumbs.db
 # Vercel
 .vercel
 
-# Prisma (keep schema; ignore generated if you add custom output)
-# prisma/*.db
-# prisma/*.db-journal
+# Prisma local SQLite (do not commit dev databases)
+prisma/*.db
+prisma/*.db-journal

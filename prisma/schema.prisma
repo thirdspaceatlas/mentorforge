@@ -1,6 +1,5 @@
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
 }
 
 generator client {
@@ -24,6 +23,7 @@ model ExamDefinition {
   slug   String                @unique
   name   String
   topics ExamTopicDefinition[]
+  exams  ExamInstance[]
 }
 
 model ExamTopicDefinition {
@@ -102,4 +102,3 @@ model StudyLog {
   planItem  PlanItem?           @relation(fields: [planItemId], references: [id])
   topic     ExamTopicDefinition @relation(fields: [examTopicDefinitionId], references: [id])
 }
-
