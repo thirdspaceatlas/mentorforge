@@ -13,7 +13,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="h-9 w-[200px] rounded-full border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-900/80" />
+      <div className="h-9 w-[200px] rounded-full border border-slate-200/90 bg-white/85 dark:border-slate-600/80 dark:bg-slate-900/85" />
     );
   }
 
@@ -25,7 +25,7 @@ export function ThemeToggle() {
 
   return (
     <div
-      className="flex rounded-full border border-slate-200/90 bg-white/90 p-0.5 shadow-sm dark:border-slate-700 dark:bg-slate-900/80"
+      className="flex rounded-full border border-slate-200/90 bg-white/90 p-0.5 shadow-sm dark:border-slate-600/80 dark:bg-slate-900/85"
       role="group"
       aria-label="Color theme"
     >
@@ -38,7 +38,7 @@ export function ThemeToggle() {
             "rounded-full px-3 py-1.5 text-xs font-medium transition-colors " +
             (theme === value
               ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950"
-              : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800")
+              : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800")
           }
         >
           {label}

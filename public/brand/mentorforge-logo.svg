@@ -1,0 +1,30 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 520 96"
+  role="img"
+  aria-label="MentorForge"
+>
+  <title>MentorForge</title>
+  <rect x="2" y="2" width="72" height="72" fill="none" stroke="currentColor" stroke-width="2" />
+  <path
+    d="M18 62V18
+       C24 18, 30 20, 38 28
+       C46 20, 52 18, 58 18
+       V62
+       H50V30
+       C46 32, 42 36, 38 42
+       C34 36, 30 32, 26 30
+       V62Z"
+    fill="currentColor"
+  />
+  <text
+    x="95"
+    y="52"
+    fill="currentColor"
+    font-family='Georgia, "Times New Roman", serif'
+    font-size="38"
+    letter-spacing="0"
+  >
+    MentorForge
+  </text>
+</svg>
