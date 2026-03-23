@@ -60,9 +60,6 @@ export default function RegisterPage() {
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
           Open the planner to build and rebalance your CFA study runway.
         </p>
-        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-          Planning and pacing software—not tutoring or a coach marketplace.
-        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">

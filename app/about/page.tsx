@@ -9,13 +9,13 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="space-y-24 pb-28 sm:space-y-28 sm:pb-36">
+    <div className="space-y-16 pb-28 sm:space-y-20 sm:pb-36">
       {/* Hero — unchanged title + headline */}
       <header className="mx-auto max-w-3xl border-b border-slate-200/70 pb-14 text-center dark:border-slate-800/80 sm:pb-16">
         <p className="mb-5 font-display text-[0.7rem] font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
           About MentorForge
         </p>
-        <h1 className="font-display text-[2rem] font-medium leading-[1.15] tracking-tight text-slate-900 dark:text-slate-50 sm:text-[2.65rem] sm:leading-[1.12]">
+        <h1 className="mx-auto max-w-[20rem] text-balance font-display text-[2rem] font-medium leading-[1.15] tracking-tight text-slate-900 dark:text-slate-50 sm:max-w-[26rem] sm:text-[2.65rem] sm:leading-[1.12]">
           Built by someone who needed it and couldn&apos;t find it.
         </h1>
       </header>
@@ -57,7 +57,7 @@ export default function AboutPage() {
       </section>
 
       {/* Emphasized closing statement */}
-      <figure className="mx-auto max-w-[40rem] border-y border-slate-200/80 py-10 dark:border-slate-700/70 sm:py-12">
+      <figure className="mx-auto max-w-[40rem] border-y border-slate-200/80 py-14 dark:border-slate-700/70 sm:py-16">
         <blockquote className="text-center font-display text-[1.45rem] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50 sm:text-[1.65rem] sm:leading-tight">
           You don&apos;t study your way to these credentials. You get forged.
         </blockquote>

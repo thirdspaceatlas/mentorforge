@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { MarketingBottomCTA } from "@/components/marketing/MarketingBottomCTA";
 
 export const metadata: Metadata = {
   title: "Pricing — MentorForge",
@@ -22,19 +23,55 @@ const pricingFaqs = [
   }
 ] as const;
 
-const trustAnchors = [
-  "Built around the CFA Institute’s widely cited 300+ study-hour benchmark — grounded in your calendar, not guesswork.",
-  "We’re early. Your feedback directly shapes what we build next — and we read every message.",
-  "One-time payment. No subscriptions. No surprises.",
-  "Independent study-planning software. Not affiliated with CFA Institute."
-] as const;
+const trustAnchors: { text: string; icon: "benchmark" | "feedback" | "independent" }[] = [
+  {
+    icon: "benchmark",
+    text: "Built around the CFA Institute’s widely cited 300+ study-hour benchmark — grounded in your calendar, not guesswork."
+  },
+  {
+    icon: "feedback",
+    text: "We’re early. Your feedback directly shapes what we build next — and we read every message."
+  },
+  {
+    icon: "independent",
+    text: "Independent study-planning software. Not affiliated with CFA Institute."
+  }
+];
+
+function TrustIcon({ type }: { type: (typeof trustAnchors)[number]["icon"] }) {
+  const c = "h-5 w-5 shrink-0 text-accent";
+  switch (type) {
+    case "benchmark":
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+          <path d="M12 6v12M8 10l4-4 4 4" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M4 20h16" strokeLinecap="round" />
+        </svg>
+      );
+    case "feedback":
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+          <path d="M7 8h10M7 12h6" strokeLinecap="round" />
+          <rect x="4" y="4" width="16" height="14" rx="2" />
+        </svg>
+      );
+    case "independent":
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+          <path d="M12 3l8 4v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z" strokeLinejoin="round" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
 
 function FeatureList({ items }: { items: readonly string[] }) {
   return (
     <ul className="mt-6 space-y-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
       {items.map((item) => (
         <li key={item} className="flex gap-2.5">
-          <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-slate-400 dark:bg-slate-500" aria-hidden />
+          <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" aria-hidden />
           <span>{item}</span>
         </li>
       ))}
@@ -44,8 +81,7 @@ function FeatureList({ items }: { items: readonly string[] }) {
 
 export default function PricingPage() {
   return (
-    <div className="space-y-24 pb-28 sm:space-y-28 sm:pb-36">
-      {/* Hero */}
+    <div className="space-y-16 pb-28 sm:space-y-20 sm:pb-36">
       <header className="mx-auto max-w-3xl border-b border-slate-200/70 pb-14 text-center dark:border-slate-800/80 sm:pb-16">
         <p className="mb-5 font-display text-[0.7rem] font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
           Pricing
@@ -58,7 +94,10 @@ export default function PricingPage() {
         </p>
       </header>
 
-      {/* Pricing tiers */}
+      <p className="mx-auto max-w-2xl text-center text-[0.95rem] font-medium leading-snug text-slate-800 dark:text-slate-200">
+        One-time payment. No subscriptions. No surprises.
+      </p>
+
       <section aria-labelledby="pricing-tiers-heading" className="mx-auto max-w-6xl">
         <div className="text-center">
           <h2
@@ -69,8 +108,7 @@ export default function PricingPage() {
           </h2>
         </div>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-5">
-          {/* Free */}
+        <div className="mt-10 grid gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-5">
           <article className="flex flex-col rounded-2xl border border-slate-200/95 bg-[#fafaf9] p-7 shadow-sm dark:border-slate-700/80 dark:bg-slate-950 sm:p-8">
             <div>
               <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
@@ -94,14 +132,13 @@ export default function PricingPage() {
             <div className="mt-auto pt-8">
               <Link
                 href="/register"
-                className="flex w-full items-center justify-center rounded-full border border-slate-300/90 bg-white px-5 py-3 text-center text-sm font-medium text-slate-900 transition-colors hover:border-slate-400 hover:bg-white dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900/80"
+                className="flex w-full items-center justify-center rounded-full border-2 border-slate-400/90 bg-white px-5 py-3 text-center text-sm font-medium text-slate-900 transition-colors hover:border-slate-600 hover:bg-slate-50 dark:border-slate-500 dark:bg-slate-900/60 dark:text-slate-100 dark:hover:border-slate-400 dark:hover:bg-slate-900"
               >
                 Get started free — no credit card required
               </Link>
             </div>
           </article>
 
-          {/* Level Pass */}
           <article className="flex flex-col rounded-2xl border border-slate-200/95 bg-white p-7 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 sm:p-8">
             <div>
               <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
@@ -128,20 +165,19 @@ export default function PricingPage() {
             <div className="mt-auto pt-8">
               <Link
                 href="/register?plan=level-pass"
-                className="flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200"
+                className="flex w-full items-center justify-center rounded-full bg-slate-800 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600"
               >
                 Buy Level Pass
               </Link>
-              <p className="mt-3 text-center text-[0.75rem] leading-snug text-slate-500 dark:text-slate-500">
+              <p className="mt-4 text-center text-sm font-medium leading-snug text-slate-700 dark:text-slate-300">
                 Less than the cost of one Schweser mock exam.
               </p>
             </div>
           </article>
 
-          {/* All-Access — emphasized */}
-          <article className="relative flex flex-col rounded-2xl border border-slate-900/15 bg-white p-7 pb-8 pt-9 shadow-md ring-1 ring-slate-900/[0.06] dark:border-slate-600/50 dark:bg-slate-900/85 dark:ring-white/10 sm:p-8 sm:pb-8 sm:pt-10">
-            <div className="absolute -top-3 left-1/2 flex -translate-x-1/2 justify-center">
-              <span className="rounded-full border border-slate-200/90 bg-white px-3 py-1 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-slate-600 shadow-sm dark:border-slate-600 dark:bg-slate-950 dark:text-slate-300">
+          <article className="flex flex-col rounded-2xl border-2 border-accent bg-white p-7 shadow-lg shadow-slate-900/10 ring-1 ring-accent/20 dark:border-accent dark:bg-[#141c28] dark:shadow-[0_20px_40px_-12px_rgb(0_0_0/0.5)] dark:ring-accent/30 sm:p-8">
+            <div className="mb-5 text-center">
+              <span className="inline-block rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-slate-800 dark:border-accent/40 dark:bg-accent/15 dark:text-emerald-100">
                 Most popular for first-time candidates
               </span>
             </div>
@@ -167,7 +203,7 @@ export default function PricingPage() {
             <div className="mt-auto pt-8">
               <Link
                 href="/register?plan=all-access"
-                className="flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200"
+                className="flex w-full items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover"
               >
                 Buy All-Access — Best Value
               </Link>
@@ -176,25 +212,21 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Trust anchors */}
-      <section
-        aria-label="Trust"
-        className="mx-auto max-w-4xl border-t border-slate-200/70 pt-16 dark:border-slate-800/80 sm:pt-20"
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          {trustAnchors.map((text) => (
+      <section aria-label="Trust" className="mx-auto max-w-4xl">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {trustAnchors.map(({ text, icon }) => (
             <div
               key={text}
-              className="rounded-xl border border-slate-200/90 bg-white/90 px-5 py-4 dark:border-slate-700/70 dark:bg-slate-900/50"
+              className="flex gap-3 rounded-xl border border-slate-200/90 bg-white/90 px-4 py-4 dark:border-slate-700/70 dark:bg-slate-900/50"
             >
+              <TrustIcon type={icon} />
               <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Pricing FAQ */}
-      <section className="mx-auto max-w-3xl border-t border-slate-200/70 pt-16 dark:border-slate-800/80 sm:pt-20">
+      <section className="mx-auto max-w-3xl rounded-2xl px-4 py-12 dark:bg-[#0a0f1a] sm:px-6 sm:py-14">
         <h2 className="text-center font-display text-[1.85rem] font-medium tracking-tight text-slate-900 dark:text-slate-50 sm:text-[2rem]">
           Pricing FAQ
         </h2>
@@ -214,6 +246,14 @@ export default function PricingPage() {
             </details>
           ))}
         </div>
+      </section>
+
+      <section className="mx-auto max-w-2xl px-0 pt-4 sm:pt-6">
+        <MarketingBottomCTA
+          headline="Ready to start?"
+          supporting="Choose a plan above, or begin free and upgrade when you’re ready."
+          primaryLabel="Create your free account"
+        />
       </section>
     </div>
   );

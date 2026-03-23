@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Providers } from "./providers";
+import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
 import { fontDisplay, fontSans } from "./fonts";
 
@@ -23,9 +24,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Providers>
           <div className="flex min-h-screen flex-col">
             <Navbar />
-            <main className="flex flex-1 justify-center px-5 py-10 sm:px-8 sm:py-14">
+            <main className="flex w-full flex-1 justify-center px-5 py-10 sm:px-8 sm:py-14">
               <div className="w-full max-w-5xl">{children}</div>
             </main>
+            <Footer />
           </div>
         </Providers>
       </body>

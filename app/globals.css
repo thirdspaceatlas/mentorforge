@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* MentorForge accent — aligned with emerald “On track” badge (emerald-700 / emerald-400 dark) */
+:root {
+  --mf-accent: 4 120 87;
+  --mf-accent-hover: 6 95 70;
+  --mf-accent-foreground: 255 255 255;
+  --mf-accent-subtle: 209 250 229;
+}
+
+.dark {
+  --mf-accent: 52 211 153;
+  --mf-accent-hover: 16 185 129;
+  --mf-accent-foreground: 15 23 42;
+  --mf-accent-subtle: 6 78 59;
+}
+
 html,
 body {
   padding: 0;

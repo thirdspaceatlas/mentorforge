@@ -33,16 +33,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-sm space-y-8 pt-8 sm:pt-12">
+    <div className="mx-auto flex min-h-[60vh] max-w-sm flex-col justify-center space-y-8 py-12 sm:min-h-[65vh] sm:py-16">
       <div className="text-center">
         <h1 className="font-display text-3xl font-medium tracking-tight text-slate-900 dark:text-slate-50">
           Welcome back
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
           Sign in to open your study planner.
-        </p>
-        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-          MentorForge helps you plan and pace—it is not a tutoring service.
         </p>
       </div>
 
@@ -84,7 +81,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200"
+          className="w-full rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
         >
           {loading ? "Signing in\u2026" : "Sign in"}
         </button>
