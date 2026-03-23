@@ -741,22 +741,22 @@ export default function PlannerPage() {
 
   return (
     <div className="space-y-8">
-      <section className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="max-w-xl text-xl font-semibold leading-snug tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">
+      <section className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+        <div className="max-w-xl space-y-2">
+          <h1 className="font-display text-2xl font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
             Forge a realistic CFA study plan.
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
+          <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             Turn your exam date and available hours into a study plan built for real life.
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
             Plan, pace, and rebalance your study path with confidence.
           </p>
         </div>
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="shrink-0 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="shrink-0 self-start rounded-full border border-slate-300/90 px-4 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-white dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-900/80"
         >
           Sign out
         </button>
@@ -764,7 +764,7 @@ export default function PlannerPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/90 dark:bg-slate-900/60 p-4"
+        className="space-y-4 rounded-2xl border border-slate-200/90 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 dark:shadow-none sm:p-6"
       >
         {formError ? (
           <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">

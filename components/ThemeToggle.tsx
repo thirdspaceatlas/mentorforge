@@ -13,7 +13,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="h-9 w-[200px] rounded-md border border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-900" />
+      <div className="h-9 w-[200px] rounded-full border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-900/80" />
     );
   }
 
@@ -25,7 +25,7 @@ export function ThemeToggle() {
 
   return (
     <div
-      className="flex rounded-md border border-slate-300 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-950/50"
+      className="flex rounded-full border border-slate-200/90 bg-white/90 p-0.5 shadow-sm dark:border-slate-700 dark:bg-slate-900/80"
       role="group"
       aria-label="Color theme"
     >
@@ -35,10 +35,10 @@ export function ThemeToggle() {
           type="button"
           onClick={() => setTheme(value)}
           className={
-            "rounded px-2 py-1.5 text-xs font-medium transition-colors " +
+            "rounded-full px-3 py-1.5 text-xs font-medium transition-colors " +
             (theme === value
-              ? "bg-sky-500 text-slate-950"
-              : "text-slate-600 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-800")
+              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950"
+              : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800")
           }
         >
           {label}

@@ -9,8 +9,11 @@ body {
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-    "Segoe UI", sans-serif;
+  @apply font-sans antialiased;
+}
+
+::selection {
+  @apply bg-slate-900/10 text-slate-900 dark:bg-white/15 dark:text-slate-100;
 }
 
 a {
@@ -21,4 +24,3 @@ a {
 * {
   box-sizing: border-box;
 }
-

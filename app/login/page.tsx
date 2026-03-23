@@ -33,9 +33,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-sm space-y-6 pt-12 sm:pt-20">
+    <div className="mx-auto max-w-sm space-y-8 pt-8 sm:pt-12">
       <div className="text-center">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+        <h1 className="font-display text-3xl font-medium tracking-tight text-slate-900 dark:text-slate-50">
           Welcome back
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
@@ -46,36 +46,36 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">
+          <div className="rounded-lg border border-rose-200/90 bg-rose-50/90 px-4 py-3 text-sm text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">
             {error}
           </div>
         )}
 
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-800 dark:text-slate-200">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Email
           </label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:focus:border-slate-500"
             required
             autoComplete="email"
           />
         </div>
 
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-800 dark:text-slate-200">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Password
           </label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:focus:border-slate-500"
             required
             autoComplete="current-password"
           />
@@ -84,17 +84,17 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-sky-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-sky-400 disabled:opacity-50"
+          className="w-full rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200"
         >
           {loading ? "Signing in\u2026" : "Sign in"}
         </button>
       </form>
 
-      <p className="text-center text-sm text-slate-600 dark:text-slate-300">
+      <p className="text-center text-sm text-slate-600 dark:text-slate-400">
         Don&apos;t have an account?{" "}
         <Link
           href="/register"
-          className="font-medium text-sky-600 hover:text-sky-500 dark:text-sky-400"
+          className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-600 dark:text-slate-200 dark:decoration-slate-600 dark:hover:decoration-slate-400"
         >
           Sign up
         </Link>

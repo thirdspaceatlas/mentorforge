@@ -12,6 +12,10 @@ const config: Config = {
         background: "#020617",
         foreground: "#e5e7eb"
       },
+      fontFamily: {
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Georgia", "ui-serif", "serif"]
+      },
       borderRadius: {
         lg: "0.5rem",
         md: "0.375rem",

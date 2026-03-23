@@ -35,29 +35,33 @@ const features = [
 
 export default function LandingPage() {
   return (
-    <div className="space-y-20 pb-16">
+    <div className="space-y-24 pb-24 sm:space-y-32 sm:pb-32">
       {/* Hero */}
-      <section className="mx-auto max-w-2xl space-y-6 pt-12 text-center sm:pt-20">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
+      <section className="relative mx-auto max-w-2xl pt-8 text-center sm:pt-4">
+        <p className="mb-6 font-display text-[0.7rem] font-medium uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">
+          CFA study planning
+        </p>
+        <h1 className="font-display text-[2.125rem] font-medium leading-[1.15] tracking-tight text-slate-900 dark:text-slate-50 sm:text-5xl sm:leading-[1.1]">
           Forge a realistic CFA study plan.
         </h1>
-        <p className="mx-auto max-w-lg text-base text-slate-600 dark:text-slate-300">
+        <div className="mx-auto mt-8 max-w-md border-t border-slate-200/80 pt-8 dark:border-slate-700/80" />
+        <p className="mx-auto max-w-md text-base leading-relaxed text-slate-600 dark:text-slate-300">
           Turn your exam date and available hours into a study plan built for real
           life.
         </p>
-        <p className="mx-auto max-w-lg text-sm text-slate-500 dark:text-slate-400">
+        <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           Plan, pace, and rebalance your study path with confidence.
         </p>
-        <div className="flex items-center justify-center gap-3">
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/register"
-            className="inline-flex items-center justify-center rounded-md bg-sky-500 px-5 py-2.5 text-sm font-medium text-slate-950 shadow-sm hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+            className="inline-flex min-w-[10rem] items-center justify-center rounded-full bg-slate-900 px-8 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9] dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200 dark:focus-visible:ring-offset-slate-950"
           >
             Get started free
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="inline-flex min-w-[10rem] items-center justify-center rounded-full border border-slate-300/90 bg-white/80 px-8 py-3 text-sm font-medium text-slate-800 transition-colors hover:border-slate-400 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9] dark:border-slate-600 dark:bg-transparent dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-900/50 dark:focus-visible:ring-offset-slate-950"
           >
             Log in
           </Link>
@@ -65,23 +69,25 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="mx-auto max-w-3xl">
-        <h2 className="text-center text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-          What MentorForge does
-        </h2>
-        <p className="mx-auto mt-2 max-w-lg text-center text-xs text-slate-500 dark:text-slate-400">
-          Study planning and pacing software—not tutoring, coaches, or a marketplace.
-        </p>
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="mx-auto max-w-5xl">
+        <div className="text-center">
+          <h2 className="font-display text-2xl font-medium tracking-tight text-slate-900 dark:text-slate-50">
+            What MentorForge does
+          </h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+            Study planning and pacing software—not tutoring, coaches, or a marketplace.
+          </p>
+        </div>
+        <div className="mt-14 grid gap-px bg-slate-200/80 dark:bg-slate-800 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
             <div
               key={f.title}
-              className="rounded-xl border border-slate-200 bg-slate-100/80 p-5 dark:border-slate-800 dark:bg-slate-900/60"
+              className="bg-[#fafaf9] p-8 dark:bg-slate-950 sm:min-h-[11rem]"
             >
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <h3 className="font-display text-lg font-medium text-slate-900 dark:text-slate-100">
                 {f.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+              <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
                 {f.description}
               </p>
             </div>
@@ -90,24 +96,26 @@ export default function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section className="mx-auto max-w-2xl text-center">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+      <section className="mx-auto max-w-xl">
+        <h2 className="text-center font-display text-2xl font-medium tracking-tight text-slate-900 dark:text-slate-50">
           How it works
         </h2>
-        <ol className="mt-8 space-y-6 text-left">
+        <ol className="mt-12 space-y-10">
           {[
             ["1. Enter your details", "Pick your CFA level, exam window, start date, and weekly hours."],
             ["2. Generate your plan", "MentorForge sequences topics by exam weight, spaces ethics reviews, and prorates partial weeks."],
             ["3. Study & track", "Log actual hours each week. Mark weeks complete. Rebalance if you fall behind."],
             ["4. Stay on pace", "Your summary, plan status, readiness note, and focus window stay aligned as you log hours and move through the weeks."]
           ].map(([title, desc]) => (
-            <li key={title} className="flex gap-4">
-              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-500/10 text-xs font-bold text-sky-600 dark:bg-sky-500/20 dark:text-sky-400">
+            <li key={title} className="flex gap-6 border-b border-slate-200/80 pb-10 last:border-0 last:pb-0 dark:border-slate-800/80">
+              <span className="font-display text-2xl font-medium tabular-nums text-slate-400 dark:text-slate-500">
                 {title![0]}
               </span>
               <div>
-                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{title!.slice(3)}</p>
-                <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">{desc}</p>
+                <p className="font-medium text-slate-900 dark:text-slate-100">{title!.slice(3)}</p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                  {desc}
+                </p>
               </div>
             </li>
           ))}
@@ -115,17 +123,17 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="mx-auto max-w-md text-center">
-        <p className="text-base font-medium text-slate-900 dark:text-slate-100">
+      <section className="mx-auto max-w-lg border-t border-slate-200/80 pt-16 text-center dark:border-slate-800/80">
+        <p className="font-display text-xl font-medium leading-snug text-slate-900 dark:text-slate-50">
           Ready to map a CFA study runway you can defend week to week?
         </p>
         <Link
           href="/register"
-          className="mt-4 inline-flex items-center justify-center rounded-md bg-sky-500 px-6 py-2.5 text-sm font-medium text-slate-950 shadow-sm hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+          className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-8 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9] dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200 dark:focus-visible:ring-offset-slate-950"
         >
           Create your free account
         </Link>
-        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+        <p className="mt-8 text-xs leading-relaxed text-slate-500 dark:text-slate-500">
           No credit card required. MentorForge is independent study-planning software and is not affiliated with CFA Institute.
         </p>
       </section>
