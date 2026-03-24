@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/next";
 import { Providers } from "./providers";
 import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Footer />
           </div>
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
