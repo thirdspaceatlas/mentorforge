@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import { MarketingBottomCTA } from "@/components/marketing/MarketingBottomCTA";
 
 export const metadata: Metadata = {
   title: "About MentorForge",
@@ -57,24 +57,15 @@ export default function AboutPage() {
         </blockquote>
       </figure>
 
-      <section className="mx-auto max-w-2xl border-t border-slate-200/70 pt-16 text-center dark:border-slate-800/80 sm:pt-20">
-        <h2 className="font-display text-[1.65rem] font-medium leading-[1.25] tracking-tight text-slate-900 dark:text-slate-50 sm:text-[1.85rem]">
-          Ready to build a plan that actually holds?
-        </h2>
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href="/register"
-            className="inline-flex min-w-[10rem] items-center justify-center rounded-full bg-slate-900 px-8 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9] [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground dark:focus-visible:ring-offset-slate-950"
-          >
-            Create your free account
-          </Link>
-          <Link
-            href="/learn-more"
-            className="inline-flex min-w-[10rem] items-center justify-center rounded-full border border-slate-300/90 bg-white/80 px-8 py-3 text-sm font-medium text-slate-800 transition-colors hover:border-slate-400 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9] dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-900/70 dark:focus-visible:ring-offset-slate-950"
-          >
-            Learn how it works
-          </Link>
-        </div>
+      <section className="pt-12 sm:pt-16">
+        <MarketingBottomCTA
+          variant="band"
+          headline="Ready to build a plan that actually holds?"
+          supporting="Start free — no credit card required."
+          primaryLabel="Create your free account"
+          secondaryLabel="Learn how it works"
+          secondaryHref="/learn-more"
+        />
       </section>
     </div>
   );

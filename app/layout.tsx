@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${fontSans.variable} ${fontDisplay.variable}`}
+      className={`scroll-smooth ${fontSans.variable} ${fontDisplay.variable}`}
     >
       <body className="min-h-screen overflow-x-hidden bg-[#fafaf9] text-slate-900 dark:bg-slate-950 dark:text-slate-100 dark:antialiased">
         <Providers>

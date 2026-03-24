@@ -56,9 +56,9 @@ export function Navbar() {
   return (
     <header
       className={
-        "sticky top-0 z-50 border-b transition-[background-color,box-shadow,border-color] duration-200 " +
+        "sticky top-0 z-50 border-b transition-[background-color,backdrop-filter,border-color,box-shadow] duration-200 ease-out " +
         (scrolled
-          ? "border-slate-200/90 bg-[#fafaf9] shadow-nav backdrop-blur-md dark:border-slate-800/50 dark:bg-slate-950/90 dark:backdrop-blur-md dark:shadow-nav-dark"
+          ? "border-slate-200/90 bg-[#fafaf9] shadow-nav backdrop-blur-md dark:border-white/[0.06] dark:bg-[rgba(10,15,26,0.8)] dark:shadow-nav-dark dark:backdrop-blur-[12px]"
           : "border-slate-200/40 bg-[#fafaf9]/85 backdrop-blur-sm dark:border-slate-800/50 dark:bg-slate-950/80 dark:backdrop-blur-sm")
       }
     >

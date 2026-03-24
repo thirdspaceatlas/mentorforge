@@ -44,3 +44,50 @@ a {
 * {
   box-sizing: border-box;
 }
+
+/* Landing — hero entrance (staggered) */
+@keyframes landing-hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.landing-hero-in {
+  opacity: 0;
+  animation: landing-hero-fade-up 0.55s ease forwards;
+}
+
+.landing-hero-d0 {
+  animation-delay: 0ms;
+}
+.landing-hero-d1 {
+  animation-delay: 0.07s;
+}
+.landing-hero-d2 {
+  animation-delay: 0.14s;
+}
+.landing-hero-d3 {
+  animation-delay: 0.21s;
+}
+.landing-hero-d4 {
+  animation-delay: 0.28s;
+}
+.landing-hero-d5 {
+  animation-delay: 0.35s;
+}
+.landing-hero-d6 {
+  animation-delay: 0.42s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-hero-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

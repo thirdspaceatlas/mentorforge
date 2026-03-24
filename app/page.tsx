@@ -1,8 +1,16 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { FeatureIcon } from "@/components/marketing/FeatureIcons";
 import { HeroProductPreviews } from "@/components/marketing/HeroProductPreview";
 import { MarketingBottomCTA } from "@/components/marketing/MarketingBottomCTA";
+import { RevealOnScroll } from "@/components/marketing/RevealOnScroll";
 import { homepageFaqs } from "./faq-data";
+
+export const metadata: Metadata = {
+  title: "MentorForge — CFA study planning & pacing",
+  description:
+    "Week-by-week CFA study plans, rebalancing, and progress tracking — built for real life. One-time pricing, no subscriptions."
+};
 
 type Feature = {
   title: string;
@@ -15,7 +23,7 @@ const features: Feature[] = [
   {
     title: "Realistic weekly plans",
     description:
-      "Enter your exam window, available hours, and start date. MentorForge builds a week-by-week CFA plan anchored to widely used study-hour benchmarks\u2014grounded in your calendar, not guesswork.",
+      "Enter your exam window, available hours, and start date. MentorForge builds a week-by-week CFA plan anchored to widely used study-hour benchmarks — grounded in your calendar, not guesswork.",
     icon: "plans",
     emphasis: true
   },
@@ -42,7 +50,7 @@ const features: Feature[] = [
   {
     title: "Calendar & progress views",
     description:
-      "Choose a calendar-anchored window or follow your first incomplete week\u2014so the planner stays where you are, not stuck on week one.",
+      "Choose a calendar-anchored window or follow your first incomplete week — so the planner stays where you are, not stuck on week one.",
     icon: "calendar"
   },
   {
@@ -60,108 +68,165 @@ const howSteps = [
   ["Stay on pace", "Your summary, plan status, readiness note, and focus window stay aligned as you log hours and move through the weeks."]
 ] as const;
 
-/** Features + how + FAQ — distinct from hero + bottom band */
-const landingPanelClass =
-  "mx-auto mt-8 max-w-5xl scroll-mt-8 rounded-2xl border border-slate-200/85 bg-white/95 px-4 py-12 shadow-[0_1px_3px_rgb(15_23_42/0.06)] dark:border-slate-800/45 dark:bg-[#0a0f1a] dark:shadow-none sm:mt-10 sm:px-8 sm:py-16";
+const trustAnchors: string[] = [
+  "Built around the CFA Institute's widely cited 300+ study-hour benchmark — grounded in your calendar, not guesswork.",
+  "We're early. Your feedback directly shapes what we build next — and we read every message.",
+  "One-time payment. No subscriptions. No surprises.",
+  "Independent study-planning software. Not affiliated with CFA Institute."
+];
 
-const sectionDividerClass =
-  "mt-12 border-t border-slate-200/75 pt-12 dark:border-slate-700/30 sm:mt-14 sm:pt-14";
+function PricingCheckList({ items }: { items: readonly string[] }) {
+  return (
+    <ul className="mt-6 space-y-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+      {items.map((item) => (
+        <li key={item} className="flex gap-2.5">
+          <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" aria-hidden />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const featuresSectionWrapperClass =
+  "mx-auto mt-8 max-w-5xl scroll-mt-8 px-4 py-12 sm:mt-10 sm:px-8 sm:py-16";
+
+const howSectionClass =
+  "mx-auto mt-12 max-w-5xl scroll-mt-28 px-4 py-12 sm:mt-14 sm:px-8 sm:py-16";
+
+const pricingSectionClass = "mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16";
+
+const faqSectionClass = "mx-auto max-w-5xl px-4 py-12 sm:px-8 sm:py-16";
 
 export default function LandingPage() {
   return (
-    <div className="space-y-0 overflow-x-hidden pb-28 sm:pb-36">
-      {/* Hero — slightly different dark base than content panel */}
-      <section className="relative border-b border-slate-200/70 pb-16 pt-10 dark:border-slate-800/80 dark:bg-[#06080e] sm:pb-20 sm:pt-12">
-        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
-          <p className="mb-5 font-display text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-slate-600 dark:text-slate-300">
+    <div className="space-y-0 pb-28 sm:pb-36">
+      {/* overflow-x-hidden only on hero so full-bleed bottom CTA is not clipped */}
+      <section className="relative overflow-x-hidden border-b border-slate-200/70 pb-12 pt-10 dark:border-slate-800/80 sm:pb-16 sm:pt-12">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:max-w-2xl sm:px-6 lg:max-w-3xl">
+          <p className="landing-hero-in landing-hero-d0 mb-5 font-display text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-slate-600 dark:text-slate-400">
             CFA study planning
           </p>
-          <h1 className="font-display text-[clamp(1.85rem,6vw,3.65rem)] font-medium leading-[1.08] tracking-tight text-slate-900 dark:text-slate-50 sm:text-[3.65rem]">
-            Forge a realistic CFA study plan.
+          <h1 className="landing-hero-in landing-hero-d1 font-display text-[clamp(1.65rem,5.5vw,3.25rem)] font-medium leading-[1.12] tracking-tight text-slate-900 dark:text-slate-50">
+            <span className="block">
+              More than half of CFA candidates don&apos;t pass their exam.
+              <sup className="ml-0.5 align-baseline text-[0.45em] font-sans font-semibold leading-none">
+                <a
+                  href="#hero-footnote"
+                  className="text-accent underline decoration-accent/50 underline-offset-2 transition-colors hover:text-accent hover:decoration-accent"
+                >
+                  ¹
+                </a>
+              </sup>
+            </span>
+            <span className="mt-2 block sm:mt-3">The ones who do have a plan.</span>
           </h1>
-          <div className="mx-auto mt-7 max-w-md border-t border-slate-200/80 pt-7 dark:border-slate-700/70" />
-          <p className="mx-auto max-w-lg text-base leading-relaxed text-slate-700 dark:text-slate-200">
-            Turn your exam date and available hours into a study plan built for real
-            life.
+          <p className="landing-hero-in landing-hero-d2 mx-auto mt-8 max-w-2xl text-left text-[0.98rem] leading-relaxed text-slate-700 dark:text-slate-300 sm:text-center sm:text-[1.02rem]">
+            Poor planning — not poor effort — is the silent killer of CFA attempts. MentorForge turns your exam date and available hours into a
+            week-by-week study plan built for real life, so you never run out of road.
           </p>
-          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-            Plan, pace, and rebalance your study path with confidence.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-10 sm:gap-14">
+          <div className="landing-hero-in landing-hero-d3 mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-5">
             <Link
               href="/register"
-              className="inline-flex min-h-[2.75rem] min-w-[10rem] touch-manipulation items-center justify-center rounded-full bg-slate-900 px-8 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9] [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground dark:focus-visible:ring-offset-slate-950"
+              className="inline-flex min-h-[2.75rem] min-w-[10rem] touch-manipulation items-center justify-center rounded-full border border-transparent bg-slate-900 px-8 py-3 text-sm font-semibold text-white shadow-sm transition-[background-color,color,box-shadow] duration-200 ease-out hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9] [-webkit-tap-highlight-color:transparent] dark:border-transparent dark:bg-white dark:text-slate-950 dark:shadow-md dark:hover:bg-slate-200 dark:hover:text-slate-900 dark:focus-visible:ring-offset-slate-950"
             >
               Get started free
             </Link>
-            <Link
-              href="/login"
-              className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 [-webkit-tap-highlight-color:transparent] dark:text-slate-400 dark:hover:text-slate-100"
+            <a
+              href="#how-it-works"
+              className="inline-flex min-h-[2.75rem] min-w-[10.5rem] touch-manipulation items-center justify-center rounded-full border border-slate-300/95 bg-white px-8 py-3 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 [-webkit-tap-highlight-color:transparent] dark:border-slate-600 dark:bg-transparent dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900/40"
             >
-              Log in
-            </Link>
+              See how it works
+            </a>
           </div>
+          <p className="landing-hero-in landing-hero-d4 mx-auto mt-6 max-w-md text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+            No credit card required. Takes less than 2 minutes to generate your first plan.
+          </p>
         </div>
 
-        <HeroProductPreviews />
+        <div className="landing-hero-in landing-hero-d5 mt-12 sm:mt-14">
+          <HeroProductPreviews />
+        </div>
+
+        <div
+          id="hero-footnote"
+          className="landing-hero-in landing-hero-d6 mx-auto mt-12 max-w-2xl scroll-mt-28 px-4 text-left text-[0.7rem] leading-relaxed text-slate-500 dark:text-slate-500 sm:px-6"
+        >
+          <p>
+            <sup className="font-sans font-semibold">¹</sup> CFA Institute 10-year historical pass rate averages: 41% for Level I, 45% for Level II, 51% for Level
+            III. Only an estimated 13.5% of candidates who sit Level I ultimately complete all three levels. Source:{" "}
+            <a
+              href="https://www.cfainstitute.org/programs/cfa-program/candidate-resources/exam-results"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline decoration-accent/40 underline-offset-2 transition-colors hover:decoration-accent"
+            >
+              CFA Institute Exam Results &amp; Pass Rates
+            </a>
+            . MentorForge is independent study-planning software and is not affiliated with CFA Institute.
+          </p>
+        </div>
       </section>
 
-      <div className={landingPanelClass}>
-        <section aria-labelledby="home-features-heading">
-          <div className="text-center">
-            <h2
-              id="home-features-heading"
-              className="font-display text-[2rem] font-medium tracking-tight text-slate-900 dark:text-slate-50"
-            >
-              What MentorForge does
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-[0.95rem] font-medium leading-relaxed text-slate-700 dark:text-slate-300">
-              Study planning and pacing software—not tutoring, coaches, or a marketplace.
-            </p>
-          </div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className={
-                  "flex h-full min-h-[17.5rem] flex-col rounded-2xl border p-7 " +
-                  (f.emphasis
-                    ? "border-slate-200/95 bg-white shadow-sm ring-1 ring-slate-900/[0.04] dark:border-slate-600/50 dark:bg-slate-900/85 dark:ring-white/[0.04]"
-                    : "border-slate-200/80 bg-[#fafaf9] dark:border-slate-700/60 dark:bg-[#0f1520]")
-                }
+      <RevealOnScroll>
+        <div className={featuresSectionWrapperClass}>
+          <section aria-labelledby="home-features-heading">
+            <div className="text-center">
+              <p className="font-display text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:text-slate-400">
+                What MentorForge does
+              </p>
+              <h2
+                id="home-features-heading"
+                className="mt-4 font-display text-[clamp(1.65rem,4vw,2.15rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50"
               >
-                <div className="flex items-start gap-3">
-                  <FeatureIcon name={f.icon} />
-                  <h3
-                    className={
-                      "font-display text-[1.15rem] leading-snug text-slate-900 dark:text-slate-50 " +
-                      (f.emphasis ? "font-semibold" : "font-medium")
-                    }
-                  >
-                    {f.title}
-                  </h3>
-                </div>
-                <p
+                Study planning and pacing software.
+                <span className="mt-1 block text-slate-700 dark:text-slate-300">Not tutoring, coaches, or a marketplace.</span>
+              </h2>
+            </div>
+            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {features.map((f) => (
+                <div
+                  key={f.title}
                   className={
-                    "mt-2.5 flex-1 text-sm leading-relaxed " +
+                    "flex h-full min-h-[17.5rem] flex-col rounded-2xl border p-7 " +
                     (f.emphasis
-                      ? "text-slate-700 dark:text-slate-300"
-                      : "text-slate-700 dark:text-slate-400")
+                      ? "border-slate-200/95 bg-white shadow-sm ring-1 ring-slate-900/[0.04] dark:border-slate-600/50 dark:bg-slate-900/85 dark:ring-white/[0.04]"
+                      : "border-slate-200/80 bg-[#fafaf9] dark:border-slate-700/60 dark:bg-[#0f1520]")
                   }
                 >
-                  {f.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
+                  <div className="flex items-start gap-3">
+                    <FeatureIcon name={f.icon} />
+                    <h3
+                      className={
+                        "font-display text-[1.15rem] leading-snug text-slate-900 dark:text-slate-50 " +
+                        (f.emphasis ? "font-semibold" : "font-medium")
+                      }
+                    >
+                      {f.title}
+                    </h3>
+                  </div>
+                  <p
+                    className={
+                      "mt-2.5 flex-1 text-sm leading-relaxed " +
+                      (f.emphasis ? "text-slate-700 dark:text-slate-300" : "text-slate-700 dark:text-slate-400")
+                    }
+                  >
+                    {f.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </RevealOnScroll>
 
-        <section aria-labelledby="home-how-heading" className={sectionDividerClass}>
+      <RevealOnScroll>
+        <section id="how-it-works" className={howSectionClass} aria-labelledby="home-how-heading">
           <h2
             id="home-how-heading"
-            className="text-center font-display text-[2rem] font-medium tracking-tight text-slate-900 dark:text-slate-50"
+            className="text-center font-display text-[clamp(1.65rem,4vw,2.15rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50"
           >
-            How it works
+            Up and running in under 2 minutes.
           </h2>
           <ol className="mx-auto mt-10 max-w-xl space-y-10 sm:space-y-12">
             {howSteps.map(([title, desc], i) => (
@@ -175,69 +240,164 @@ export default function LandingPage() {
                   </span>
                   <div className="min-w-0 shrink pt-0.5">
                     <p className="text-base font-semibold text-slate-900 dark:text-slate-100">{title}</p>
-                    <p className="mt-1.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                      {desc}
-                    </p>
+                    <p className="mt-1.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{desc}</p>
                   </div>
                 </div>
               </li>
             ))}
           </ol>
         </section>
+      </RevealOnScroll>
 
-        <section aria-labelledby="home-faq-heading" className={sectionDividerClass}>
+      <RevealOnScroll>
+        <section className={pricingSectionClass} aria-labelledby="home-pricing-heading">
+          <div className="text-center">
+            <h2
+              id="home-pricing-heading"
+              className="font-display text-[clamp(1.65rem,4vw,2.15rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50"
+            >
+              Simple, one-time pricing.
+            </h2>
+            <p className="mt-3 text-base font-medium text-slate-700 dark:text-slate-300 sm:text-lg">No subscriptions. No surprises.</p>
+          </div>
+
+          <div className="mt-10 grid gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-5">
+            <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-[#fafaf9] p-7 shadow-sm dark:border-slate-700/80 dark:bg-slate-950 sm:p-8">
+              <div>
+                <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                  Free <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
+                  <span className="tabular-nums">$0</span>
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">Try it first</p>
+              </div>
+              <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-500">What&apos;s included</p>
+              <PricingCheckList
+                items={["Level I plan generation", "Week-by-week topic sequencing", "Exam-weight-based scheduling"]}
+              />
+              <div className="mt-auto pt-8">
+                <Link
+                  href="/register"
+                  className="flex w-full items-center justify-center rounded-full border-2 border-slate-400/90 bg-white px-5 py-3 text-center text-sm font-semibold text-slate-900 transition-colors hover:border-slate-600 hover:bg-slate-50 dark:border-slate-500 dark:bg-slate-900/60 dark:text-slate-100 dark:hover:border-slate-400 dark:hover:bg-slate-900"
+                >
+                  Get started free
+                </Link>
+              </div>
+            </article>
+
+            <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-white p-7 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 sm:p-8">
+              <div>
+                <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                  Level Pass <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
+                  <span className="tabular-nums">$34</span>
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">Everything you need for one level</p>
+              </div>
+              <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-500">What&apos;s included</p>
+              <PricingCheckList
+                items={[
+                  "Full plan generation (Level I, II, or III)",
+                  "Smart rebalancing when life gets in the way",
+                  "Progress tracking & readiness narrative",
+                  "Ethics and review spacing built in",
+                  "Calendar + progress views",
+                  "Lifetime access for your level"
+                ]}
+              />
+              <div className="mt-auto pt-8">
+                <Link
+                  href="/register?plan=level-pass"
+                  className="flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 dark:hover:text-slate-900"
+                >
+                  Buy Level Pass
+                </Link>
+                <p className="mt-4 text-center text-sm italic leading-snug text-slate-500 dark:text-slate-500">
+                  Less than the cost of one Schweser mock exam.
+                </p>
+              </div>
+            </article>
+
+            <article className="flex min-h-full flex-col rounded-2xl border-2 border-accent bg-white p-7 shadow-lg shadow-slate-900/10 ring-1 ring-accent/20 dark:border-accent dark:bg-[#141c28] dark:shadow-[0_20px_40px_-12px_rgb(0_0_0/0.5)] dark:ring-accent/30 sm:p-8">
+              <div className="mb-5 text-center">
+                <span className="inline-block rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-800 dark:border-accent/40 dark:bg-accent/15 dark:text-emerald-100">
+                  Best Value
+                </span>
+              </div>
+              <div>
+                <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                  All-Access <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
+                  <span className="tabular-nums">$74</span>
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  For candidates committed to all three levels
+                </p>
+              </div>
+              <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">What&apos;s included</p>
+              <PricingCheckList
+                items={[
+                  "Everything in Level Pass",
+                  "All three CFA levels unlocked",
+                  "Best value if you're in it for the full journey"
+                ]}
+              />
+              <div className="mt-auto pt-8">
+                <Link
+                  href="/register?plan=all-access"
+                  className="flex w-full items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:ring-offset-[#141c28]"
+                >
+                  Buy All-Access
+                </Link>
+              </div>
+            </article>
+          </div>
+
+          <div className="mx-auto mt-12 max-w-2xl">
+            <ul className="space-y-4 text-sm leading-relaxed text-slate-700 dark:text-slate-300 sm:text-[0.95rem]">
+              {trustAnchors.map((text) => (
+                <li key={text} className="flex gap-3">
+                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" aria-hidden />
+                  <span>{text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      </RevealOnScroll>
+
+      <RevealOnScroll>
+        <section className={faqSectionClass} aria-labelledby="home-faq-heading">
           <h2
             id="home-faq-heading"
-            className="text-center font-display text-[2rem] font-medium tracking-tight text-slate-900 dark:text-slate-50"
+            className="text-center font-display text-[clamp(1.65rem,4vw,2.15rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50"
           >
-            Frequently Asked Questions
+            Common questions.
           </h2>
-          <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-slate-200/95 bg-white/95 shadow-sm dark:border-slate-700/85 dark:bg-[#0d1420]/80 dark:shadow-none">
+          <div
+            className="mx-auto mt-8 max-w-2xl rounded-2xl border border-slate-200/95 bg-white/95 shadow-sm dark:border-slate-700/85 dark:bg-[#0d1420]/80 dark:shadow-none"
+            role="region"
+            aria-label="Frequently asked questions"
+          >
             {homepageFaqs.map((faq) => (
               <details
                 key={faq.question}
                 className="group border-b border-slate-200/85 px-6 py-5 last:border-b-0 dark:border-slate-700/70 sm:px-7"
               >
-                <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center pr-8 text-[0.97rem] font-medium leading-relaxed text-slate-900 marker:content-none [-webkit-tap-highlight-color:transparent] dark:text-slate-100">
+                <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center pr-8 text-left text-[0.97rem] font-semibold leading-relaxed text-slate-900 marker:content-none [-webkit-tap-highlight-color:transparent] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-slate-100 dark:focus-visible:ring-offset-[#0d1420]">
                   {faq.question}
                 </summary>
-                <p className="mt-3.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                  {faq.answer}
-                </p>
+                <p className="mt-3.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{faq.answer}</p>
               </details>
             ))}
           </div>
-          <div className="mt-8 flex flex-col items-center gap-2">
-            <Link
-              href="/learn-more"
-              className="inline-flex min-h-[2.75rem] items-center justify-center rounded-full border border-slate-300/95 bg-white px-5 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 [-webkit-tap-highlight-color:transparent] dark:border-slate-600 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900"
-            >
-              Learn more
-              <span className="ml-2 inline-block translate-y-px text-base font-medium leading-none text-accent" aria-hidden>
-                →
-              </span>
-            </Link>
-            <p className="max-w-sm text-center text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-              More questions answered, plus a full product comparison
-            </p>
-          </div>
         </section>
-      </div>
+      </RevealOnScroll>
 
-      <section className="pt-16 sm:pt-20">
+      <section className="pt-12 sm:pt-16">
         <MarketingBottomCTA
           variant="band"
-          headline="Build a CFA study plan you can actually follow."
-          supporting="Map your runway, log real hours, and rebalance when life happens — without losing the thread."
+          headline="Ready to map a study runway you can defend week to week?"
+          supporting="Join candidates who are done winging it."
+          primaryLabel="Create your free account"
         />
-        <div className="mx-auto mt-10 max-w-2xl px-4 text-center sm:px-6">
-          <Link
-            href="/learn-more"
-            className="inline-flex min-h-[2.75rem] items-center justify-center text-sm font-medium text-slate-600 underline decoration-slate-300 underline-offset-4 transition-colors hover:text-slate-900 [-webkit-tap-highlight-color:transparent] dark:text-slate-400 dark:decoration-slate-600 dark:hover:text-slate-200"
-          >
-            FAQ
-          </Link>
-        </div>
       </section>
     </div>
   );

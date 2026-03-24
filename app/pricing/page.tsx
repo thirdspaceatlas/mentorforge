@@ -111,7 +111,7 @@ export default function PricingPage() {
 
       <section
         aria-labelledby="pricing-tiers-heading"
-        className="mx-auto max-w-6xl rounded-2xl border border-slate-200/60 bg-white/50 px-4 py-8 dark:border-slate-800/50 dark:bg-[#0a0f1a] sm:px-6 sm:py-10"
+        className="mx-auto max-w-6xl rounded-2xl border border-slate-200/60 bg-white/50 px-4 py-8 dark:border-transparent dark:bg-transparent sm:px-6 sm:py-10"
       >
         <div className="text-center">
           <h2
@@ -240,7 +240,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl scroll-mt-8 rounded-2xl border border-slate-200/85 bg-white/95 px-4 py-12 shadow-[0_1px_3px_rgb(15_23_42/0.06)] dark:border-slate-800/45 dark:bg-[#0d1420] dark:shadow-none sm:px-8 sm:py-14">
+      <section className="mx-auto max-w-5xl scroll-mt-8 rounded-2xl border border-slate-200/85 bg-white/95 px-4 py-12 shadow-[0_1px_3px_rgb(15_23_42/0.06)] dark:border-transparent dark:bg-transparent dark:shadow-none sm:px-8 sm:py-14">
         <h2 className="text-center font-display text-[1.85rem] font-medium tracking-tight text-slate-900 dark:text-slate-50 sm:text-[2rem]">
           Pricing FAQ
         </h2>
@@ -261,8 +261,9 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-2xl px-4 pt-4 sm:px-6 sm:pt-6">
+      <section className="pt-16 sm:pt-20">
         <MarketingBottomCTA
+          variant="band"
           headline="Ready to start?"
           supporting="Start free and upgrade when you're ready — your plan carries over."
           primaryLabel="Create your free account"

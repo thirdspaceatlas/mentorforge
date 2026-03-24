@@ -61,4 +61,25 @@ export const fullFaqs: FaqItem[] = [
   }
 ];
 
-export const homepageFaqs: FaqItem[] = fullFaqs.slice(0, 6);
+/** Homepage — concise set (full list remains on learn-more) */
+export const homepageFaqs: FaqItem[] = [
+  {
+    question: "Do I need to buy again if I move to the next level?",
+    answer:
+      "Yes — unless you have All-Access. We recommend All-Access if you know you're going all the way."
+  },
+  {
+    question: "What if I fail and need to retake?",
+    answer: "Reach out. We offer a 50% retake discount — no questions asked."
+  },
+  {
+    question: "Is this a tutoring or prep course?",
+    answer:
+      "No. MentorForge is purely a planning and pacing tool. It tells you when to study what — you bring the materials."
+  },
+  {
+    question: "Is MentorForge affiliated with CFA Institute?",
+    answer:
+      "No. MentorForge is independent study-planning software. CFA Institute does not endorse, promote, or warrant the accuracy or quality of MentorForge."
+  }
+];
