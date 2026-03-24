@@ -2,16 +2,36 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Analytics } from "@vercel/analytics/next";
+import { getSiteUrl } from "@/lib/site";
 import { Providers } from "./providers";
 import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
 import { fontDisplay, fontSans } from "./fonts";
 
+const siteDescription =
+  "Plan, pace, and rebalance your study path for serious exams and certifications.";
+
 export const metadata: Metadata = {
-  title: "MentorForge",
-  description:
-    "Plan, pace, and rebalance your study path for serious exams and certifications.",
-  applicationName: "MentorForge"
+  metadataBase: getSiteUrl(),
+  title: {
+    default: "MentorForge",
+    template: "%s — MentorForge"
+  },
+  description: siteDescription,
+  applicationName: "MentorForge",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "MentorForge",
+    title: "MentorForge",
+    description: siteDescription,
+    url: "/"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MentorForge",
+    description: siteDescription
+  }
 };
 
 export const viewport: Viewport = {
