@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -25,8 +26,10 @@ const mobileNavLinkClass =
   "flex min-h-[2.75rem] items-center rounded-lg px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-200/80 active:bg-slate-200 dark:text-slate-200 dark:hover:bg-slate-800/80 dark:active:bg-slate-800 [-webkit-tap-highlight-color:transparent]";
 
 export function Navbar() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isApp = pathname?.startsWith("/app");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -104,9 +107,11 @@ export function Navbar() {
             >
               {mobileOpen ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
             </button>
-            <div className="ml-1 shrink-0 scale-90 opacity-[0.88] md:ml-2">
-              <ThemeToggle />
-            </div>
+            {isApp && (
+              <div className="ml-1 shrink-0 scale-90 opacity-[0.88] md:ml-2">
+                <ThemeToggle />
+              </div>
+            )}
           </div>
         </div>
       </div>

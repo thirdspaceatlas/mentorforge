@@ -63,7 +63,7 @@ const features: Feature[] = [
 
 const howSteps = [
   ["Enter your details", "Pick your CFA level, exam window, start date, and weekly hours."],
-  ["Generate your plan", "MentorForge sequences topics by exam weight, spaces ethics reviews, and prorates partial weeks."],
+  ["Build your plan", "MentorForge sequences topics by exam weight, spaces ethics reviews, and prorates partial weeks."],
   ["Study & track", "Log actual hours each week. Mark weeks complete. Rebalance if you fall behind."],
   ["Stay on pace", "Your summary, plan status, readiness note, and focus window stay aligned as you log hours and move through the weeks."]
 ] as const;
@@ -100,7 +100,7 @@ const faqSectionClass = "mx-auto max-w-5xl px-4 py-12 sm:px-8 sm:py-16";
 
 export default function LandingPage() {
   return (
-    <div className="space-y-0 pb-28 sm:pb-36">
+    <div className="space-y-0 pb-16 sm:pb-20">
       {/* overflow-x-hidden only on hero so full-bleed bottom CTA is not clipped */}
       <section className="relative overflow-x-hidden border-b border-slate-200/70 pb-12 pt-10 dark:border-slate-800/80 sm:pb-16 sm:pt-12">
         <div className="mx-auto max-w-3xl px-4 text-center sm:max-w-2xl sm:px-6 lg:max-w-3xl">
@@ -128,19 +128,19 @@ export default function LandingPage() {
           <div className="landing-hero-in landing-hero-d3 mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-5">
             <Link
               href="/register"
-              className="inline-flex min-h-[2.75rem] min-w-[10rem] touch-manipulation items-center justify-center rounded-full border border-transparent bg-slate-900 px-8 py-3 text-sm font-semibold text-white shadow-sm transition-[background-color,color,box-shadow] duration-200 ease-out hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9] [-webkit-tap-highlight-color:transparent] dark:border-transparent dark:bg-white dark:text-slate-950 dark:shadow-md dark:hover:bg-slate-200 dark:hover:text-slate-900 dark:focus-visible:ring-offset-slate-950"
+              className="inline-flex min-h-[3rem] min-w-[11rem] touch-manipulation items-center justify-center rounded-full border border-transparent bg-slate-900 px-10 py-3.5 text-[0.9375rem] font-semibold text-white shadow-sm transition-[background-color,color,box-shadow] duration-200 ease-out hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9] [-webkit-tap-highlight-color:transparent] dark:border-transparent dark:bg-white dark:text-slate-950 dark:shadow-md dark:hover:bg-slate-200 dark:hover:text-slate-900 dark:focus-visible:ring-offset-slate-950"
             >
               Get started free
             </Link>
             <a
               href="#how-it-works"
-              className="inline-flex min-h-[2.75rem] min-w-[10.5rem] touch-manipulation items-center justify-center rounded-full border border-slate-300/95 bg-white px-8 py-3 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 [-webkit-tap-highlight-color:transparent] dark:border-slate-600 dark:bg-transparent dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900/40"
+              className="inline-flex min-h-[3rem] min-w-[11.5rem] touch-manipulation items-center justify-center rounded-full border border-slate-300/95 bg-white px-10 py-3.5 text-[0.9375rem] font-semibold text-slate-900 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 [-webkit-tap-highlight-color:transparent] dark:border-slate-600 dark:bg-transparent dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900/40"
             >
               See how it works
             </a>
           </div>
           <p className="landing-hero-in landing-hero-d4 mx-auto mt-6 max-w-md text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            No credit card required. Takes less than 2 minutes to generate your first plan.
+            No credit card required. Takes less than 2 minutes to build your first plan.
           </p>
         </div>
 
@@ -228,20 +228,34 @@ export default function LandingPage() {
           >
             Up and running in under 2 minutes.
           </h2>
-          <ol className="mx-auto mt-10 max-w-xl space-y-10 sm:space-y-12">
+          <ol className="mx-auto mt-10 grid max-w-5xl grid-cols-1 gap-6 sm:mt-12 sm:grid-cols-2 sm:gap-8 lg:mt-14 lg:flex lg:flex-nowrap lg:items-stretch lg:gap-0">
             {howSteps.map(([title, desc], i) => (
-              <li key={title} className="relative">
-                <div className="flex gap-5">
-                  <span
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold tabular-nums text-accent-foreground shadow-sm"
-                    aria-hidden
+              <li key={title} className="flex flex-1 items-stretch">
+                <div className="flex w-full flex-col lg:contents">
+                  <div
+                    className={
+                      "flex min-w-0 flex-1 flex-col rounded-2xl border border-slate-200/90 bg-white/95 p-6 shadow-sm dark:border-slate-700/70 dark:bg-slate-900/50 dark:shadow-none lg:min-w-0 " +
+                      (i % 2 === 0 ? "lg:-rotate-[0.5deg]" : "lg:rotate-[0.5deg]")
+                    }
                   >
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0 shrink pt-0.5">
+                    <span
+                      className="mb-4 flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-full bg-accent text-sm font-bold tabular-nums text-accent-foreground shadow-sm"
+                      aria-hidden
+                    >
+                      {i + 1}
+                    </span>
                     <p className="text-base font-semibold text-slate-900 dark:text-slate-100">{title}</p>
-                    <p className="mt-1.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{desc}</p>
+                    <p className="mt-1.5 flex-1 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{desc}</p>
                   </div>
+                  {i < howSteps.length - 1 && (
+                    <div
+                      className="hidden shrink-0 items-center self-center lg:flex"
+                      style={{ width: "2rem" }}
+                      aria-hidden
+                    >
+                      <div className="h-0.5 w-full border-t-2 border-dashed border-slate-300 dark:border-slate-600" />
+                    </div>
+                  )}
                 </div>
               </li>
             ))}
@@ -382,7 +396,8 @@ export default function LandingPage() {
                 className="group border-b border-slate-200/85 px-6 py-5 last:border-b-0 dark:border-slate-700/70 sm:px-7"
               >
                 <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center pr-8 text-left text-[0.97rem] font-semibold leading-relaxed text-slate-900 marker:content-none [-webkit-tap-highlight-color:transparent] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-slate-100 dark:focus-visible:ring-offset-[#0d1420]">
-                  {faq.question}
+                  <span className="flex-1">{faq.question}</span>
+                  <span className="ml-2 shrink-0 text-slate-500 transition-transform duration-200 ease group-open:rotate-90 dark:text-slate-400" aria-hidden>›</span>
                 </summary>
                 <p className="mt-3.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{faq.answer}</p>
               </details>

@@ -92,7 +92,7 @@ function FeatureList({ items }: { items: readonly string[] }) {
 
 export default function PricingPage() {
   return (
-    <div className="space-y-16 pb-28 sm:space-y-20 sm:pb-36">
+    <div className="space-y-16 pb-16 sm:space-y-20 sm:pb-20">
       <header className="mx-auto max-w-3xl border-b border-slate-200/70 pb-14 text-center dark:border-slate-800/80 sm:pb-16">
         <p className="mb-5 font-display text-[0.7rem] font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
           Pricing
@@ -250,8 +250,9 @@ export default function PricingPage() {
               key={faq.q}
               className="group border-b border-slate-200/85 px-6 py-5 last:border-b-0 dark:border-slate-700/70 sm:px-7"
             >
-              <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center pr-8 text-[0.97rem] font-medium leading-relaxed text-slate-900 marker:content-none [-webkit-tap-highlight-color:transparent] dark:text-slate-100">
-                {faq.q}
+              <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center pr-8 text-left text-[0.97rem] font-medium leading-relaxed text-slate-900 marker:content-none [-webkit-tap-highlight-color:transparent] dark:text-slate-100">
+                <span className="flex-1">{faq.q}</span>
+                <span className="ml-2 shrink-0 text-slate-500 transition-transform duration-200 ease group-open:rotate-90 dark:text-slate-400" aria-hidden>›</span>
               </summary>
               <p className="mt-3.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                 {faq.a}

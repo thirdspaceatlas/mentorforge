@@ -4,7 +4,7 @@ import { fullFaqs } from "../faq-data";
 
 const howSteps = [
   "Set level, exam window, start date, and realistic weekly capacity.",
-  "Generate a full plan with pacing and week-by-week topic focus.",
+  "Build a full plan with pacing and week-by-week topic focus.",
   "Track actual progress and mark completion as weeks pass.",
   "Rebalance future weeks when life interrupts your schedule."
 ] as const;
@@ -30,7 +30,7 @@ const differentiators: { lead: string; rest: string }[] = [
 
 export default function LearnMorePage() {
   return (
-    <div className="space-y-20 pb-28 sm:space-y-24 sm:pb-36">
+    <div className="space-y-20 pb-16 sm:space-y-24 sm:pb-20">
       <section className="mx-auto max-w-4xl border-b border-slate-200/70 px-4 pb-16 pt-2 text-center dark:border-slate-800/80 sm:pb-16 sm:px-6">
         <p className="mb-4 font-display text-[0.7rem] font-medium uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
           MentorForge
@@ -166,8 +166,9 @@ export default function LearnMorePage() {
               key={faq.question}
               className="group border-b border-slate-200/85 px-6 py-5 last:border-b-0 dark:border-slate-700/70 sm:px-8"
             >
-              <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center pr-8 text-[0.97rem] font-medium leading-relaxed text-slate-900 marker:content-none [-webkit-tap-highlight-color:transparent] dark:text-slate-100">
-                {faq.question}
+              <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center pr-8 text-left text-[0.97rem] font-medium leading-relaxed text-slate-900 marker:content-none [-webkit-tap-highlight-color:transparent] dark:text-slate-100">
+                <span className="flex-1">{faq.question}</span>
+                <span className="ml-2 shrink-0 text-slate-500 transition-transform duration-200 ease group-open:rotate-90 dark:text-slate-400" aria-hidden>›</span>
               </summary>
               <p className="mt-3.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                 {faq.answer}
