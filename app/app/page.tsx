@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useSession, signOut } from "next-auth/react";
 import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { useSupabaseUser } from "@/lib/supabase/use-supabase-user";
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -602,13 +603,7 @@ const buildSummary = (input: BuildSummaryInput): PlanSummary => {
   };
 };
 
-export default function PlannerPage() {
-  const { status: sessionStatus } = useSession();
-
-  if (sessionStatus === "unauthenticated") {
-    redirect("/login");
-  }
-
+function PlannerInner() {
   const [examDate, setExamDate] = useState(() =>
     getDefaultExamDateForLevel("I")
   );
@@ -731,14 +726,6 @@ export default function PlannerPage() {
     };
   }, [weekPlan, showAllWeeks, studyPlanFocusIndex]);
 
-  if (sessionStatus === "loading") {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-w-0 max-w-full space-y-8">
       <section className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
@@ -755,7 +742,11 @@ export default function PlannerPage() {
         </div>
         <button
           type="button"
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={async () => {
+            const supabase = createClient();
+            await supabase.auth.signOut();
+            window.location.href = "/";
+          }}
           className="shrink-0 self-start rounded-full border border-slate-300/90 px-4 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-white dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-900/80"
         >
           Sign out
@@ -1368,4 +1359,22 @@ export default function PlannerPage() {
       ) : null}
     </div>
   );
+}
+
+export default function PlannerPage() {
+  const { user, loading } = useSupabaseUser();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  return <PlannerInner />;
 }

@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
 const ACCESS_TOKEN = "qtrai";
 const ACCESS_COOKIE = "access";
@@ -11,6 +10,35 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith("/_next") || pathname === "/favicon.ico") {
     return NextResponse.next();
   }
+
+  let response = NextResponse.next({
+    request: { headers: request.headers }
+  });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          response = NextResponse.next({
+            request: { headers: request.headers }
+          });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        }
+      }
+    }
+  );
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
 
   const urlToken = request.nextUrl.searchParams.get("token");
   const cookieValue = request.cookies.get(ACCESS_COOKIE)?.value;
@@ -29,22 +57,21 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
-  if (cookieValue === ACCESS_TOKEN) {
-    if (pathname.startsWith("/app")) {
-      const token = await getToken({
-        req: request,
-        secret: process.env.NEXTAUTH_SECRET
-      });
-      if (!token) {
-        const loginUrl = new URL("/login", request.url);
-        loginUrl.searchParams.set("callbackUrl", request.url);
-        return NextResponse.redirect(loginUrl);
-      }
-    }
-    return NextResponse.next();
+  if (cookieValue !== ACCESS_TOKEN) {
+    return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  return new NextResponse("Unauthorized", { status: 401 });
+  if (pathname.startsWith("/app") && !user) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", request.url);
+    const redirectResponse = NextResponse.redirect(loginUrl);
+    response.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value);
+    });
+    return redirectResponse;
+  }
+
+  return response;
 }
 
 export const config = {

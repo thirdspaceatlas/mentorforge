@@ -1,50 +1,44 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setInfo(null);
     setLoading(true);
 
     try {
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error ?? "Registration failed.");
-        setLoading(false);
-        return;
-      }
-
-      const signInRes = await signIn("credentials", {
+      const supabase = createClient();
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
-        password,
-        redirect: false,
-        callbackUrl: "/app"
+        password
       });
 
       setLoading(false);
 
-      if (signInRes?.error) {
-        setError("Account created. Please sign in manually.");
+      if (signUpError) {
+        setError(signUpError.message);
         return;
       }
 
-      window.location.href = signInRes?.url ?? "/app";
+      if (data.session) {
+        window.location.href = "/app";
+        return;
+      }
+
+      setInfo(
+        "Check your email for a confirmation link, then sign in. You can disable email confirmation in the Supabase dashboard for local testing."
+      );
     } catch {
       setError("Something went wrong.");
       setLoading(false);
@@ -66,6 +60,11 @@ export default function RegisterPage() {
         {error && (
           <div className="rounded-lg border border-rose-200/90 bg-rose-50/90 px-4 py-3 text-sm text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">
             {error}
+          </div>
+        )}
+        {info && (
+          <div className="rounded-lg border border-sky-200/90 bg-sky-50/90 px-4 py-3 text-sm text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-100">
+            {info}
           </div>
         )}
 
