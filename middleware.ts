@@ -11,35 +11,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  let response = NextResponse.next({
-    request: { headers: request.headers }
-  });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({
-            request: { headers: request.headers }
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        }
-      }
-    }
-  );
-
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
+  // ✅ Check access token FIRST — before touching Supabase
   const urlToken = request.nextUrl.searchParams.get("token");
   const cookieValue = request.cookies.get(ACCESS_COOKIE)?.value;
 
@@ -60,6 +32,40 @@ export async function middleware(request: NextRequest) {
   if (cookieValue !== ACCESS_TOKEN) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
+
+  // ✅ Only initialize Supabase if the user has access
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("Missing Supabase env vars");
+    return NextResponse.next();
+  }
+
+  let response = NextResponse.next({
+    request: { headers: request.headers }
+  });
+
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        response = NextResponse.next({
+          request: { headers: request.headers }
+        });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options)
+        );
+      }
+    }
+  });
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
 
   if (pathname.startsWith("/app") && !user) {
     const loginUrl = new URL("/login", request.url);
