@@ -109,7 +109,9 @@ export default function LandingPage() {
           </p>
           <h1 className="landing-hero-in landing-hero-d1 font-display text-[clamp(1.65rem,5.5vw,3.25rem)] font-medium leading-[1.12] tracking-tight text-slate-900 dark:text-slate-50">
             <span className="block">
-              More than half of CFA candidates don&apos;t pass their exam.
+              More than half of CFA candidates
+              <br />
+              don&apos;t pass their exam.
               <sup className="ml-0.5 align-baseline text-[0.45em] font-sans font-semibold leading-none">
                 <a
                   href="#hero-footnote"
