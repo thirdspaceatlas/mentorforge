@@ -31,7 +31,7 @@ const differentiators: { lead: string; rest: string }[] = [
 export default function LearnMorePage() {
   return (
     <div className="space-y-20 pb-28 sm:space-y-24 sm:pb-36">
-      <section className="mx-auto max-w-4xl border-b border-slate-200/70 pb-16 pt-2 text-center dark:border-slate-800/80 sm:pb-16">
+      <section className="mx-auto max-w-4xl border-b border-slate-200/70 px-4 pb-16 pt-2 text-center dark:border-slate-800/80 sm:pb-16 sm:px-6">
         <p className="mb-4 font-display text-[0.7rem] font-medium uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
           MentorForge
         </p>
@@ -155,13 +155,12 @@ export default function LearnMorePage() {
           Full FAQ
         </h2>
         <div className="mx-auto mt-9 max-w-3xl rounded-2xl border border-slate-200/95 bg-white/95 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 dark:shadow-none">
-          {fullFaqs.map((faq, idx) => (
+          {fullFaqs.map((faq) => (
             <details
               key={faq.question}
-              open={idx === 0}
               className="group border-b border-slate-200/85 px-6 py-5 last:border-b-0 dark:border-slate-700/70 sm:px-8"
             >
-              <summary className="cursor-pointer list-none pr-8 text-[0.97rem] font-medium leading-relaxed text-slate-900 marker:content-none dark:text-slate-100">
+              <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center pr-8 text-[0.97rem] font-medium leading-relaxed text-slate-900 marker:content-none [-webkit-tap-highlight-color:transparent] dark:text-slate-100">
                 {faq.question}
               </summary>
               <p className="mt-3.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
@@ -172,7 +171,7 @@ export default function LearnMorePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-2xl px-0 pt-20 sm:pt-24">
+      <section className="mx-auto max-w-2xl px-4 pt-20 sm:px-6 sm:pt-24">
         <MarketingBottomCTA
           headline="Build a plan you can defend week to week."
           supporting="See the full FAQ above — then open the planner when you’re ready."

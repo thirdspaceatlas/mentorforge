@@ -196,7 +196,7 @@ export function HeroProductPreview({
 /** Two product snapshots for the marketing hero — balanced pair on md+ */
 export function HeroProductPreviews() {
   return (
-    <div className="mx-auto mt-14 w-full max-w-5xl px-4 sm:mt-16 sm:px-6">
+    <div className="mx-auto mt-14 w-full min-w-0 max-w-5xl px-4 sm:mt-16 sm:px-6">
       <div className="grid gap-8 sm:gap-10 md:grid-cols-2 md:items-start md:gap-8 lg:gap-10">
         <HeroProductPreview variant="overview" tilt="left" />
         <HeroProductPreview variant="focus" tilt="right" />

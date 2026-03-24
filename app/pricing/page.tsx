@@ -226,18 +226,17 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl rounded-2xl px-4 py-12 dark:bg-[#0a0f1a] sm:px-6 sm:py-14">
+      <section className="mx-auto max-w-5xl scroll-mt-8 rounded-2xl border border-slate-200/85 bg-white/95 px-4 py-12 shadow-[0_1px_3px_rgb(15_23_42/0.06)] dark:border-slate-800/45 dark:bg-[#0a0f1a] dark:shadow-none sm:px-8 sm:py-14">
         <h2 className="text-center font-display text-[1.85rem] font-medium tracking-tight text-slate-900 dark:text-slate-50 sm:text-[2rem]">
           Pricing FAQ
         </h2>
         <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-slate-200/95 bg-white/95 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 dark:shadow-none">
-          {pricingFaqs.map((faq, idx) => (
+          {pricingFaqs.map((faq) => (
             <details
               key={faq.q}
-              open={idx === 0}
               className="group border-b border-slate-200/85 px-6 py-5 last:border-b-0 dark:border-slate-700/70 sm:px-7"
             >
-              <summary className="cursor-pointer list-none pr-8 text-[0.97rem] font-medium leading-relaxed text-slate-900 marker:content-none dark:text-slate-100">
+              <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center pr-8 text-[0.97rem] font-medium leading-relaxed text-slate-900 marker:content-none [-webkit-tap-highlight-color:transparent] dark:text-slate-100">
                 {faq.q}
               </summary>
               <p className="mt-3.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
@@ -248,7 +247,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-2xl px-0 pt-4 sm:pt-6">
+      <section className="mx-auto max-w-2xl px-4 pt-4 sm:px-6 sm:pt-6">
         <MarketingBottomCTA
           headline="Ready to start?"
           supporting="Choose a plan above, or begin free and upgrade when you’re ready."

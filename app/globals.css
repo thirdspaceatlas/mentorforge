@@ -17,6 +17,11 @@
   --mf-accent-subtle: 6 78 59;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html,
 body {
   padding: 0;

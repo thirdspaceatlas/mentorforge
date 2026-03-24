@@ -18,7 +18,7 @@ export function Footer() {
               <li key={href}>
                 <Link
                   href={href}
-                  className="transition-colors hover:text-slate-900 dark:hover:text-white"
+                  className="inline-flex min-h-[2.75rem] items-center py-1 transition-colors hover:text-slate-900 [-webkit-tap-highlight-color:transparent] dark:hover:text-white"
                 >
                   {label}
                 </Link>

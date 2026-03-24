@@ -740,10 +740,10 @@ export default function PlannerPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="min-w-0 max-w-full space-y-8">
       <section className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-        <div className="max-w-xl space-y-2">
-          <h1 className="font-display text-2xl font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
+        <div className="min-w-0 max-w-xl space-y-2">
+          <h1 className="font-display text-[clamp(1.35rem,4.5vw,1.875rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
             Forge a realistic CFA study plan.
           </h1>
           <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
@@ -764,7 +764,7 @@ export default function PlannerPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 rounded-2xl border border-slate-200/90 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 dark:shadow-none sm:p-6"
+        className="min-w-0 space-y-4 rounded-2xl border border-slate-200/90 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 dark:shadow-none sm:p-6"
       >
         {formError ? (
           <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">
@@ -790,7 +790,7 @@ export default function PlannerPage() {
                   setExamDate(getDefaultExamDateForLevel(level));
                 }}
                 className={
-                  "flex-1 rounded px-3 py-2 text-sm font-medium transition-colors " +
+                  "min-h-[2.75rem] flex-1 touch-manipulation rounded px-3 py-2 text-sm font-medium transition-colors [-webkit-tap-highlight-color:transparent] " +
                   (examLevel === level
                     ? "bg-sky-500 text-slate-950"
                     : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800/80")
@@ -833,7 +833,7 @@ export default function PlannerPage() {
                   type="button"
                   onClick={() => setLevelIIIPathway(key)}
                   className={
-                    "rounded px-3 py-2 text-left text-sm font-medium transition-colors sm:flex-1 sm:text-center " +
+                    "min-h-[2.75rem] touch-manipulation rounded px-3 py-2 text-left text-sm font-medium transition-colors [-webkit-tap-highlight-color:transparent] sm:flex-1 sm:text-center " +
                     (levelIIIPathway === key
                       ? "bg-sky-500 text-slate-950"
                       : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800/80")
@@ -854,7 +854,7 @@ export default function PlannerPage() {
             <select
               value={examDate}
               onChange={(e) => setExamDate(e.target.value)}
-              className="w-full rounded-md border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 dark:text-slate-100"
+              className="min-h-[2.75rem] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 outline-none focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:text-sm"
               required
             >
               {examWindows.map((w) => (
@@ -904,7 +904,7 @@ export default function PlannerPage() {
                 if (Number.isNaN(next)) return;
                 setWeeklyHours(next);
               }}
-              className="w-full rounded-md border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 dark:text-slate-100"
+              className="min-h-[2.75rem] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 outline-none focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:text-sm"
               required
             />
             <p className="text-sm text-slate-500 dark:text-slate-400">Be realistic, not ideal.</p>
@@ -917,7 +917,7 @@ export default function PlannerPage() {
             <select
               value={weekStartDay}
               onChange={(e) => setWeekStartDay(e.target.value)}
-              className="w-full rounded-md border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 dark:text-slate-100"
+              className="min-h-[2.75rem] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 outline-none focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:text-sm"
             >
               <option value="0">Sunday</option>
               <option value="1">Monday</option>
@@ -935,7 +935,7 @@ export default function PlannerPage() {
 
         <button
           type="submit"
-          className="inline-flex items-center justify-center rounded-md bg-sky-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-sky-400"
+          className="inline-flex min-h-[2.75rem] touch-manipulation items-center justify-center rounded-md bg-sky-500 px-5 py-2.5 text-sm font-medium text-slate-950 hover:bg-sky-400 [-webkit-tap-highlight-color:transparent]"
         >
           Build my plan
         </button>
@@ -1093,7 +1093,7 @@ export default function PlannerPage() {
                       onClick={() => setStudyPlanAnchor("progress")}
                       aria-pressed={studyPlanAnchor === "progress"}
                       className={
-                        "rounded px-2 py-1 text-xs font-medium transition-colors " +
+                        "min-h-[2.5rem] min-w-[5.5rem] touch-manipulation rounded px-3 py-2 text-xs font-medium transition-colors [-webkit-tap-highlight-color:transparent] " +
                         (studyPlanAnchor === "progress"
                           ? "bg-sky-500 text-slate-950"
                           : "text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800")
@@ -1106,7 +1106,7 @@ export default function PlannerPage() {
                       onClick={() => setStudyPlanAnchor("calendar")}
                       aria-pressed={studyPlanAnchor === "calendar"}
                       className={
-                        "rounded px-2 py-1 text-xs font-medium transition-colors " +
+                        "min-h-[2.5rem] min-w-[5.5rem] touch-manipulation rounded px-3 py-2 text-xs font-medium transition-colors [-webkit-tap-highlight-color:transparent] " +
                         (studyPlanAnchor === "calendar"
                           ? "bg-sky-500 text-slate-950"
                           : "text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800")

@@ -60,7 +60,7 @@ export function ThemeToggle() {
 
   return (
     <div
-      className="flex items-center rounded-full border border-slate-200/90 bg-white/90 p-0.5 shadow-sm dark:border-slate-600/80 dark:bg-slate-900/85"
+      className="flex touch-manipulation items-center rounded-full border border-slate-200/90 bg-white/90 p-0.5 shadow-sm dark:border-slate-600/80 dark:bg-slate-900/85 [-webkit-tap-highlight-color:transparent]"
       role="group"
       aria-label="Color theme"
     >
@@ -70,7 +70,7 @@ export function ThemeToggle() {
         aria-label="Light mode"
         aria-pressed={isLight}
         className={
-          "rounded-full p-2 transition-colors " +
+          "min-h-[2.25rem] min-w-[2.25rem] rounded-full p-2 transition-colors " +
           (isLight
             ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950"
             : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800")
@@ -84,7 +84,7 @@ export function ThemeToggle() {
         aria-label="Dark mode"
         aria-pressed={!isLight}
         className={
-          "rounded-full p-2 transition-colors " +
+          "min-h-[2.25rem] min-w-[2.25rem] rounded-full p-2 transition-colors " +
           (!isLight
             ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950"
             : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800")

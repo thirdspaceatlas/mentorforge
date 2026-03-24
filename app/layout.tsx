@@ -1,5 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Providers } from "./providers";
 import { Footer } from "../components/Footer";
@@ -13,6 +13,12 @@ export const metadata: Metadata = {
   applicationName: "MentorForge"
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover"
+};
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
@@ -24,8 +30,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Providers>
           <div className="flex min-h-screen flex-col">
             <Navbar />
-            <main className="flex w-full flex-1 justify-center px-5 py-10 sm:px-8 sm:py-14">
-              <div className="w-full max-w-5xl">{children}</div>
+            <main className="flex w-full min-w-0 flex-1 justify-center px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-14 sm:pb-14">
+              <div className="w-full min-w-0 max-w-5xl">{children}</div>
             </main>
             <Footer />
           </div>
