@@ -150,7 +150,7 @@ export default function LandingPage() {
 
         <div
           id="hero-footnote"
-          className="landing-hero-in landing-hero-d6 mx-auto mt-12 max-w-2xl scroll-mt-28 px-4 text-left text-[0.7rem] leading-relaxed text-slate-500 dark:text-slate-500 sm:px-6"
+          className="landing-hero-in landing-hero-d6 mx-auto mt-12 max-w-2xl scroll-mt-28 px-4 text-left text-[0.7rem] leading-relaxed text-slate-600 dark:text-slate-400 sm:px-6"
         >
           <p>
             <sup className="font-sans font-semibold">¹</sup> CFA Institute 10-year historical pass rate averages: 41% for Level I, 45% for Level II, 51% for Level
@@ -172,12 +172,9 @@ export default function LandingPage() {
         <div className={featuresSectionWrapperClass}>
           <section aria-labelledby="home-features-heading">
             <div className="text-center">
-              <p className="font-display text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:text-slate-400">
-                What MentorForge does
-              </p>
               <h2
                 id="home-features-heading"
-                className="mt-4 font-display text-[clamp(1.65rem,4vw,2.15rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50"
+                className="font-display text-[clamp(1.65rem,4vw,2.15rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50"
               >
                 Study planning and pacing software.
                 <span className="mt-1 block text-slate-700 dark:text-slate-300">Not tutoring, coaches, or a marketplace.</span>
@@ -358,7 +355,7 @@ export default function LandingPage() {
                   href="/register?plan=all-access"
                   className="flex w-full items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:ring-offset-[#141c28]"
                 >
-                  Buy All-Access
+                  Buy All-Access — Best Value
                 </Link>
               </div>
             </article>
