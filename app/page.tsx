@@ -165,15 +165,9 @@ export default function LandingPage() {
           >
             How it works
           </h2>
-          <ol className="mx-auto mt-10 max-w-xl space-y-0">
+          <ol className="mx-auto mt-10 max-w-xl space-y-10 sm:space-y-12">
             {howSteps.map(([title, desc], i) => (
               <li key={title} className="relative">
-                {i > 0 && (
-                  <div
-                    className="mx-auto mb-8 h-px w-[min(100%,20rem)] border-t border-dashed border-slate-300/90 dark:border-slate-600/50"
-                    aria-hidden
-                  />
-                )}
                 <div className="flex gap-5">
                   <span
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold tabular-nums text-accent-foreground shadow-sm"
