@@ -23,7 +23,7 @@ const pricingFaqs = [
   }
 ] as const;
 
-const trustAnchors: { text: string; icon: "benchmark" | "feedback" | "independent" }[] = [
+const trustAnchors: { text: string; icon: "benchmark" | "feedback" | "independent" | "retake" }[] = [
   {
     icon: "benchmark",
     text: "Built around the CFA Institute’s widely cited 300+ study-hour benchmark — grounded in your calendar, not guesswork."
@@ -35,6 +35,10 @@ const trustAnchors: { text: string; icon: "benchmark" | "feedback" | "independen
   {
     icon: "independent",
     text: "Independent study-planning software. Not affiliated with CFA Institute."
+  },
+  {
+    icon: "retake",
+    text: "50% retake discount — no questions asked."
   }
 ];
 
@@ -59,6 +63,13 @@ function TrustIcon({ type }: { type: (typeof trustAnchors)[number]["icon"] }) {
       return (
         <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
           <path d="M12 3l8 4v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z" strokeLinejoin="round" />
+        </svg>
+      );
+    case "retake":
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+          <path d="M4 12a8 8 0 0113.657-5.657M20 12a8 8 0 01-13.657 5.657" strokeLinecap="round" />
+          <path d="M17 3v6h-6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     default:
@@ -98,7 +109,10 @@ export default function PricingPage() {
         One-time payment. No subscriptions. No surprises.
       </p>
 
-      <section aria-labelledby="pricing-tiers-heading" className="mx-auto max-w-6xl">
+      <section
+        aria-labelledby="pricing-tiers-heading"
+        className="mx-auto max-w-6xl rounded-2xl border border-slate-200/60 bg-white/50 px-4 py-8 dark:border-slate-800/50 dark:bg-[#0a0f1a] sm:px-6 sm:py-10"
+      >
         <div className="text-center">
           <h2
             id="pricing-tiers-heading"
@@ -109,7 +123,7 @@ export default function PricingPage() {
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-5">
-          <article className="flex flex-col rounded-2xl border border-slate-200/95 bg-[#fafaf9] p-7 shadow-sm dark:border-slate-700/80 dark:bg-slate-950 sm:p-8">
+          <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-[#fafaf9] p-7 shadow-sm dark:border-slate-700/80 dark:bg-slate-950 sm:p-8">
             <div>
               <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                 Free <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
@@ -139,7 +153,7 @@ export default function PricingPage() {
             </div>
           </article>
 
-          <article className="flex flex-col rounded-2xl border border-slate-200/95 bg-white p-7 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 sm:p-8">
+          <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-white p-7 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 sm:p-8">
             <div>
               <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                 Level Pass <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
@@ -165,7 +179,7 @@ export default function PricingPage() {
             <div className="mt-auto pt-8">
               <Link
                 href="/register?plan=level-pass"
-                className="flex w-full items-center justify-center rounded-full bg-slate-800 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600"
+                className="flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
               >
                 Buy Level Pass
               </Link>
@@ -175,7 +189,7 @@ export default function PricingPage() {
             </div>
           </article>
 
-          <article className="flex flex-col rounded-2xl border-2 border-accent bg-white p-7 shadow-lg shadow-slate-900/10 ring-1 ring-accent/20 dark:border-accent dark:bg-[#141c28] dark:shadow-[0_20px_40px_-12px_rgb(0_0_0/0.5)] dark:ring-accent/30 sm:p-8">
+          <article className="flex min-h-full flex-col rounded-2xl border-2 border-accent bg-white p-7 shadow-lg shadow-slate-900/10 ring-1 ring-accent/20 dark:border-accent dark:bg-[#141c28] dark:shadow-[0_20px_40px_-12px_rgb(0_0_0/0.5)] dark:ring-accent/30 sm:p-8">
             <div className="mb-5 text-center">
               <span className="inline-block rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-slate-800 dark:border-accent/40 dark:bg-accent/15 dark:text-emerald-100">
                 Most popular for first-time candidates
@@ -197,13 +211,13 @@ export default function PricingPage() {
               items={[
                 "Everything in Level Pass",
                 "All three CFA levels unlocked",
-                "Best value if you’re committed to the full journey"
+                "One plan that adapts as you progress through all three levels"
               ]}
             />
             <div className="mt-auto pt-8">
               <Link
                 href="/register?plan=all-access"
-                className="flex w-full items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover"
+                className="flex w-full items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:ring-offset-[#141c28]"
               >
                 Buy All-Access — Best Value
               </Link>
@@ -213,20 +227,20 @@ export default function PricingPage() {
       </section>
 
       <section aria-label="Trust" className="mx-auto max-w-4xl">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid min-h-0 gap-3 sm:grid-cols-2">
           {trustAnchors.map(({ text, icon }) => (
             <div
               key={text}
-              className="flex gap-3 rounded-xl border border-slate-200/90 bg-white/90 px-4 py-4 dark:border-slate-700/70 dark:bg-slate-900/50"
+              className="flex min-h-[5.5rem] gap-3 rounded-xl border border-slate-200/90 bg-white/90 px-4 py-4 dark:border-slate-700/70 dark:bg-slate-900/50"
             >
               <TrustIcon type={icon} />
-              <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{text}</p>
+              <p className="min-w-0 flex-1 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl scroll-mt-8 rounded-2xl border border-slate-200/85 bg-white/95 px-4 py-12 shadow-[0_1px_3px_rgb(15_23_42/0.06)] dark:border-slate-800/45 dark:bg-[#0a0f1a] dark:shadow-none sm:px-8 sm:py-14">
+      <section className="mx-auto max-w-5xl scroll-mt-8 rounded-2xl border border-slate-200/85 bg-white/95 px-4 py-12 shadow-[0_1px_3px_rgb(15_23_42/0.06)] dark:border-slate-800/45 dark:bg-[#0d1420] dark:shadow-none sm:px-8 sm:py-14">
         <h2 className="text-center font-display text-[1.85rem] font-medium tracking-tight text-slate-900 dark:text-slate-50 sm:text-[2rem]">
           Pricing FAQ
         </h2>
@@ -250,7 +264,7 @@ export default function PricingPage() {
       <section className="mx-auto max-w-2xl px-4 pt-4 sm:px-6 sm:pt-6">
         <MarketingBottomCTA
           headline="Ready to start?"
-          supporting="Choose a plan above, or begin free and upgrade when you’re ready."
+          supporting="Start free and upgrade when you're ready — your plan carries over."
           primaryLabel="Create your free account"
         />
       </section>

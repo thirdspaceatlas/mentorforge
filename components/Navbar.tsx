@@ -62,7 +62,7 @@ export function Navbar() {
           : "border-slate-200/40 bg-[#fafaf9]/85 backdrop-blur-sm dark:border-slate-800/50 dark:bg-slate-950/80 dark:backdrop-blur-sm")
       }
     >
-      <div className="mx-auto flex h-[3.65rem] max-w-7xl items-center justify-between gap-3 px-4 sm:h-16 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-[3.65rem] max-w-[1200px] items-center justify-between gap-3 px-4 sm:h-16 sm:px-6 lg:px-8">
         <Logo priority variant="full" className="min-w-0 shrink-0" />
 
         <div className="flex min-w-0 items-center gap-6 md:gap-10 lg:gap-12">
@@ -87,7 +87,7 @@ export function Navbar() {
             </Link>
             <Link
               href="/login"
-              className="text-sm font-medium text-slate-600 underline decoration-slate-300/90 underline-offset-4 transition-colors hover:text-slate-900 dark:text-slate-400 dark:decoration-slate-600 dark:hover:text-slate-100"
+              className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
             >
               Log in
             </Link>
@@ -116,7 +116,7 @@ export function Navbar() {
           id="mobile-nav"
           className="border-t border-slate-200/90 bg-[#fafaf9]/98 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-950/98 md:hidden"
         >
-          <nav className="mx-auto flex max-w-7xl flex-col gap-0.5 px-4 py-3 sm:px-6" aria-label="Mobile">
+          <nav className="mx-auto flex max-w-[1200px] flex-col gap-0.5 px-4 py-3 sm:px-6" aria-label="Mobile">
             <Link href="/about" className={mobileNavLinkClass} onClick={closeMobile}>
               About
             </Link>
@@ -132,7 +132,7 @@ export function Navbar() {
             </Link>
             <Link
               href="/login"
-              className="inline-flex min-h-[2.75rem] items-center justify-center text-sm font-medium text-slate-600 underline decoration-slate-300 underline-offset-4 dark:text-slate-400"
+              className="inline-flex min-h-[2.75rem] items-center justify-center text-sm font-medium text-slate-600 dark:text-slate-400"
               onClick={closeMobile}
             >
               Log in

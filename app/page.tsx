@@ -60,7 +60,7 @@ const howSteps = [
   ["Stay on pace", "Your summary, plan status, readiness note, and focus window stay aligned as you log hours and move through the weeks."]
 ] as const;
 
-/** One surface for features + how it works + FAQ — avoids stacked dark bands of different widths */
+/** Features + how + FAQ — distinct from hero + bottom band */
 const landingPanelClass =
   "mx-auto mt-8 max-w-5xl scroll-mt-8 rounded-2xl border border-slate-200/85 bg-white/95 px-4 py-12 shadow-[0_1px_3px_rgb(15_23_42/0.06)] dark:border-slate-800/45 dark:bg-[#0a0f1a] dark:shadow-none sm:mt-10 sm:px-8 sm:py-16";
 
@@ -69,9 +69,9 @@ const sectionDividerClass =
 
 export default function LandingPage() {
   return (
-    <div className="space-y-0 pb-28 sm:pb-36">
-      {/* Hero */}
-      <section className="relative border-b border-slate-200/70 pb-16 pt-10 dark:border-slate-800/80 sm:pb-20 sm:pt-12">
+    <div className="space-y-0 overflow-x-hidden pb-28 sm:pb-36">
+      {/* Hero — slightly different dark base than content panel */}
+      <section className="relative border-b border-slate-200/70 pb-16 pt-10 dark:border-slate-800/80 dark:bg-[#06080e] sm:pb-20 sm:pt-12">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
           <p className="mb-5 font-display text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-slate-600 dark:text-slate-300">
             CFA study planning
@@ -87,7 +87,7 @@ export default function LandingPage() {
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             Plan, pace, and rebalance your study path with confidence.
           </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-5">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-10 sm:gap-14">
             <Link
               href="/register"
               className="inline-flex min-h-[2.75rem] min-w-[10rem] touch-manipulation items-center justify-center rounded-full bg-slate-900 px-8 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9] [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground dark:focus-visible:ring-offset-slate-950"
@@ -96,7 +96,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/login"
-              className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-500 underline decoration-slate-300/90 underline-offset-[5px] transition-colors hover:text-slate-800 [-webkit-tap-highlight-color:transparent] dark:text-slate-500 dark:decoration-slate-600 dark:hover:text-slate-200"
+              className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 [-webkit-tap-highlight-color:transparent] dark:text-slate-400 dark:hover:text-slate-100"
             >
               Log in
             </Link>
@@ -107,7 +107,6 @@ export default function LandingPage() {
       </section>
 
       <div className={landingPanelClass}>
-        {/* Features */}
         <section aria-labelledby="home-features-heading">
           <div className="text-center">
             <h2
@@ -157,7 +156,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* How it works */}
         <section aria-labelledby="home-how-heading" className={sectionDividerClass}>
           <h2
             id="home-how-heading"
@@ -187,7 +185,6 @@ export default function LandingPage() {
           </ol>
         </section>
 
-        {/* FAQ */}
         <section aria-labelledby="home-faq-heading" className={sectionDividerClass}>
           <h2
             id="home-faq-heading"
@@ -195,7 +192,7 @@ export default function LandingPage() {
           >
             Frequently Asked Questions
           </h2>
-          <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-slate-200/95 bg-white/95 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 dark:shadow-none">
+          <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-slate-200/95 bg-white/95 shadow-sm dark:border-slate-700/85 dark:bg-[#0d1420]/80 dark:shadow-none">
             {homepageFaqs.map((faq) => (
               <details
                 key={faq.question}
@@ -210,27 +207,33 @@ export default function LandingPage() {
               </details>
             ))}
           </div>
-          <div className="mt-6 text-center">
+          <div className="mt-8 flex flex-col items-center gap-2">
             <Link
               href="/learn-more"
-              className="inline-flex min-h-[2.75rem] items-center justify-center text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 transition-colors hover:text-slate-900 hover:decoration-accent [-webkit-tap-highlight-color:transparent] dark:text-slate-300 dark:decoration-slate-500 dark:hover:text-slate-100 dark:hover:decoration-accent"
+              className="inline-flex min-h-[2.75rem] items-center justify-center rounded-full border border-slate-300/95 bg-white px-5 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 [-webkit-tap-highlight-color:transparent] dark:border-slate-600 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900"
             >
-              Learn More →
+              Learn more
+              <span className="ml-2 inline-block translate-y-px text-base font-medium leading-none text-accent" aria-hidden>
+                →
+              </span>
             </Link>
+            <p className="max-w-sm text-center text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              More questions answered, plus a full product comparison
+            </p>
           </div>
         </section>
       </div>
 
-      {/* CTA */}
-      <section className="mx-auto max-w-2xl px-4 pt-16 sm:px-6 sm:pt-20">
+      <section className="pt-16 sm:pt-20">
         <MarketingBottomCTA
+          variant="band"
           headline="Build a CFA study plan you can actually follow."
           supporting="Map your runway, log real hours, and rebalance when life happens — without losing the thread."
         />
-        <div className="mt-10 text-center">
+        <div className="mx-auto mt-10 max-w-2xl px-4 text-center sm:px-6">
           <Link
             href="/learn-more"
-            className="inline-flex min-h-[2.75rem] items-center justify-center text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 transition-colors hover:text-slate-900 [-webkit-tap-highlight-color:transparent] dark:text-slate-300 dark:hover:text-slate-100"
+            className="inline-flex min-h-[2.75rem] items-center justify-center text-sm font-medium text-slate-600 underline decoration-slate-300 underline-offset-4 transition-colors hover:text-slate-900 [-webkit-tap-highlight-color:transparent] dark:text-slate-400 dark:decoration-slate-600 dark:hover:text-slate-200"
           >
             FAQ
           </Link>

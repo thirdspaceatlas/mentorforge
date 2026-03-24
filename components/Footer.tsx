@@ -11,7 +11,7 @@ const footerLinks = [
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-slate-200/80 bg-[#fafaf9]/50 dark:border-slate-800/80 dark:bg-slate-950/50">
-      <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
+      <div className="mx-auto max-w-[1200px] px-5 py-10 sm:px-8">
         <nav aria-label="Footer">
           <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-slate-700 dark:text-slate-300">
             {footerLinks.map(({ href, label }) => (

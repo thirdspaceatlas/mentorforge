@@ -139,11 +139,17 @@ export default function LearnMorePage() {
                 <td className="px-4 py-3">Manual</td>
                 <td className="px-4 py-3">One-off</td>
               </tr>
-              <tr>
+              <tr className="border-b border-slate-200/70 dark:border-slate-800/80">
                 <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Progress vs. plan</td>
                 <td className="px-4 py-3 text-accent">Tracked</td>
                 <td className="px-4 py-3">DIY</td>
                 <td className="px-4 py-3">Varies</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Partial week handling</td>
+                <td className="px-4 py-3 text-accent">Built in</td>
+                <td className="px-4 py-3">Manual</td>
+                <td className="px-4 py-3">Not addressed</td>
               </tr>
             </tbody>
           </table>
@@ -171,10 +177,12 @@ export default function LearnMorePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-2xl px-4 pt-20 sm:px-6 sm:pt-24">
+      <section className="pt-20 sm:pt-24">
         <MarketingBottomCTA
-          headline="Build a plan you can defend week to week."
-          supporting="See the full FAQ above — then open the planner when you’re ready."
+          variant="band"
+          headline="You've seen how it works."
+          supporting="Build a plan that holds — and stays honest when life gets in the way."
+          primaryLabel="Create your free account"
         />
       </section>
     </div>

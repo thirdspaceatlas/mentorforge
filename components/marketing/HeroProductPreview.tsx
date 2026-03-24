@@ -2,9 +2,18 @@ import clsx from "clsx";
 
 export type HeroPreviewVariant = "overview" | "focus";
 
-const cardShell =
-  "rounded-2xl border border-slate-200/95 bg-white p-6 shadow-[0_12px_40px_-12px_rgb(15_23_42/0.12),0_4px_16px_-4px_rgb(15_23_42/0.08)] ring-1 ring-slate-900/[0.04] " +
-  "dark:border-slate-600/80 dark:bg-slate-900/90 dark:shadow-[0_20px_50px_-15px_rgb(0_0_0/0.45)] dark:ring-white/[0.06] " +
+/** Primary (left): stronger lift — matches ~0 8px 32px rgba(0,0,0,0.10) */
+const cardShellPrimary =
+  "rounded-2xl border border-slate-200/95 bg-white p-6 ring-1 ring-slate-900/[0.05] " +
+  "shadow-[0_8px_32px_rgba(0,0,0,0.10),0_2px_8px_rgba(15,23,42,0.06)] " +
+  "dark:border-slate-500/50 dark:bg-slate-900/95 dark:shadow-[0_12px_40px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.06)] " +
+  "sm:p-7 sm:scale-[1.02] sm:transform-gpu";
+
+/** Secondary (right): lighter shadow, “peeking” — ~0 4px 16px rgba(0,0,0,0.07) */
+const cardShellSecondary =
+  "rounded-2xl border border-slate-200/90 bg-white p-6 ring-1 ring-slate-900/[0.03] " +
+  "shadow-[0_4px_16px_rgba(0,0,0,0.07),0_1px_4px_rgba(15,23,42,0.04)] " +
+  "dark:border-slate-600/70 dark:bg-slate-900/90 dark:shadow-[0_6px_24px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.04)] " +
   "sm:p-7 sm:transform-gpu";
 
 function OverviewCard() {
@@ -163,43 +172,46 @@ function FocusCard() {
 
 type HeroProductPreviewProps = {
   variant?: HeroPreviewVariant;
-  /** Slight tilt for visual depth in the two-up grid */
+  /** Primary = stronger shadow & scale; secondary = lighter */
+  role?: "primary" | "secondary";
   tilt?: "left" | "right" | "none";
   className?: string;
 };
 
-/**
- * Static marketing preview — not connected to planner state.
- * Suggests the real product UI without embedding app logic.
- */
 export function HeroProductPreview({
   variant = "overview",
+  role = "primary",
   tilt = "right",
   className
 }: HeroProductPreviewProps) {
+  const shell = role === "primary" ? cardShellPrimary : cardShellSecondary;
   const tiltClass =
     tilt === "left"
-      ? "sm:-rotate-[1deg]"
+      ? "sm:-rotate-[1.5deg]"
       : tilt === "right"
-        ? "sm:rotate-[1deg]"
+        ? "sm:rotate-[1.5deg]"
         : "";
 
   return (
     <div className={clsx("w-full", className)}>
-      <div className={clsx(cardShell, tiltClass)}>
+      <div className={clsx(shell, tiltClass)}>
         {variant === "overview" ? <OverviewCard /> : <FocusCard />}
       </div>
     </div>
   );
 }
 
-/** Two product snapshots for the marketing hero — balanced pair on md+ */
 export function HeroProductPreviews() {
   return (
     <div className="mx-auto mt-14 w-full min-w-0 max-w-5xl px-4 sm:mt-16 sm:px-6">
-      <div className="grid gap-8 sm:gap-10 md:grid-cols-2 md:items-start md:gap-8 lg:gap-10">
-        <HeroProductPreview variant="overview" tilt="left" />
-        <HeroProductPreview variant="focus" tilt="right" />
+      {/* Mobile: stack, full width, no stagger */}
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:items-start md:gap-x-4 md:gap-y-0 lg:gap-x-8">
+        <div className="relative z-20 md:z-30">
+          <HeroProductPreview variant="overview" role="primary" tilt="left" />
+        </div>
+        <div className="relative z-10 md:-ml-4 md:mt-8 lg:-ml-8 lg:mt-10">
+          <HeroProductPreview variant="focus" role="secondary" tilt="right" />
+        </div>
       </div>
     </div>
   );

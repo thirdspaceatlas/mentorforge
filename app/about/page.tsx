@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="space-y-16 pb-28 sm:space-y-20 sm:pb-36">
-      {/* Hero — unchanged title + headline */}
       <header className="mx-auto max-w-3xl border-b border-slate-200/70 pb-14 text-center dark:border-slate-800/80 sm:pb-16">
         <p className="mb-5 font-display text-[0.7rem] font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
           About MentorForge
@@ -20,11 +19,7 @@ export default function AboutPage() {
         </h1>
       </header>
 
-      {/* Founder letter */}
-      <section
-        aria-labelledby="founder-letter-label"
-        className="mx-auto max-w-[42rem]"
-      >
+      <section aria-labelledby="founder-letter-label" className="mx-auto max-w-[42rem]">
         <p
           id="founder-letter-label"
           className="mb-6 font-display text-[0.7rem] font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400"
@@ -56,24 +51,12 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Emphasized closing statement */}
       <figure className="mx-auto max-w-[40rem] border-y border-slate-200/80 py-14 dark:border-slate-700/70 sm:py-16">
         <blockquote className="text-center font-display text-[1.45rem] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50 sm:text-[1.65rem] sm:leading-tight">
           You don&apos;t study your way to these credentials. You get forged.
         </blockquote>
       </figure>
 
-      {/* Disclosure */}
-      <section
-        aria-label="Disclosure"
-        className="mx-auto max-w-[42rem] rounded-xl border border-slate-200/70 bg-slate-50/80 px-5 py-5 dark:border-slate-800/80 dark:bg-slate-900/35 sm:px-6"
-      >
-        <p className="text-[0.8125rem] leading-relaxed text-slate-600 dark:text-slate-400">
-          MentorForge is independent study-planning software and is not affiliated with CFA Institute, CFP Board, or any other credentialing body.
-        </p>
-      </section>
-
-      {/* CTA */}
       <section className="mx-auto max-w-2xl border-t border-slate-200/70 pt-16 text-center dark:border-slate-800/80 sm:pt-20">
         <h2 className="font-display text-[1.65rem] font-medium leading-[1.25] tracking-tight text-slate-900 dark:text-slate-50 sm:text-[1.85rem]">
           Ready to build a plan that actually holds?
@@ -81,7 +64,7 @@ export default function AboutPage() {
         <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/register"
-            className="inline-flex min-w-[10rem] items-center justify-center rounded-full bg-slate-900 px-8 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9] dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200 dark:focus-visible:ring-offset-slate-950"
+            className="inline-flex min-w-[10rem] items-center justify-center rounded-full bg-slate-900 px-8 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9] [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground dark:focus-visible:ring-offset-slate-950"
           >
             Create your free account
           </Link>
