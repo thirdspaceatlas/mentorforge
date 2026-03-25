@@ -4,7 +4,12 @@ import { FeatureIcon } from "@/components/marketing/FeatureIcons";
 import { HeroProductPreviews } from "@/components/marketing/HeroProductPreview";
 import { MarketingBottomCTA } from "@/components/marketing/MarketingBottomCTA";
 import { RevealOnScroll } from "@/components/marketing/RevealOnScroll";
+import { AllAccessCheckoutButton } from "@/components/pricing/AllAccessCheckoutButton";
+import { LevelPassCheckoutSection } from "@/components/pricing/LevelPassCheckoutSection";
 import { homepageFaqs } from "./faq-data";
+
+const priceLevelPass = process.env.NEXT_PUBLIC_STRIPE_PRICE_LEVEL_PASS ?? "";
+const priceAllAccess = process.env.NEXT_PUBLIC_STRIPE_PRICE_ALL_ACCESS ?? "";
 
 export const metadata: Metadata = {
   title: "MentorForge — CFA study planning & pacing",
@@ -264,103 +269,120 @@ export default function LandingPage() {
 
       <RevealOnScroll>
         <section className={pricingSectionClass} aria-labelledby="home-pricing-heading">
-          <div className="text-center">
-            <h2
-              id="home-pricing-heading"
-              className="font-display text-[clamp(1.65rem,4vw,2.15rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50"
-            >
-              Simple, one-time pricing.
-            </h2>
-            <p className="mt-3 text-base font-medium text-slate-700 dark:text-slate-300 sm:text-lg">No subscriptions. No surprises.</p>
-          </div>
+          <p className="mx-auto max-w-2xl text-center text-[0.95rem] font-medium leading-snug text-slate-800 dark:text-slate-200">
+            Free forever for Level I basics. Level Pass is a one-time purchase; All Access is billed yearly.
+          </p>
 
-          <div className="mt-10 grid gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-5">
-            <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-[#fafaf9] p-7 shadow-sm dark:border-slate-700/80 dark:bg-slate-950 sm:p-8">
-              <div>
-                <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                  Free <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
-                  <span className="tabular-nums">$0</span>
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">Try it first</p>
-              </div>
-              <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-500">What&apos;s included</p>
-              <PricingCheckList
-                items={["Level I plan generation", "Week-by-week topic sequencing", "Exam-weight-based scheduling"]}
-              />
-              <div className="mt-auto pt-8">
-                <Link
-                  href="/register"
-                  className="flex w-full items-center justify-center rounded-full border-2 border-slate-400/90 bg-white px-5 py-3 text-center text-sm font-semibold text-slate-900 transition-colors hover:border-slate-600 hover:bg-slate-50 dark:border-slate-500 dark:bg-slate-900/60 dark:text-slate-100 dark:hover:border-slate-400 dark:hover:bg-slate-900"
-                >
-                  Get started free
-                </Link>
-              </div>
-            </article>
+          <div className="mx-auto mt-8 max-w-6xl rounded-2xl border border-slate-200/60 bg-white/50 px-4 py-8 dark:border-transparent dark:bg-transparent sm:px-6 sm:py-10">
+            <div className="text-center">
+              <h2
+                id="home-pricing-heading"
+                className="font-display text-[1.35rem] font-medium tracking-tight text-slate-900 dark:text-slate-50 sm:text-[1.5rem]"
+              >
+                Pricing tiers
+              </h2>
+            </div>
 
-            <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-white p-7 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 sm:p-8">
-              <div>
-                <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                  Level Pass <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
-                  <span className="tabular-nums">$34</span>
+            <div className="mt-10 grid gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-5">
+              <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-[#fafaf9] p-7 shadow-sm dark:border-slate-700/80 dark:bg-slate-950 sm:p-8">
+                <div>
+                  <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                    Free <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
+                    <span className="tabular-nums">$0</span>
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                    Level I only — plan generation and core scheduling.
+                  </p>
+                </div>
+                <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-500">
+                  What&apos;s included
                 </p>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">Everything you need for one level</p>
-              </div>
-              <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-500">What&apos;s included</p>
-              <PricingCheckList
-                items={[
-                  "Full plan generation (Level I, II, or III)",
-                  "Smart rebalancing when life gets in the way",
-                  "Progress tracking & readiness narrative",
-                  "Ethics and review spacing built in",
-                  "Calendar + progress views",
-                  "Lifetime access for your level"
-                ]}
-              />
-              <div className="mt-auto pt-8">
-                <Link
-                  href="/register?plan=level-pass"
-                  className="flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 dark:hover:text-slate-900"
-                >
-                  Buy Level Pass
-                </Link>
-                <p className="mt-4 text-center text-sm italic leading-snug text-slate-500 dark:text-slate-500">
-                  Less than the cost of one Schweser mock exam.
-                </p>
-              </div>
-            </article>
+                <PricingCheckList
+                  items={[
+                    "Level I plan generation",
+                    "Week-by-week topic sequencing",
+                    "Exam-weight-based scheduling"
+                  ]}
+                />
+                <div className="mt-auto pt-8">
+                  <Link
+                    href="/register"
+                    className="flex w-full items-center justify-center rounded-full border-2 border-slate-400/90 bg-white px-5 py-3 text-center text-sm font-medium text-slate-900 transition-colors hover:border-slate-600 hover:bg-slate-50 dark:border-slate-500 dark:bg-slate-900/60 dark:text-slate-100 dark:hover:border-slate-400 dark:hover:bg-slate-900"
+                  >
+                    Get started free — no credit card required
+                  </Link>
+                </div>
+              </article>
 
-            <article className="flex min-h-full flex-col rounded-2xl border-2 border-accent bg-white p-7 shadow-lg shadow-slate-900/10 ring-1 ring-accent/20 dark:border-accent dark:bg-[#141c28] dark:shadow-[0_20px_40px_-12px_rgb(0_0_0/0.5)] dark:ring-accent/30 sm:p-8">
-              <div className="mb-5 text-center">
-                <span className="inline-block rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-800 dark:border-accent/40 dark:bg-accent/15 dark:text-emerald-100">
-                  Best Value
-                </span>
-              </div>
-              <div>
-                <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                  All-Access <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
-                  <span className="tabular-nums">$74</span>
+              <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-white p-7 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 sm:p-8">
+                <div>
+                  <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                    Level Pass <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
+                    <span className="tabular-nums">$49</span>{" "}
+                    <span className="text-sm font-normal text-slate-500 dark:text-slate-400">one-time</span>
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                    Full features for one CFA level. Access ends two weeks after your exam window month ends.
+                  </p>
+                </div>
+                <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-500">
+                  What&apos;s included
                 </p>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                  For candidates committed to all three levels
+                <PricingCheckList
+                  items={[
+                    "Full plan generation for chosen level",
+                    "Smart rebalancing, progress tracking, ethics spacing",
+                    "Calendar + progress views",
+                    "Timed access through exam window"
+                  ]}
+                />
+                <LevelPassCheckoutSection
+                  priceId={priceLevelPass}
+                  buttonClassName="flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
+                  footnote={
+                    <p className="mt-4 text-center text-sm font-medium leading-snug text-slate-700 dark:text-slate-300">
+                      Less than the cost of one Schweser mock exam.
+                    </p>
+                  }
+                />
+              </article>
+
+              <article className="flex min-h-full flex-col rounded-2xl border-2 border-accent bg-white p-7 shadow-lg shadow-slate-900/10 ring-1 ring-accent/20 dark:border-accent dark:bg-[#141c28] dark:shadow-[0_20px_40px_-12px_rgb(0_0_0/0.5)] dark:ring-accent/30 sm:p-8">
+                <div className="mb-5 text-center">
+                  <span className="inline-block rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-slate-800 dark:border-accent/40 dark:bg-accent/15 dark:text-emerald-100">
+                    Best Value
+                  </span>
+                </div>
+                <div>
+                  <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                    All Access <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
+                    <span className="tabular-nums">$99</span>
+                    <span className="text-sm font-normal text-slate-500 dark:text-slate-400"> /year</span>
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                    All three levels, full features. Renews yearly until cancelled.
+                  </p>
+                </div>
+                <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                  What&apos;s included
                 </p>
-              </div>
-              <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">What&apos;s included</p>
-              <PricingCheckList
-                items={[
-                  "Everything in Level Pass",
-                  "All three CFA levels unlocked",
-                  "Best value if you're in it for the full journey"
-                ]}
-              />
-              <div className="mt-auto pt-8">
-                <Link
-                  href="/register?plan=all-access"
-                  className="flex w-full items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:ring-offset-[#141c28]"
-                >
-                  Buy All-Access — Best Value
-                </Link>
-              </div>
-            </article>
+                <PricingCheckList
+                  items={[
+                    "Everything in Level Pass",
+                    "Levels I, II & III unlocked",
+                    "Yearly access with auto-renewal via Stripe"
+                  ]}
+                />
+                <div className="mt-auto pt-8">
+                  <AllAccessCheckoutButton
+                    priceId={priceAllAccess}
+                    className="flex w-full min-h-[2.75rem] items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:ring-offset-[#141c28]"
+                  >
+                    Buy All-Access — Best Value
+                  </AllAccessCheckoutButton>
+                </div>
+              </article>
+            </div>
           </div>
 
           <div className="mx-auto mt-12 max-w-2xl">
