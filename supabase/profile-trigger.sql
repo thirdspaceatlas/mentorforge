@@ -1,12 +1,9 @@
--- Run in Supabase SQL Editor after Prisma has created the `profiles` table.
--- Keeps `public.profiles.id` aligned with `auth.users.id` for foreign keys.
+-- Run in the Supabase SQL Editor (after `public.profiles` exists).
+-- Creates a profile row whenever a new `auth.users` row is inserted, so FKs (e.g. `purchases.userId`) resolve.
+-- Must set all NOT NULL columns: Prisma maps `createdAt` / `updatedAt` (camelCase, quoted in PostgreSQL).
 
 create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
+returns trigger as $$
 begin
   insert into public.profiles (id, email, "createdAt", "updatedAt")
   values (
@@ -20,7 +17,7 @@ begin
         "updatedAt" = now();
   return new;
 end;
-$$;
+$$ language plpgsql security definer;
 
 drop trigger if exists on_auth_user_created on auth.users;
 

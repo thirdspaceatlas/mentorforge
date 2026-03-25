@@ -27,6 +27,19 @@ export default function RegisterPage() {
       setLoading(false);
 
       if (signUpError) {
+        const err = signUpError as {
+          message: string;
+          code?: string;
+          status?: number;
+          details?: string;
+        };
+        console.error("[register] supabase.auth.signUp failed — full error object:", signUpError);
+        console.error("[register] message:", err.message);
+        console.error("[register] code:", err.code);
+        console.error("[register] status:", err.status);
+        if (err.details != null && err.details !== "") {
+          console.error("[register] details:", err.details);
+        }
         setError(signUpError.message);
         return;
       }
@@ -39,7 +52,8 @@ export default function RegisterPage() {
       setInfo(
         "Check your email for a confirmation link, then sign in. You can disable email confirmation in the Supabase dashboard for local testing."
       );
-    } catch {
+    } catch (err) {
+      console.error("[register] unexpected error during signUp:", err);
       setError("Something went wrong.");
       setLoading(false);
     }

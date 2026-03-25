@@ -1,21 +1,26 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { AllAccessCheckoutButton } from "@/components/pricing/AllAccessCheckoutButton";
+import { LevelPassCheckoutSection } from "@/components/pricing/LevelPassCheckoutSection";
 import { MarketingBottomCTA } from "@/components/marketing/MarketingBottomCTA";
+
+const priceLevelPass = process.env.NEXT_PUBLIC_STRIPE_PRICE_LEVEL_PASS ?? "";
+const priceAllAccess = process.env.NEXT_PUBLIC_STRIPE_PRICE_ALL_ACCESS ?? "";
 
 export const metadata: Metadata = {
   title: "Pricing — MentorForge",
   description:
-    "Free, Level Pass, and All-Access plans for CFA study planning. One-time payment. No subscriptions."
+    "Free, Level Pass, and All-Access plans for CFA study planning. Level Pass is a one-time purchase; All Access is billed yearly."
 };
 
 const pricingFaqs = [
   {
     q: "Do I need to buy again if I move to the next level?",
-    a: "Yes — unless you have All-Access. We recommend All-Access if you know you're going all the way."
+    a: "Yes — unless you have All Access, which covers Levels I–III for as long as your subscription is active. With Level Pass, you choose one level when you buy."
   },
   {
     q: "What if I fail and need to retake?",
-    a: "Reach out. We offer a 50% retake discount — no questions asked."
+    a: "Repurchase Level Pass at 50% off using the retake promotion code at checkout (create a 50% coupon in Stripe and share the code here — e.g. CFA50RETAKE). All Access is yearly; cancel or renew in the Stripe Billing Portal as needed."
   },
   {
     q: "Is this a tutoring or prep course?",
@@ -38,7 +43,7 @@ const trustAnchors: { text: string; icon: "benchmark" | "feedback" | "independen
   },
   {
     icon: "retake",
-    text: "50% retake discount — no questions asked."
+    text: "50% retake discount on Level Pass repurchase — use your Stripe promotion code at checkout."
   }
 ];
 
@@ -106,7 +111,7 @@ export default function PricingPage() {
       </header>
 
       <p className="mx-auto max-w-2xl text-center text-[0.95rem] font-medium leading-snug text-slate-800 dark:text-slate-200">
-        One-time payment. No subscriptions. No surprises.
+        Free forever for Level I basics. Level Pass is a one-time purchase; All Access is billed yearly.
       </p>
 
       <section
@@ -130,7 +135,7 @@ export default function PricingPage() {
                 <span className="tabular-nums">$0</span>
               </p>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                Try it before you commit.
+                Level I only — plan generation and core scheduling.
               </p>
             </div>
             <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-500">
@@ -157,10 +162,11 @@ export default function PricingPage() {
             <div>
               <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                 Level Pass <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
-                <span className="tabular-nums">$34</span>
+                <span className="tabular-nums">$49</span>{" "}
+                <span className="text-sm font-normal text-slate-500 dark:text-slate-400">one-time</span>
               </p>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                Everything you need for one level.
+                Full features for one CFA level. Access ends two weeks after your exam window month ends.
               </p>
             </div>
             <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-500">
@@ -168,40 +174,37 @@ export default function PricingPage() {
             </p>
             <FeatureList
               items={[
-                "Full plan generation (Level I, II, or III)",
-                "Smart rebalancing when life gets in the way",
-                "Progress tracking & readiness narrative",
-                "Ethics and review spacing built in",
+                "Full plan generation for the level you choose",
+                "Smart rebalancing, progress tracking, ethics spacing",
                 "Calendar + progress views",
-                "Lifetime access for your level"
+                "Timed access through your exam window (see checkout)"
               ]}
             />
-            <div className="mt-auto pt-8">
-              <Link
-                href="/register?plan=level-pass"
-                className="flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
-              >
-                Buy Level Pass
-              </Link>
-              <p className="mt-4 text-center text-sm font-medium leading-snug text-slate-700 dark:text-slate-300">
-                Less than the cost of one Schweser mock exam.
-              </p>
-            </div>
+            <LevelPassCheckoutSection
+              priceId={priceLevelPass}
+              buttonClassName="flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
+              footnote={
+                <p className="mt-4 text-center text-sm font-medium leading-snug text-slate-700 dark:text-slate-300">
+                  Less than the cost of one Schweser mock exam.
+                </p>
+              }
+            />
           </article>
 
           <article className="flex min-h-full flex-col rounded-2xl border-2 border-accent bg-white p-7 shadow-lg shadow-slate-900/10 ring-1 ring-accent/20 dark:border-accent dark:bg-[#141c28] dark:shadow-[0_20px_40px_-12px_rgb(0_0_0/0.5)] dark:ring-accent/30 sm:p-8">
             <div className="mb-5 text-center">
               <span className="inline-block rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-slate-800 dark:border-accent/40 dark:bg-accent/15 dark:text-emerald-100">
-                Most popular for first-time candidates
+                Best for the full journey
               </span>
             </div>
             <div>
               <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                All-Access <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
-                <span className="tabular-nums">$74</span>
+                All Access <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
+                <span className="tabular-nums">$99</span>
+                <span className="text-sm font-normal text-slate-500 dark:text-slate-400"> /year</span>
               </p>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                For candidates who are in it for all three.
+                All three levels, full features. Renews yearly until you cancel.
               </p>
             </div>
             <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
@@ -210,17 +213,17 @@ export default function PricingPage() {
             <FeatureList
               items={[
                 "Everything in Level Pass",
-                "All three CFA levels unlocked",
-                "One plan that adapts as you progress through all three levels"
+                "Levels I, II & III unlocked",
+                "Yearly access — renews automatically (manage in Stripe)"
               ]}
             />
             <div className="mt-auto pt-8">
-              <Link
-                href="/register?plan=all-access"
-                className="flex w-full items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:ring-offset-[#141c28]"
+              <AllAccessCheckoutButton
+                priceId={priceAllAccess}
+                className="flex w-full min-h-[2.75rem] items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:ring-offset-[#141c28]"
               >
                 Buy All-Access — Best Value
-              </Link>
+              </AllAccessCheckoutButton>
             </div>
           </article>
         </div>

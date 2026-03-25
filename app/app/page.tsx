@@ -4,6 +4,9 @@ import { useMemo, useState } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useSupabaseUser } from "@/lib/supabase/use-supabase-user";
+import { usePlan } from "@/components/app/PlanProvider";
+import { hasFeatureForPlan } from "@/lib/access";
+import { FeatureGate } from "@/components/app/FeatureGate";
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -726,6 +729,11 @@ function PlannerInner() {
     };
   }, [weekPlan, showAllWeeks, studyPlanFocusIndex]);
 
+  const plan = usePlan();
+  const levelGateLocked =
+    (examLevel === "II" && !hasFeatureForPlan(plan, "level_II")) ||
+    (examLevel === "III" && !hasFeatureForPlan(plan, "level_III"));
+
   return (
     <div className="min-w-0 max-w-full space-y-8">
       <section className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
@@ -936,7 +944,11 @@ function PlannerInner() {
         <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/90 dark:bg-slate-900/60 p-4">
           <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Plan summary</h2>
 
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <FeatureGate locked={levelGateLocked}>
+            <FeatureGate
+              locked={!levelGateLocked && !hasFeatureForPlan(plan, "progress_tracking")}
+            >
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-3 sm:col-span-2">
               <div className="text-sm text-slate-500 dark:text-slate-400">
                 Exam window & testing readiness
@@ -1036,7 +1048,8 @@ function PlannerInner() {
                   : ` You have ~${weeklyHoursNum - summary.requiredWeeklyHours} extra hour${weeklyHoursNum - summary.requiredWeeklyHours === 1 ? "" : "s"}/wk above it.`}
               </p>
             </div>
-          </div>
+              </div>
+            </FeatureGate>
 
           <div className="mt-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/60 p-3 text-sm text-slate-800 dark:text-slate-200">
             <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -1054,6 +1067,9 @@ function PlannerInner() {
 
           {weekPlan ? (
             <div className="mt-6 space-y-3">
+              <FeatureGate
+                locked={!levelGateLocked && !hasFeatureForPlan(plan, "calendar_view")}
+              >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -1170,9 +1186,13 @@ function PlannerInner() {
                           {week.startDateLabel} – {week.endDateLabel}
                         </div>
                       </div>
-                      <div className="mt-1 text-sm text-slate-800 dark:text-slate-200">
-                        {week.topic}
-                      </div>
+                      <FeatureGate
+                        locked={!levelGateLocked && !hasFeatureForPlan(plan, "ethics_spacing")}
+                      >
+                        <div className="mt-1 text-sm text-slate-800 dark:text-slate-200">
+                          {week.topic}
+                        </div>
+                      </FeatureGate>
                       <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         {week.plannedHours} planned hour{week.plannedHours === 1 ? "" : "s"}
                       </div>
@@ -1182,6 +1202,9 @@ function PlannerInner() {
                           {week.rebalancedExtraHours === 1 ? "" : "s"}
                         </div>
                       ) : null}
+                      <FeatureGate
+                        locked={!levelGateLocked && !hasFeatureForPlan(plan, "progress_tracking")}
+                      >
                       <div className="mt-2 space-y-1">
                         <label className="text-xs text-slate-500 dark:text-slate-400">
                           Actual hours completed
@@ -1236,11 +1259,16 @@ function PlannerInner() {
                           )}
                         </div>
                       </div>
+                      </FeatureGate>
                     </div>
                   );
                 })}
               </div>
+              </FeatureGate>
 
+              <FeatureGate
+                locked={!levelGateLocked && !hasFeatureForPlan(plan, "smart_rebalancing")}
+              >
               <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center sm:justify-between">
                 <button
                   type="button"
@@ -1340,6 +1368,7 @@ function PlannerInner() {
                   <p className="text-xs text-slate-500 dark:text-slate-400">{rebalanceMessage}</p>
                 ) : null}
               </div>
+              </FeatureGate>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Planner uses a {summary.targetHours}-hour CFA study benchmark for Level{" "}
                 {summary.cfaLevel}
@@ -1355,6 +1384,7 @@ function PlannerInner() {
               </p>
             </div>
           ) : null}
+          </FeatureGate>
         </section>
       ) : null}
     </div>
