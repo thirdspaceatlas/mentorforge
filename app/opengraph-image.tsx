@@ -1,10 +1,11 @@
 import { ImageResponse } from "next/og";
+import { ogImage } from "@/lib/og";
 
 export const runtime = "edge";
 
-export const alt = "MentorForge — CFA study planning and pacing";
+export const alt = ogImage.alt;
 
-export const size = { width: 1200, height: 630 };
+export const size = { width: ogImage.width, height: ogImage.height };
 
 export const contentType = "image/png";
 

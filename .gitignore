@@ -48,3 +48,4 @@ prisma/*.db-journal
 /brandIcon.PNG
 /brand_Icon_and_workdmark.PNG
 /brandwordmark.PNG
+.gstack/

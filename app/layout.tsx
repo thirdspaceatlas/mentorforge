@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Analytics } from "@vercel/analytics/next";
+import { ogImage } from "@/lib/og";
 import { getSiteUrl } from "@/lib/site";
 import { Providers } from "./providers";
 import { Footer } from "../components/Footer";
@@ -25,12 +26,21 @@ export const metadata: Metadata = {
     siteName: "MentorForge",
     title: "MentorForge",
     description: siteDescription,
-    url: "/"
+    url: "/",
+    images: [
+      {
+        url: ogImage.path,
+        width: ogImage.width,
+        height: ogImage.height,
+        alt: ogImage.alt
+      }
+    ]
   },
   twitter: {
     card: "summary_large_image",
     title: "MentorForge",
-    description: siteDescription
+    description: siteDescription,
+    images: [ogImage.path]
   }
 };
 
