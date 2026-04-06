@@ -692,6 +692,14 @@ function PlannerInner() {
     setBaseWeekPlan(newWeekPlan);
     setWeekPlan(newWeekPlan);
     setActualHours(freshActuals);
+
+    window.plausible?.('StudyPlanCreated', {
+      props: {
+        cfaLevel: examLevel,
+        weeklyHours: String(weeklyHoursNum),
+        planWeeks: String(newWeekPlan.length),
+      },
+    });
   };
 
   const rebalanceActive = weekPlan?.some((w) => w.rebalancedExtraHours > 0) ?? false;
