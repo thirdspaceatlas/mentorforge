@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { ogImage } from "@/lib/og";
 import { getSiteUrl } from "@/lib/site";
@@ -57,6 +58,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
       className={`scroll-smooth ${fontSans.variable} ${fontDisplay.variable}`}
     >
+      <head>
+        <Script
+          async
+          src="https://plausible.io/js/pa-IT9YPoq3cR4_pXnLQxZTt.js"
+          strategy="afterInteractive"
+        />
+        <Script id="plausible-init" strategy="afterInteractive">
+          {`window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()`}
+        </Script>
+      </head>
       <body className="min-h-screen overflow-x-hidden bg-[#fafaf9] text-slate-900 dark:bg-slate-950 dark:text-slate-100 dark:antialiased">
         <Providers>
           <div className="flex min-h-screen flex-col">
