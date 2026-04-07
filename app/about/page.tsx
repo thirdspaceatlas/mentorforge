@@ -34,10 +34,10 @@ export default function AboutPage() {
             I&apos;ve spent most of my career in wealth management and financial services, in environments where real clients, real money, and real decisions do not wait for a convenient moment. I know what this career actually demands because I&apos;ve lived it.
           </p>
           <p>
-            I&apos;m also a husband and a father of eight children, ages three to twenty-one. And a few years ago, inside all of that, I decided to pursue my CFA.
+            A few years ago, inside all of that, I decided to pursue my CFA.
           </p>
           <p>
-            Every tool I tried seemed built for someone with clean time, clear focus, and a predictable schedule. That person is not me. I&apos;m not sure that person works in financial services.
+            Every tool I tried seemed built for someone with clean time, clear focus, and a predictable schedule. That wasn&apos;t me.
           </p>
           <p>
             At forty-three, I was diagnosed with Inattentive ADHD. It didn&apos;t slow me down. It gave me better information. And it pushed me to build the tool I had always needed — the one that didn&apos;t exist.
