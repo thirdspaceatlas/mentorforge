@@ -746,9 +746,11 @@ function PlannerInner() {
   return (
     <div className="min-w-0 max-w-full space-y-8">
       {/* Calendar Coach dashboard — shown above the planner, gated to paid tiers */}
-      <FeatureGate locked={!hasFeatureForPlan(plan, "calendar_view")}>
-        <CalendarCoachDashboard />
-      </FeatureGate>
+      <section id="calendar-coach">
+        <FeatureGate locked={!hasFeatureForPlan(plan, "calendar_view")}>
+          <CalendarCoachDashboard />
+        </FeatureGate>
+      </section>
 
       <section className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 max-w-xl space-y-2">

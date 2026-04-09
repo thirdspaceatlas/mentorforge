@@ -1,6 +1,9 @@
-import Link from "next/link";
+"use client";
 
-const footerLinks = [
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const marketingLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/pricing", label: "Pricing" },
@@ -8,7 +11,17 @@ const footerLinks = [
   { href: "/login", label: "Login" }
 ] as const;
 
+const appLinks = [
+  { href: "/app", label: "Study Plan" },
+  { href: "/app#calendar-coach", label: "Calendar Coach" },
+  { href: "/pricing", label: "Pricing" }
+] as const;
+
 export function Footer() {
+  const pathname = usePathname();
+  const isApp = pathname?.startsWith("/app");
+  const footerLinks = isApp ? appLinks : marketingLinks;
+
   return (
     <footer className="mt-auto border-t border-slate-200/80 bg-[#fafaf9]/50 dark:border-slate-800/80 dark:bg-slate-950/50">
       <div className="mx-auto max-w-[1200px] px-5 py-6 sm:px-8 sm:py-8">

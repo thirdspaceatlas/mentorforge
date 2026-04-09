@@ -70,7 +70,22 @@ export function Navbar() {
 
         <div className="flex min-w-0 items-center gap-6 md:gap-10 lg:gap-12">
           <nav className="hidden items-center gap-5 md:flex lg:gap-6" aria-label="Main">
-            {!isApp && (
+            {isApp ? (
+              <>
+                <Link
+                  href="/app"
+                  className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                >
+                  Study Plan
+                </Link>
+                <Link
+                  href="/app#calendar-coach"
+                  className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                >
+                  Calendar Coach
+                </Link>
+              </>
+            ) : (
               <>
                 <Link
                   href="/about"
@@ -127,9 +142,14 @@ export function Navbar() {
         >
           <nav className="mx-auto flex max-w-[1200px] flex-col gap-0.5 px-4 py-3 sm:px-6" aria-label="Mobile">
             {isApp ? (
-              <Link href="/app" className={mobileNavLinkClass} onClick={closeMobile}>
-                Dashboard
-              </Link>
+              <>
+                <Link href="/app" className={mobileNavLinkClass} onClick={closeMobile}>
+                  Study Plan
+                </Link>
+                <Link href="/app#calendar-coach" className={mobileNavLinkClass} onClick={closeMobile}>
+                  Calendar Coach
+                </Link>
+              </>
             ) : (
               <>
                 <Link href="/about" className={mobileNavLinkClass} onClick={closeMobile}>
