@@ -61,10 +61,8 @@ export function CalendarCoachDashboard() {
     );
   }
 
-  if (error || !stats) return null;
-
-  // Empty state: no calendar connections yet
-  if (stats.calendarsConnected === 0) {
+  // Show onboarding prompt on error (API may fail if tables are new) or no connections
+  if (error || !stats || stats.calendarsConnected === 0) {
     return (
       <section className="mb-8" aria-label="Calendar Coach">
         <div className="rounded-lg border border-slate-200 bg-white p-6 text-center dark:border-slate-700 dark:bg-slate-900">
