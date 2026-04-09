@@ -1102,7 +1102,7 @@ function PlannerInner() {
                     Window follows{" "}
                     {studyPlanAnchor === "progress"
                       ? "your progress (first incomplete week)."
-                      : "the calendar (week containing today)."}
+                      : "this week (week containing today)."}
                   </p>
                 </div>
                 <div className="flex flex-shrink-0 flex-wrap items-center gap-2 sm:justify-end">
@@ -1135,7 +1135,7 @@ function PlannerInner() {
                           : "text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800")
                       }
                     >
-                      Calendar
+                      This Week
                     </button>
                   </div>
                   {weekPlan.length > VISIBLE_WEEKS_DEFAULT && (
