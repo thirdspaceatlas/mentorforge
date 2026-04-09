@@ -30,17 +30,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Window not found" }, { status: 404 });
   }
 
-  // Idempotent: return existing session if one exists
-  const existing = await prisma.studySession.findUnique({
+  // Atomic upsert — idempotent, no race condition on concurrent requests
+  const session = await prisma.studySession.upsert({
     where: { windowId },
-  });
-
-  if (existing) {
-    return NextResponse.json({ session: existing });
-  }
-
-  const session = await prisma.studySession.create({
-    data: {
+    update: {}, // no-op if already exists
+    create: {
       userId: user.id,
       windowId,
       startedAt: new Date(),

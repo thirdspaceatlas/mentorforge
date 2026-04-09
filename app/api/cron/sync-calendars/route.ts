@@ -3,9 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { syncConnection } from "@/lib/calendar/sync";
 
 /**
- * POST /api/cron/sync-calendars — Hourly calendar sync for all users.
+ * GET /api/cron/sync-calendars — Hourly calendar sync for all users.
  *
- * Protected by CRON_SECRET header. Call from Vercel Cron or external scheduler.
+ * Vercel Cron sends GET requests with Authorization: Bearer <CRON_SECRET>.
  *
  * Processing strategy:
  * - Fetches all enabled connections
@@ -13,7 +13,7 @@ import { syncConnection } from "@/lib/calendar/sync";
  * - Cursor-based: processes connections by ID order so crashes can resume
  * - Structured JSON logging for observability
  */
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   const secret = req.headers.get("authorization");
 
   if (secret !== `Bearer ${process.env.CRON_SECRET}`) {

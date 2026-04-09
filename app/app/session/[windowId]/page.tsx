@@ -40,6 +40,8 @@ export default function SessionPage() {
   const [windowData, setWindowData] = useState<WindowData | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [remaining, setRemaining] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number | null>(null);
@@ -77,7 +79,7 @@ export default function SessionPage() {
           }
         }
       })
-      .catch(() => {})
+      .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
   }, [windowId]);
 
@@ -122,16 +124,24 @@ export default function SessionPage() {
   });
 
   async function startSession() {
-    // Create session via API
-    const res = await fetch("/api/calendar/sessions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ windowId }),
-    });
+    setActionError(null);
+    try {
+      const res = await fetch("/api/calendar/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ windowId }),
+      });
 
-    if (res.ok) {
-      const data = await res.json();
-      setSessionId(data.session.id);
+      if (res.ok) {
+        const data = await res.json();
+        setSessionId(data.session.id);
+      } else {
+        setActionError("Couldn't start session. Try again.");
+        return;
+      }
+    } catch {
+      setActionError("Network error. Check your connection.");
+      return;
     }
 
     startTimeRef.current = Date.now();
@@ -147,11 +157,15 @@ export default function SessionPage() {
     if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
 
     if (sessionId) {
-      await fetch("/api/calendar/sessions", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, action: "complete" }),
-      });
+      try {
+        await fetch("/api/calendar/sessions", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, action: "complete" }),
+        });
+      } catch {
+        // Session is marked complete locally. Server sync will catch up.
+      }
     }
   }
 
@@ -161,11 +175,15 @@ export default function SessionPage() {
     setState("ready");
 
     if (sessionId) {
-      await fetch("/api/calendar/sessions", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, action: "interrupt" }),
-      });
+      try {
+        await fetch("/api/calendar/sessions", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, action: "interrupt" }),
+        });
+      } catch {
+        // Best effort — interruption is already reflected in UI
+      }
       setSessionId(null);
     }
   }
@@ -178,6 +196,25 @@ export default function SessionPage() {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#fafaf9] dark:bg-slate-950">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#fafaf9] dark:bg-slate-950">
+        <div className="text-center">
+          <p className="font-display text-lg font-semibold text-slate-900 dark:text-slate-100">
+            Something went wrong
+          </p>
+          <p className="mt-1 text-sm text-slate-500">Couldn&apos;t load this study window.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 inline-flex items-center rounded-md bg-sky-500 px-4 py-2 text-sm font-medium text-sky-950 hover:bg-sky-400"
+          >
+            Try again
+          </button>
+        </div>
       </div>
     );
   }
@@ -207,6 +244,11 @@ export default function SessionPage() {
 
         {state === "ready" && (
           <div>
+            {actionError && (
+              <p className="mb-4 rounded-md border border-rose-200/90 bg-rose-50/90 px-4 py-2.5 text-sm text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">
+                {actionError}
+              </p>
+            )}
             <h1 className="font-display text-2xl font-semibold leading-tight text-slate-900 dark:text-slate-100">
               {topic}
             </h1>
