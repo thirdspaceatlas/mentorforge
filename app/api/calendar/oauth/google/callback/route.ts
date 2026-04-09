@@ -61,8 +61,18 @@ export async function GET(req: NextRequest) {
     headers: { Authorization: `Bearer ${access_token}` },
   });
 
-  const profile = profileRes.ok ? await profileRes.json() : { email: "unknown" };
-  const providerEmail = profile.email || "unknown";
+  if (!profileRes.ok) {
+    console.error(JSON.stringify({ event: "google_profile_fetch_failed", status: profileRes.status }));
+    return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
+  }
+
+  const profile = await profileRes.json();
+  const providerEmail = profile.email;
+
+  if (!providerEmail) {
+    console.error(JSON.stringify({ event: "google_profile_no_email" }));
+    return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
+  }
 
   // Encrypt tokens before storing
   const encryptedAccess = encrypt(access_token);

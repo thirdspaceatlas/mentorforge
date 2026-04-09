@@ -60,8 +60,18 @@ export async function GET(req: NextRequest) {
     headers: { Authorization: `Bearer ${access_token}` },
   });
 
-  const profile = profileRes.ok ? await profileRes.json() : {};
-  const providerEmail = profile.mail || profile.userPrincipalName || "unknown";
+  if (!profileRes.ok) {
+    console.error(JSON.stringify({ event: "outlook_profile_fetch_failed", status: profileRes.status }));
+    return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
+  }
+
+  const profile = await profileRes.json();
+  const providerEmail = profile.mail || profile.userPrincipalName;
+
+  if (!providerEmail) {
+    console.error(JSON.stringify({ event: "outlook_profile_no_email" }));
+    return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
+  }
 
   // Encrypt tokens
   const encryptedAccess = encrypt(access_token);
