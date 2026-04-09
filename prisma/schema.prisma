@@ -20,6 +20,13 @@ model Profile {
   studyLogs  StudyLog[]
   purchases  Purchase[]
 
+  // Calendar Coach relations
+  calendarConnections CalendarConnection[]
+  studyWindows        StudyWindow[]
+  studySessions       StudySession[]
+  sessionPatterns     SessionPattern[]
+  snoozedWindows      SnoozedWindow[]
+
   @@map("profiles")
 }
 
@@ -42,8 +49,8 @@ model Purchase {
   /// `free` is not stored as Purchase; values: `level_pass`, `all_access`.
   planKey String?
 
-  examWindow   String?
-  examYear     Int?
+  examWindow      String?
+  examYear        Int?
   accessExpiresAt DateTime?
   levelUnlocked   String?
 
@@ -71,7 +78,7 @@ model ExamTopicDefinition {
   name             String
   recommendedHours Int
 
-  examDefinition ExamDefinition  @relation(fields: [examDefinitionId], references: [id])
+  examDefinition ExamDefinition @relation(fields: [examDefinitionId], references: [id])
   planItems      PlanItem[]
   studyLogs      StudyLog[]
 }
@@ -98,8 +105,8 @@ model StudyPlan {
   totalHours     Int
   version        Int      @default(1)
 
-  user         Profile        @relation(fields: [userId], references: [id])
-  examInstance ExamInstance   @relation(fields: [examInstanceId], references: [id])
+  user         Profile      @relation(fields: [userId], references: [id])
+  examInstance ExamInstance @relation(fields: [examInstanceId], references: [id])
   weeks        PlanWeek[]
   studyLogs    StudyLog[]
 }
@@ -112,18 +119,18 @@ model PlanWeek {
   endDate      DateTime
   plannedHours Int
 
-  studyPlan StudyPlan @relation(fields: [studyPlanId], references: [id])
+  studyPlan StudyPlan  @relation(fields: [studyPlanId], references: [id])
   items     PlanItem[]
 }
 
 model PlanItem {
-  id                    String   @id @default(cuid())
+  id                    String @id @default(cuid())
   planWeekId            String
   examTopicDefinitionId String
   plannedHours          Int
 
-  planWeek PlanWeek            @relation(fields: [planWeekId], references: [id])
-  topic    ExamTopicDefinition @relation(fields: [examTopicDefinitionId], references: [id])
+  planWeek  PlanWeek            @relation(fields: [planWeekId], references: [id])
+  topic     ExamTopicDefinition @relation(fields: [examTopicDefinitionId], references: [id])
   studyLogs StudyLog[]
 }
 
@@ -134,10 +141,126 @@ model StudyLog {
   planItemId            String?
   examTopicDefinitionId String
   date                  DateTime
-  actualHours           Int
+  actualHours           Float // Changed from Int — sub-hour sessions (7-25 min) round to 0 as Int
 
   user      Profile             @relation(fields: [userId], references: [id])
   studyPlan StudyPlan           @relation(fields: [studyPlanId], references: [id])
   planItem  PlanItem?           @relation(fields: [planItemId], references: [id])
   topic     ExamTopicDefinition @relation(fields: [examTopicDefinitionId], references: [id])
+}
+
+// ─── Calendar Coach Models ───
+
+/// OAuth connection to a calendar provider (Google, Outlook). One user can have multiple.
+model CalendarConnection {
+  id             String   @id @default(cuid())
+  userId         String   @db.Uuid
+  provider       String // "google" | "outlook"
+  providerEmail  String // e.g. "david@work.com" — display only
+  accessToken    String // encrypted at rest via lib/calendar/crypto
+  refreshToken   String // encrypted at rest
+  tokenExpiresAt DateTime
+  scopes         String // space-separated OAuth scopes granted
+  enabled        Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user   Profile         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events CalendarEvent[]
+
+  @@unique([userId, provider, providerEmail])
+  @@index([userId])
+  @@map("calendar_connections")
+}
+
+/// Synced calendar event from a provider. Only stores busy/free + times, never titles or details.
+model CalendarEvent {
+  id              String   @id @default(cuid())
+  connectionId    String
+  providerEventId String // provider's unique ID for dedup on sync
+  startTime       DateTime
+  endTime         DateTime
+  busyStatus      String   @default("busy") // "busy" | "free" | "tentative"
+  lastSyncedAt    DateTime @default(now())
+
+  connection CalendarConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, providerEventId])
+  @@index([connectionId, startTime])
+  @@map("calendar_events")
+}
+
+/// Detected study window (gap between calendar events). Re-generated on every sync.
+model StudyWindow {
+  id          String   @id @default(cuid())
+  userId      String   @db.Uuid
+  startTime   DateTime
+  endTime     DateTime
+  durationMin Int
+  /// Recommended topic + type, set by the topic recommender
+  topicName   String?
+  studyType   String? // "review" | "new" | "practice"
+  /// Whether a notification was sent for this window
+  notified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user     Profile         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions StudySession[]
+  snoozes  SnoozedWindow[]
+
+  @@index([userId, startTime])
+  @@map("study_windows")
+}
+
+/// Actual study session started from a window. One window → at most one session.
+model StudySession {
+  id          String    @id @default(cuid())
+  userId      String    @db.Uuid
+  windowId    String    @unique // one session per window (idempotent start)
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  interrupted Boolean   @default(false)
+  /// Wall-clock duration in minutes (server-derived: completedAt - startedAt)
+  actualMin   Float?
+
+  user   Profile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  window StudyWindow @relation(fields: [windowId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startedAt])
+  @@map("study_sessions")
+}
+
+/// Tracks study completion patterns by day-of-week and hour for optimization.
+model SessionPattern {
+  id             String   @id @default(cuid())
+  userId         String   @db.Uuid
+  dayOfWeek      Int // 0-6 (Sunday-Saturday)
+  hourSlot       Int // 0-23
+  completionRate Float // 0.0-1.0
+  avgDurationMin Float
+  sessionCount   Int
+  lastUpdated    DateTime @default(now())
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dayOfWeek, hourSlot])
+  @@index([userId])
+  @@map("session_patterns")
+}
+
+/// Tracks snoozed notification windows for re-notification.
+model SnoozedWindow {
+  id          String   @id @default(cuid())
+  windowId    String
+  userId      String   @db.Uuid
+  snoozeUntil DateTime
+  notified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  window StudyWindow @relation(fields: [windowId], references: [id], onDelete: Cascade)
+  user   Profile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([snoozeUntil, notified])
+  @@index([userId])
+  @@map("snoozed_windows")
 }

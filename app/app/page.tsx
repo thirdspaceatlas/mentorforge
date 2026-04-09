@@ -7,6 +7,7 @@ import { useSupabaseUser } from "@/lib/supabase/use-supabase-user";
 import { usePlan } from "@/components/app/PlanProvider";
 import { hasFeatureForPlan } from "@/lib/access";
 import { FeatureGate } from "@/components/app/FeatureGate";
+import { CalendarCoachDashboard } from "@/components/calendar/CalendarCoachDashboard";
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -744,6 +745,11 @@ function PlannerInner() {
 
   return (
     <div className="min-w-0 max-w-full space-y-8">
+      {/* Calendar Coach dashboard — shown above the planner, gated to paid tiers */}
+      <FeatureGate locked={!hasFeatureForPlan(plan, "calendar_view")}>
+        <CalendarCoachDashboard />
+      </FeatureGate>
+
       <section className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 max-w-xl space-y-2">
           <h1 className="font-display text-[clamp(1.35rem,4.5vw,1.875rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
