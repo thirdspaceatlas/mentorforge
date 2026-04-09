@@ -50,3 +50,6 @@ prisma/*.db-journal
 /brand_Icon_and_workdmark.PNG
 /brandwordmark.PNG
 .gstack/
+
+# Supabase CLI cache
+supabase/.temp/
