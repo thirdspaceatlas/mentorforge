@@ -14,26 +14,37 @@ export async function GET(req: NextRequest) {
   const stateRaw = url.searchParams.get("state");
   const error = url.searchParams.get("error");
 
-  if (error || !code || !stateRaw) {
-    return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
+  // Decode state first to get returnTo for error redirects
+  let stateUserId: string | null = null;
+  let returnTo = "/app?error=oauth";
+  if (stateRaw) {
+    try {
+      const parsed = JSON.parse(Buffer.from(stateRaw, "base64").toString());
+      stateUserId = parsed.userId;
+      if (parsed.returnTo) returnTo = parsed.returnTo;
+    } catch {
+      stateUserId = stateRaw;
+    }
   }
 
-  // Decode state: { userId, returnTo }
-  let stateUserId: string;
-  let returnTo = "/app/onboarding?calendar=connected";
-  try {
-    const parsed = JSON.parse(Buffer.from(stateRaw, "base64").toString());
-    stateUserId = parsed.userId;
-    if (parsed.returnTo) returnTo = parsed.returnTo;
-  } catch {
-    stateUserId = stateRaw;
+  const errorUrl = (reason: string) => {
+    const u = new URL(returnTo.split("?")[0] || "/app", req.url);
+    u.searchParams.set("error", "oauth");
+    u.searchParams.set("reason", reason);
+    return u;
+  };
+
+  if (error || !code || !stateRaw) {
+    console.error("Outlook OAuth error:", error);
+    return NextResponse.redirect(errorUrl(error || "missing_params"));
   }
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user || user.id !== stateUserId) {
-    return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
+    console.error("Outlook OAuth state mismatch:", { userId: user?.id, stateUserId });
+    return NextResponse.redirect(errorUrl("state_mismatch"));
   }
 
   const tenantId = process.env.OUTLOOK_TENANT_ID || "common";
@@ -55,15 +66,17 @@ export async function GET(req: NextRequest) {
   );
 
   if (!tokenRes.ok) {
-    console.error("Outlook token exchange failed:", await tokenRes.text());
-    return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
+    const errBody = await tokenRes.text();
+    console.error("Outlook token exchange failed:", errBody);
+    return NextResponse.redirect(errorUrl("token_exchange"));
   }
 
   const tokens = await tokenRes.json();
   const { access_token, refresh_token, expires_in } = tokens;
 
   if (!access_token) {
-    return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
+    console.error("Outlook token exchange returned no access_token");
+    return NextResponse.redirect(errorUrl("no_access_token"));
   }
 
   // Get user's email from Microsoft Graph
@@ -72,16 +85,16 @@ export async function GET(req: NextRequest) {
   });
 
   if (!profileRes.ok) {
-    console.error(JSON.stringify({ event: "outlook_profile_fetch_failed", status: profileRes.status }));
-    return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
+    console.error("Outlook profile fetch failed:", profileRes.status);
+    return NextResponse.redirect(errorUrl("profile_fetch"));
   }
 
   const profile = await profileRes.json();
   const providerEmail = profile.mail || profile.userPrincipalName;
 
   if (!providerEmail) {
-    console.error(JSON.stringify({ event: "outlook_profile_no_email" }));
-    return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
+    console.error("Outlook profile has no email");
+    return NextResponse.redirect(errorUrl("no_email"));
   }
 
   // Encrypt tokens
