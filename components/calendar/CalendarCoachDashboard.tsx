@@ -279,8 +279,8 @@ function CalendarStatus({ count }: { count: number }) {
         </button>
       ) : (
         <span className="flex items-center gap-2">
-          <a href="/api/calendar/oauth/google" className="font-medium text-sky-500 transition-colors hover:text-sky-400">Google</a>
-          <a href="/api/calendar/oauth/outlook" className="font-medium text-sky-500 transition-colors hover:text-sky-400">Outlook</a>
+          <a href="/api/calendar/oauth/google?returnTo=/app" className="font-medium text-sky-500 transition-colors hover:text-sky-400">Google</a>
+          <a href="/api/calendar/oauth/outlook?returnTo=/app" className="font-medium text-sky-500 transition-colors hover:text-sky-400">Outlook</a>
         </span>
       )}
     </div>

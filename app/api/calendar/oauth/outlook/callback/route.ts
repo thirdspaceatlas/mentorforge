@@ -11,17 +11,28 @@ import { encrypt } from "@/lib/calendar/crypto";
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
-  const state = url.searchParams.get("state");
+  const stateRaw = url.searchParams.get("state");
   const error = url.searchParams.get("error");
 
-  if (error || !code || !state) {
+  if (error || !code || !stateRaw) {
     return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
+  }
+
+  // Decode state: { userId, returnTo }
+  let stateUserId: string;
+  let returnTo = "/app/onboarding?calendar=connected";
+  try {
+    const parsed = JSON.parse(Buffer.from(stateRaw, "base64").toString());
+    stateUserId = parsed.userId;
+    if (parsed.returnTo) returnTo = parsed.returnTo;
+  } catch {
+    stateUserId = stateRaw;
   }
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user || user.id !== state) {
+  if (!user || user.id !== stateUserId) {
     return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
   }
 
@@ -105,5 +116,5 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  return NextResponse.redirect(new URL("/app/onboarding?calendar=connected", req.url));
+  return NextResponse.redirect(new URL(returnTo, req.url));
 }

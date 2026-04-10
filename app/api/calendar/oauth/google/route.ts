@@ -8,10 +8,13 @@ import { createClient } from "@/lib/supabase/server";
  *   GOOGLE_CLIENT_ID
  *   GOOGLE_REDIRECT_URI (e.g. https://yourapp.com/api/calendar/oauth/google/callback)
  */
-export async function GET() {
+export async function GET(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { searchParams } = new URL(req.url);
+  const returnTo = searchParams.get("returnTo") || "/app/onboarding?calendar=connected";
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = process.env.GOOGLE_REDIRECT_URI;
@@ -36,7 +39,7 @@ export async function GET() {
     scope: scopes,
     access_type: "offline",      // get refresh token
     prompt: "consent",           // always show consent to ensure refresh token
-    state: user.id,              // pass user ID through OAuth flow
+    state: Buffer.from(JSON.stringify({ userId: user.id, returnTo })).toString("base64"),
   });
 
   const url = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;

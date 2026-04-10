@@ -9,10 +9,13 @@ import { createClient } from "@/lib/supabase/server";
  *   OUTLOOK_REDIRECT_URI
  *   OUTLOOK_TENANT_ID (use "common" for multi-tenant)
  */
-export async function GET() {
+export async function GET(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { searchParams } = new URL(req.url);
+  const returnTo = searchParams.get("returnTo") || "/app/onboarding?calendar=connected";
 
   const clientId = process.env.OUTLOOK_CLIENT_ID;
   const redirectUri = process.env.OUTLOOK_REDIRECT_URI;
@@ -38,7 +41,7 @@ export async function GET() {
     response_type: "code",
     scope: scopes,
     response_mode: "query",
-    state: user.id,
+    state: Buffer.from(JSON.stringify({ userId: user.id, returnTo })).toString("base64"),
   });
 
   const url = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize?${params}`;
