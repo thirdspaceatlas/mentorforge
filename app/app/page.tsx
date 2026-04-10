@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { useSupabaseUser } from "@/lib/supabase/use-supabase-user";
 import { usePlan } from "@/components/app/PlanProvider";
 import { hasFeatureForPlan } from "@/lib/access";
@@ -782,29 +781,10 @@ function PlannerInner() {
         )}
       </section>
 
-      <section className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 max-w-xl space-y-2">
-          <h1 className="font-display text-[clamp(1.35rem,4.5vw,1.875rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
-            Forge a realistic CFA study plan.
-          </h1>
-          <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-            Turn your exam date and available hours into a study plan built for real life.
-          </p>
-          <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            Plan, pace, and rebalance your study path with confidence.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={async () => {
-            const supabase = createClient();
-            await supabase.auth.signOut();
-            window.location.href = "/";
-          }}
-          className="shrink-0 self-start rounded-full border border-slate-300/90 px-4 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-white dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-900/80"
-        >
-          Sign out
-        </button>
+      <section>
+        <h1 className="font-display text-[clamp(1.35rem,4.5vw,1.875rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
+          Study Plan
+        </h1>
       </section>
 
       <form

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { createClient } from "@/lib/supabase/client";
 
 function MenuIcon({ className }: { className?: string }) {
   return (
@@ -84,6 +85,17 @@ export function Navbar() {
                 >
                   Calendar Coach
                 </Link>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const supabase = createClient();
+                    await supabase.auth.signOut();
+                    window.location.href = "/";
+                  }}
+                  className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                >
+                  Sign out
+                </button>
               </>
             ) : (
               <>
@@ -149,6 +161,18 @@ export function Navbar() {
                 <Link href="/app#calendar-coach" className={mobileNavLinkClass} onClick={closeMobile}>
                   Calendar Coach
                 </Link>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    closeMobile();
+                    const supabase = createClient();
+                    await supabase.auth.signOut();
+                    window.location.href = "/";
+                  }}
+                  className={mobileNavLinkClass}
+                >
+                  Sign out
+                </button>
               </>
             ) : (
               <>

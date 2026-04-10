@@ -13,8 +13,7 @@ const marketingLinks = [
 
 const appLinks = [
   { href: "/app", label: "Study Plan" },
-  { href: "/app#calendar-coach", label: "Calendar Coach" },
-  { href: "/pricing", label: "Pricing" }
+  { href: "/app#calendar-coach", label: "Calendar Coach" }
 ] as const;
 
 export function Footer() {
