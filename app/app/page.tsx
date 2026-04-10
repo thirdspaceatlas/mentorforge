@@ -643,6 +643,7 @@ function PlannerInner() {
   const [planStartDate, setPlanStartDate] = useState(() => todayISO());
   const [weekStartDay, setWeekStartDay] = useState("1");
   const [formError, setFormError] = useState<string | null>(null);
+  const [planBuilderOpen, setPlanBuilderOpen] = useState(true);
   const [summary, setSummary] = useState<PlanSummary | null>(null);
   const [baseWeekPlan, setBaseWeekPlan] = useState<WeekPlan[] | null>(null);
   const [weekPlan, setWeekPlan] = useState<WeekPlan[] | null>(null);
@@ -721,6 +722,8 @@ function PlannerInner() {
     setWeekPlan(newWeekPlan);
     setActualHours(freshActuals);
 
+    setPlanBuilderOpen(false);
+
     window.plausible?.('StudyPlanCreated', {
       props: {
         cfaLevel: examLevel,
@@ -781,12 +784,35 @@ function PlannerInner() {
         )}
       </section>
 
-      <section>
+      <section className="flex items-center justify-between gap-4">
         <h1 className="font-display text-[clamp(1.35rem,4.5vw,1.875rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
           Study Plan
         </h1>
+        {weekPlan && !planBuilderOpen && (
+          <button
+            type="button"
+            onClick={() => setPlanBuilderOpen(true)}
+            className="inline-flex min-h-[2.5rem] items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
+              <path d="M10.5 1.75l1.75 1.75L4.5 11.25H2.75V9.5z" />
+            </svg>
+            Edit plan settings
+          </button>
+        )}
       </section>
 
+      {weekPlan && !planBuilderOpen ? (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-slate-200/90 bg-white/90 px-5 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
+          <span>Level <strong className="text-slate-900 dark:text-slate-100">{examLevel}</strong></span>
+          <span className="text-slate-300 dark:text-slate-600">&middot;</span>
+          <span><strong className="text-slate-900 dark:text-slate-100">{summary?.examWindowLabel}</strong></span>
+          <span className="text-slate-300 dark:text-slate-600">&middot;</span>
+          <span><strong className="text-slate-900 dark:text-slate-100">{weeklyHoursNum}</strong> hrs/wk</span>
+          <span className="text-slate-300 dark:text-slate-600">&middot;</span>
+          <span><strong className="text-slate-900 dark:text-slate-100">{weekPlan.length}</strong> weeks</span>
+        </div>
+      ) : (
       <form
         onSubmit={handleSubmit}
         className="min-w-0 space-y-4 rounded-2xl border border-slate-200/90 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 dark:shadow-none sm:p-6"
@@ -965,6 +991,7 @@ function PlannerInner() {
           Build my plan
         </button>
       </form>
+      )}
 
       {summary ? (
         <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/90 dark:bg-slate-900/60 p-4">
