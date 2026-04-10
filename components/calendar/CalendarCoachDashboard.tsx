@@ -89,11 +89,12 @@ export function CalendarCoachDashboard() {
       <section className="mb-8" aria-label="Calendar Coach">
         <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <p className="font-display text-lg font-semibold text-slate-900 dark:text-slate-100">
-            Full day today.
+            No study windows found today.
           </p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            No study windows found. Check back tomorrow, or your calendar might open up.
+            Your calendar looks full, but you can still start a session anytime.
           </p>
+          <AdHocButton />
           {stats.calendarsConnected > 0 && (
             <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -107,10 +108,14 @@ export function CalendarCoachDashboard() {
   }
 
   const { nextWindow, todayWindows, heatmap } = stats;
+  const allDone = todayWindows.length > 0 && !nextWindow;
 
   return (
     <section className="mb-8" aria-label="Calendar Coach">
       {/* Hero Card */}
+      {allDone && (
+        <AllDoneCard minutesToday={stats.minutesToday} calendarsConnected={stats.calendarsConnected} />
+      )}
       {nextWindow && (
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6">
           <p className="text-xs font-semibold uppercase tracking-wide text-sky-500 dark:text-sky-400">
@@ -194,6 +199,75 @@ export function CalendarCoachDashboard() {
 }
 
 /* ─── Sub-components ─── */
+
+function AdHocButton() {
+  const router = useRouter();
+  const [starting, setStarting] = useState(false);
+
+  return (
+    <button
+      onClick={async () => {
+        setStarting(true);
+        try {
+          const res = await fetch("/api/calendar/sessions/ad-hoc", { method: "POST" });
+          if (!res.ok) throw new Error();
+          const { windowId } = await res.json();
+          router.push(`/app/session/${windowId}`);
+        } catch {
+          setStarting(false);
+        }
+      }}
+      disabled={starting}
+      className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-md bg-sky-500 px-5 py-2.5 text-sm font-semibold text-sky-950 transition-colors hover:bg-sky-400 disabled:opacity-60 [-webkit-tap-highlight-color:transparent]"
+    >
+      {starting ? "Starting..." : "Start a study session"}
+    </button>
+  );
+}
+
+function AllDoneCard({ minutesToday, calendarsConnected }: { minutesToday: number; calendarsConnected: number }) {
+  const router = useRouter();
+  const [starting, setStarting] = useState(false);
+
+  const startAdHoc = async () => {
+    setStarting(true);
+    try {
+      const res = await fetch("/api/calendar/sessions/ad-hoc", { method: "POST" });
+      if (!res.ok) throw new Error();
+      const { windowId } = await res.json();
+      router.push(`/app/session/${windowId}`);
+    } catch {
+      setStarting(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm dark:border-emerald-900/50 dark:from-emerald-950/30 dark:to-slate-900 sm:p-6">
+      <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+        All done for today
+      </p>
+      <p className="mt-2 font-display text-xl font-semibold text-slate-900 dark:text-slate-100">
+        Nice work — {minutesToday} min logged today.
+      </p>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        Want to keep going? Start an extra session anytime.
+      </p>
+      <button
+        onClick={startAdHoc}
+        disabled={starting}
+        className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-md bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:opacity-60 [-webkit-tap-highlight-color:transparent]"
+      >
+        {starting ? "Starting..." : "Start another session"}
+      </button>
+      {calendarsConnected > 0 && (
+        <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          {calendarsConnected} calendar{calendarsConnected > 1 ? "s" : ""} synced
+        </p>
+      )}
+    </div>
+  );
+}
 
 function Heatmap({ heatmap }: { heatmap: HeatmapDay[] }) {
   if (heatmap.length === 0) return null;
