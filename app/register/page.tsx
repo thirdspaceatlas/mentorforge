@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getPublicSiteOrigin } from "@/lib/site";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -21,7 +22,10 @@ export default function RegisterPage() {
       const supabase = createClient();
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          emailRedirectTo: `${getPublicSiteOrigin()}/login`
+        }
       });
 
       setLoading(false);

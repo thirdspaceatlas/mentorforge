@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getPublicSiteOrigin } from "@/lib/site";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -17,7 +18,7 @@ export default function ForgotPasswordPage() {
 
     const supabase = createClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "https://www.mentorforge.co/reset-password"
+      redirectTo: `${getPublicSiteOrigin()}/reset-password`
     });
 
     setLoading(false);
