@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getSupabaseEnv } from "./lib/supabase/env";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -13,12 +14,14 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ✅ Only initialize Supabase if the user has access
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    console.error("Missing Supabase env vars");
+  let supabaseUrl: string;
+  let supabaseKey: string;
+  try {
+    ({ url: supabaseUrl, anonKey: supabaseKey } = getSupabaseEnv());
+  } catch {
+    console.error(
+      "Missing NEXT_PUBLIC_SUPABASE_URL and/or client API key (ANON or PUBLISHABLE)"
+    );
     return NextResponse.next();
   }
 

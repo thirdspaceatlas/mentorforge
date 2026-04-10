@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "postinstall": "npm exec prisma generate",
+    "postinstall": "npm exec prisma generate && patch-package",
     "build": "npm exec prisma generate && next build",
     "start": "next start",
     "lint": "next lint"
@@ -33,6 +33,7 @@
     "@types/react": "^19.0.0",
     "eslint": "latest",
     "eslint-config-next": "latest",
+    "patch-package": "^8.0.1",
     "tailwindcss-animate": "latest",
     "typescript": "latest",
     "vitest": "^4.1.3"

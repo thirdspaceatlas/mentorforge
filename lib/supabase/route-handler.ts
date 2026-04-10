@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import type { NextRequest, NextResponse } from "next/server";
+import { getSupabaseEnv } from "./env";
 
 /**
  * Supabase client bound to the incoming request cookies (required in Route Handlers).
@@ -10,9 +11,11 @@ export function createSupabaseRouteHandlerClient(request: NextRequest) {
   let cookiesToSet: { name: string; value: string; options?: Parameters<NextResponse["cookies"]["set"]>[2] }[] =
     [];
 
+  const { url, anonKey } = getSupabaseEnv();
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anonKey,
     {
       cookies: {
         getAll() {
