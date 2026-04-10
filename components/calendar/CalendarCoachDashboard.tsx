@@ -96,10 +96,7 @@ export function CalendarCoachDashboard() {
           </p>
           <AdHocButton />
           {stats.calendarsConnected > 0 && (
-            <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              {stats.calendarsConnected} calendar{stats.calendarsConnected > 1 ? "s" : ""} synced
-            </p>
+            <CalendarStatus count={stats.calendarsConnected} />
           )}
         </div>
         <Heatmap heatmap={stats.heatmap} />
@@ -160,10 +157,7 @@ export function CalendarCoachDashboard() {
                 </>
               )}
             </p>
-            <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              {stats.calendarsConnected} calendar{stats.calendarsConnected > 1 ? "s" : ""} synced
-            </p>
+            <CalendarStatus count={stats.calendarsConnected} />
           </div>
         </div>
       )}
@@ -260,10 +254,34 @@ function AllDoneCard({ minutesToday, calendarsConnected }: { minutesToday: numbe
         {starting ? "Starting..." : "Start another session"}
       </button>
       {calendarsConnected > 0 && (
-        <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          {calendarsConnected} calendar{calendarsConnected > 1 ? "s" : ""} synced
-        </p>
+        <CalendarStatus count={calendarsConnected} />
+      )}
+    </div>
+  );
+}
+
+function CalendarStatus({ count }: { count: number }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="mt-3 flex items-center gap-3 text-xs text-slate-400">
+      <span className="flex items-center gap-1.5">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        {count} calendar{count > 1 ? "s" : ""} synced
+      </span>
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="font-medium text-sky-500 transition-colors hover:text-sky-400"
+        >
+          + Add calendar
+        </button>
+      ) : (
+        <span className="flex items-center gap-2">
+          <a href="/api/calendar/oauth/google" className="font-medium text-sky-500 transition-colors hover:text-sky-400">Google</a>
+          <a href="/api/calendar/oauth/outlook" className="font-medium text-sky-500 transition-colors hover:text-sky-400">Outlook</a>
+        </span>
       )}
     </div>
   );
