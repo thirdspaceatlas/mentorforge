@@ -99,6 +99,17 @@ export default function SessionPage() {
     if (next <= 0 && intervalRef.current) clearInterval(intervalRef.current);
   }, [totalSeconds]);
 
+  // Start/stop the timer interval whenever state changes to/from active
+  useEffect(() => {
+    if (state !== "active") return;
+    tick(); // sync immediately
+    intervalRef.current = setInterval(tick, 1000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    };
+  }, [state, tick]);
+
   // Recalculate on visibility change
   useEffect(() => {
     if (state !== "active") return;
@@ -147,7 +158,6 @@ export default function SessionPage() {
     startTimeRef.current = Date.now();
     setRemaining(totalSeconds);
     setState("active");
-    intervalRef.current = setInterval(tick, 1000);
   }
 
   async function completeSession() {
