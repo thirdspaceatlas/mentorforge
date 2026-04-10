@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useSupabaseUser } from "@/lib/supabase/use-supabase-user";
@@ -607,6 +608,33 @@ const buildSummary = (input: BuildSummaryInput): PlanSummary => {
   };
 };
 
+function CalendarCoachTeaser() {
+  return (
+    <div className="rounded-lg border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-6 dark:border-sky-900/50 dark:from-sky-950/30 dark:to-slate-900">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 space-y-1.5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-sky-500 dark:text-sky-400">
+            Calendar Coach
+          </p>
+          <p className="font-display text-lg font-semibold text-slate-900 dark:text-slate-100">
+            Find study time in your real schedule
+          </p>
+          <p className="max-w-md text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            Connect Google or Outlook and Calendar Coach scans for open windows, nudges you when
+            it&apos;s time, and tracks your consistency — so you study when life actually allows it.
+          </p>
+        </div>
+        <Link
+          href="/pricing"
+          className="inline-flex min-h-[44px] shrink-0 items-center rounded-md bg-sky-500 px-5 py-2.5 text-sm font-semibold text-sky-950 transition-colors hover:bg-sky-400 [-webkit-tap-highlight-color:transparent]"
+        >
+          Unlock Calendar Coach
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function PlannerInner() {
   const [examDate, setExamDate] = useState(() =>
     getDefaultExamDateForLevel("I")
@@ -745,11 +773,13 @@ function PlannerInner() {
 
   return (
     <div className="min-w-0 max-w-full space-y-8">
-      {/* Calendar Coach dashboard — shown above the planner, gated to paid tiers */}
+      {/* Calendar Coach — full dashboard for paid users, teaser for free */}
       <section id="calendar-coach">
-        <FeatureGate locked={!hasFeatureForPlan(plan, "calendar_view")}>
+        {hasFeatureForPlan(plan, "calendar_view") ? (
           <CalendarCoachDashboard />
-        </FeatureGate>
+        ) : (
+          <CalendarCoachTeaser />
+        )}
       </section>
 
       <section className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
