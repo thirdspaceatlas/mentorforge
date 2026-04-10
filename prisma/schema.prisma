@@ -20,6 +20,9 @@ model Profile {
   studyLogs  StudyLog[]
   purchases  Purchase[]
 
+  // Study plan persistence
+  savedStudyPlan SavedStudyPlan?
+
   // Calendar Coach relations
   calendarConnections CalendarConnection[]
   studyWindows        StudyWindow[]
@@ -148,6 +151,30 @@ model StudyLog {
   studyPlan StudyPlan           @relation(fields: [studyPlanId], references: [id])
   planItem  PlanItem?           @relation(fields: [planItemId], references: [id])
   topic     ExamTopicDefinition @relation(fields: [examTopicDefinitionId], references: [id])
+}
+
+// ─── Saved Study Plan (JSON blob persistence) ───
+
+/// Persists the user's active study plan settings, weekly schedule, and progress.
+/// One active plan per user (`userId` is @unique). Plan arrays stored as JSON.
+model SavedStudyPlan {
+  id              String   @id @default(cuid())
+  userId          String   @unique @db.Uuid
+  examLevel       String   // "I" | "II" | "III"
+  examDate        String   // ISO date "2026-11-15"
+  weeklyHours     Int
+  planStartDate   String   // ISO date
+  weekStartDay    String   // "0"-"6" (0=Sunday)
+  levelIIIPathway String?  // null for Level I/II
+  weekPlan        Json     // WeekPlan[] with dates as ISO strings
+  baseWeekPlan    Json     // original unmodified plan for undo
+  actualHours     Json     // (number | null)[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("saved_study_plans")
 }
 
 // ─── Calendar Coach Models ───

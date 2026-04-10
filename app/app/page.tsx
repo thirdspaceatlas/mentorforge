@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { serializeWeekPlan, deserializeWeekPlan } from "@/lib/study-plan/serialize";
+import type { SavedStudyPlanPayload } from "@/lib/study-plan/serialize";
 import { useSupabaseUser } from "@/lib/supabase/use-supabase-user";
 import { usePlan } from "@/components/app/PlanProvider";
 import { hasFeatureForPlan } from "@/lib/access";
@@ -635,6 +637,10 @@ function CalendarCoachTeaser() {
 }
 
 function PlannerInner() {
+  const { user } = useSupabaseUser();
+  const [planLoaded, setPlanLoaded] = useState(false);
+  const skipNextSave = useRef(false);
+
   const [examDate, setExamDate] = useState(() =>
     getDefaultExamDateForLevel("I")
   );
@@ -667,6 +673,89 @@ function PlannerInner() {
       finalReviewWeekLabel: getFinalReviewWeekLabel(examDate, weekStartDay)
     };
   }, [examWindows, examLevel, examDate, weekStartDay]);
+
+  // ─── Load saved plan on mount ───
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/study-plan")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data?.plan) return;
+        const p = data.plan as SavedStudyPlanPayload;
+        skipNextSave.current = true;
+        setExamLevel(p.examLevel as CfaLevel);
+        setExamDate(p.examDate);
+        setWeeklyHours(p.weeklyHours);
+        setPlanStartDate(p.planStartDate);
+        setWeekStartDay(p.weekStartDay);
+        if (p.levelIIIPathway) setLevelIIIPathway(p.levelIIIPathway as LevelIIIPathway);
+        const deserialized = deserializeWeekPlan(p.weekPlan);
+        const deserializedBase = deserializeWeekPlan(p.baseWeekPlan);
+        setWeekPlan(deserialized);
+        setBaseWeekPlan(deserializedBase);
+        setActualHours(p.actualHours);
+        setPlanBuilderOpen(false);
+      })
+      .catch(() => {})
+      .finally(() => setPlanLoaded(true));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  // Recompute summary whenever weekPlan or actualHours change (including after load)
+  useEffect(() => {
+    if (!weekPlan || !planLoaded) return;
+    // Defer to next tick so examMetadata is fresh
+    const id = requestAnimationFrame(() => {
+      setSummary(buildSummary({
+        plan: weekPlan,
+        actuals: actualHours,
+        weeklyHoursAvail: weeklyHoursNum,
+        targetHours: CFA_LEVEL_BENCHMARK[examLevel],
+        cfaLevel: examLevel,
+        levelIIIPathway: examLevel === "III" ? levelIIIPathway : null,
+        examWindowLabel: examMetadata.examWindowLabel,
+        suggestedNextWindowLabel: examMetadata.suggestedNextWindowLabel,
+        finalReviewWeekLabel: examMetadata.finalReviewWeekLabel,
+      }));
+    });
+    return () => cancelAnimationFrame(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekPlan, actualHours, planLoaded]);
+
+  // ─── Auto-save (debounced) ───
+  const buildPayload = useCallback((): SavedStudyPlanPayload | null => {
+    if (!weekPlan || !baseWeekPlan) return null;
+    return {
+      examLevel,
+      examDate,
+      weeklyHours: weeklyHoursNum,
+      planStartDate,
+      weekStartDay,
+      levelIIIPathway: examLevel === "III" ? levelIIIPathway : null,
+      weekPlan: serializeWeekPlan(weekPlan),
+      baseWeekPlan: serializeWeekPlan(baseWeekPlan),
+      actualHours,
+    };
+  }, [weekPlan, baseWeekPlan, actualHours, examLevel, examDate, weeklyHoursNum, planStartDate, weekStartDay, levelIIIPathway]);
+
+  useEffect(() => {
+    if (!user || !weekPlan || !planLoaded) return;
+    if (skipNextSave.current) {
+      skipNextSave.current = false;
+      return;
+    }
+    const payload = buildPayload();
+    if (!payload) return;
+    const timer = setTimeout(() => {
+      fetch("/api/study-plan", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).catch(() => {});
+    }, 1000);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekPlan, baseWeekPlan, actualHours, examLevel, examDate, weeklyHoursNum, planStartDate, weekStartDay, levelIIIPathway, planLoaded]);
 
   const makeSummaryInput = (plan: WeekPlan[], actuals: (number | null)[]): BuildSummaryInput => ({
     plan,
@@ -772,6 +861,14 @@ function PlannerInner() {
   const levelGateLocked =
     (examLevel === "II" && !hasFeatureForPlan(plan, "level_II")) ||
     (examLevel === "III" && !hasFeatureForPlan(plan, "level_III"));
+
+  if (!planLoaded) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-w-0 max-w-full space-y-8">
