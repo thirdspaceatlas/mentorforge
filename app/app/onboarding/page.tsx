@@ -55,10 +55,33 @@ export default function OnboardingPage() {
   function goTo(s: number) {
     setStep(s);
     window.scrollTo(0, 0);
-    // Trigger calendar sync when reaching the final step
+    // Trigger calendar sync and save preferences when reaching the final step
     if (s === TOTAL_STEPS) {
       fetch("/api/calendar/sync", { method: "POST" }).catch(() => {});
+      savePreferences();
     }
+  }
+
+  function savePreferences() {
+    // Map exam window label to an approximate ISO date for the planner
+    const examMonthMap: Record<string, string> = {
+      "May 2026": "2026-05-12",
+      "August 2026": "2026-08-18",
+      "November 2026": "2026-11-15",
+      "February 2027": "2027-02-02",
+    };
+    const examDate = examMonthMap[examWindow] || "2026-05-12";
+
+    fetch("/api/onboarding-preferences", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        examLevel: level,
+        examDate,
+        weeklyHours: hoursPerWeek,
+        weekStartDay: "1", // Monday default
+      }),
+    }).catch(() => {});
   }
 
   // Keyboard: Enter to advance, Escape to go back

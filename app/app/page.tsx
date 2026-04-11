@@ -689,12 +689,17 @@ function PlannerInner() {
         setPlanStartDate(p.planStartDate);
         setWeekStartDay(p.weekStartDay);
         if (p.levelIIIPathway) setLevelIIIPathway(p.levelIIIPathway as LevelIIIPathway);
-        const deserialized = deserializeWeekPlan(p.weekPlan);
-        const deserializedBase = deserializeWeekPlan(p.baseWeekPlan);
-        setWeekPlan(deserialized);
-        setBaseWeekPlan(deserializedBase);
-        setActualHours(p.actualHours);
-        setPlanBuilderOpen(false);
+
+        // If weekPlan has data, restore the full plan; otherwise just pre-fill the form
+        if (p.weekPlan.length > 0) {
+          const deserialized = deserializeWeekPlan(p.weekPlan);
+          const deserializedBase = deserializeWeekPlan(p.baseWeekPlan);
+          setWeekPlan(deserialized);
+          setBaseWeekPlan(deserializedBase);
+          setActualHours(p.actualHours);
+          setPlanBuilderOpen(false);
+        }
+        // else: preferences only (from onboarding) — form stays open with pre-filled values
       })
       .catch(() => {})
       .finally(() => setPlanLoaded(true));
