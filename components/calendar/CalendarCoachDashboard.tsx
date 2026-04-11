@@ -369,9 +369,10 @@ function ForecastCard() {
 
 function CalendarStatus({ count }: { count: number }) {
   const [open, setOpen] = useState(false);
+  const [showTip, setShowTip] = useState(false);
 
   return (
-    <div className="mt-3 flex items-center gap-3 text-xs text-slate-400">
+    <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400">
       <span className="flex items-center gap-1.5">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
         {count} calendar{count > 1 ? "s" : ""} synced
@@ -390,6 +391,43 @@ function CalendarStatus({ count }: { count: number }) {
           <a href="/api/calendar/oauth/outlook?returnTo=/app" className="font-medium text-sky-500 transition-colors hover:text-sky-400">Outlook</a>
         </span>
       )}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setShowTip(!showTip)}
+          aria-label="Why connect multiple calendars?"
+          className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold text-slate-400 transition-colors hover:border-sky-400 hover:text-sky-500 dark:border-slate-600 dark:hover:border-sky-500"
+        >
+          ?
+        </button>
+        {showTip && (
+          <div className="absolute bottom-7 left-1/2 z-20 w-72 -translate-x-1/2 rounded-lg border border-slate-200 bg-white p-4 text-left shadow-lg dark:border-slate-700 dark:bg-slate-800 sm:w-80">
+            <button
+              type="button"
+              onClick={() => setShowTip(false)}
+              className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+              Why multiple calendars?
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+              Our founder spent 20 years in financial services juggling a locked-down work
+              calendar and a personal one. They never synced, and he never wanted to blend
+              them ... he didn&apos;t trust that his employer wouldn&apos;t have a way to read
+              his personal events. So he kept them separate.
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+              Calendar Coach was built for this. Connect both, and we merge the busy
+              times from all your calendars to find the real gaps. No calendar is
+              prioritized over another. We never read event titles or details ... just
+              free/busy status.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
