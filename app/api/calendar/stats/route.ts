@@ -30,12 +30,11 @@ export async function GET() {
     todayWindows,
     recentSessions,
   ] = await Promise.all([
-    // Today's completed sessions
+    // Today's completed sessions (including interrupted — study time still counts)
     prisma.studySession.findMany({
       where: {
         userId: user.id,
         completedAt: { not: null },
-        interrupted: false,
         startedAt: { gte: todayStart, lte: todayEnd },
       },
       select: { actualMin: true },
@@ -67,12 +66,11 @@ export async function GET() {
       orderBy: { startTime: "asc" },
     }),
 
-    // Last 14 days of sessions for heatmap
+    // Last 14 days of sessions for heatmap (interrupted sessions still count)
     prisma.studySession.findMany({
       where: {
         userId: user.id,
         completedAt: { not: null },
-        interrupted: false,
         startedAt: { gte: fourteenDaysAgo },
       },
       select: { startedAt: true, actualMin: true },
