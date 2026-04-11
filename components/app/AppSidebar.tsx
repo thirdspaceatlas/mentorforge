@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/client";
 
@@ -17,14 +16,7 @@ export function AppSidebar() {
 
   return (
     <aside className="hidden lg:flex lg:w-56 lg:shrink-0 lg:flex-col lg:border-r lg:border-slate-200/80 lg:bg-[#fafaf9] dark:lg:border-slate-800/80 dark:lg:bg-slate-950">
-      <div className="flex h-16 items-center px-5">
-        <Logo priority variant="mark" className="h-8 w-8" />
-        <span className="ml-2.5 font-display text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-          MentorForge
-        </span>
-      </div>
-
-      <nav className="flex-1 space-y-0.5 px-3 py-4" aria-label="App">
+      <nav className="flex-1 space-y-0.5 px-3 py-6" aria-label="App">
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive = href === "/app"
             ? pathname === "/app"

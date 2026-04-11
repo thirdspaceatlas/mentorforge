@@ -145,7 +145,7 @@ export function Navbar() {
               {mobileOpen ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
             </button>
             {isApp && (
-              <div className="ml-1 shrink-0 scale-90 opacity-[0.88] md:ml-2 lg:hidden">
+              <div className="ml-1 shrink-0 scale-90 opacity-[0.88] md:ml-2">
                 <ThemeToggle />
               </div>
             )}

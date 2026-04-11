@@ -31,16 +31,6 @@ export async function GET(req: NextRequest) {
   endDate.setDate(endDate.getDate() + days - 1);
   endDate.setHours(23, 59, 59, 999);
 
-  // Check for existing study windows in the forecast range
-  const existingWindows = await prisma.studyWindow.findMany({
-    where: {
-      userId: user.id,
-      startTime: { gte: tomorrow },
-      endTime: { lte: endDate },
-    },
-    orderBy: { startTime: "asc" },
-  });
-
   type DayForecast = {
     date: string;
     dayLabel: string;
@@ -48,36 +38,7 @@ export async function GET(req: NextRequest) {
     totalMin: number;
   };
 
-  // If we have existing windows, group them by day
-  if (existingWindows.length > 0) {
-    const byDay = new Map<string, { count: number; min: number }>();
-
-    for (const w of existingWindows) {
-      const dateStr = w.startTime.toISOString().slice(0, 10);
-      const entry = byDay.get(dateStr) || { count: 0, min: 0 };
-      entry.count++;
-      entry.min += w.durationMin;
-      byDay.set(dateStr, entry);
-    }
-
-    const forecast: DayForecast[] = [];
-    const cursor = new Date(tomorrow);
-    for (let i = 0; i < days; i++) {
-      const dateStr = cursor.toISOString().slice(0, 10);
-      const entry = byDay.get(dateStr);
-      forecast.push({
-        date: dateStr,
-        dayLabel: formatDayLabel(cursor),
-        windowCount: entry?.count ?? 0,
-        totalMin: entry?.min ?? 0,
-      });
-      cursor.setDate(cursor.getDate() + 1);
-    }
-
-    return NextResponse.json({ forecast, days });
-  }
-
-  // No existing windows — run gap finder against calendar events
+  // Always run gap finder fresh against calendar events (avoids stale/oversized windows)
   const connections = await prisma.calendarConnection.findMany({
     where: { userId: user.id, enabled: true },
     select: { id: true },
