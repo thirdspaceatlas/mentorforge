@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
   const forecast: DayForecast[] = [];
   const cursor = new Date(tomorrow);
   for (let i = 0; i < days; i++) {
-    const dayGaps = findGapsForDay(cursor, busyPeriods, { minSessionMin: 15 });
+    const dayGaps = findGapsForDay(cursor, busyPeriods, { minSessionMin: 15, maxSessionMin: 120 });
     forecast.push({
       date: cursor.toISOString().slice(0, 10),
       dayLabel: formatDayLabel(cursor),

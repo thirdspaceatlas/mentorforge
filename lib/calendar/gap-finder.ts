@@ -23,8 +23,10 @@ export type StudyGap = {
 };
 
 export type GapFinderOptions = {
-  /** Minimum session length in minutes (default: 5) */
+  /** Minimum session length in minutes (default: 15) */
   minSessionMin?: number;
+  /** Maximum session length in minutes (default: 120). Longer gaps are split. */
+  maxSessionMin?: number;
   /** Earliest hour to consider (0-23, default: 7) */
   dayStartHour?: number;
   /** Latest hour to consider (0-23, default: 22) */
@@ -43,7 +45,7 @@ export function findGapsForDay(
   busyPeriods: BusyPeriod[],
   options: GapFinderOptions = {}
 ): StudyGap[] {
-  const { minSessionMin = 5, dayStartHour = 7, dayEndHour = 22 } = options;
+  const { minSessionMin = 15, maxSessionMin = 120, dayStartHour = 7, dayEndHour = 22 } = options;
 
   // Day boundaries in the same timezone as the input date
   const dayStart = new Date(date);
@@ -64,15 +66,12 @@ export function findGapsForDay(
   const merged = mergePeriods(relevant);
 
   // Scan for gaps
-  const gaps: StudyGap[] = [];
+  const rawGaps: { start: Date; end: Date }[] = [];
   let cursor = dayStart;
 
   for (const busy of merged) {
     if (busy.start > cursor) {
-      const durationMin = (busy.start.getTime() - cursor.getTime()) / 60000;
-      if (durationMin >= minSessionMin) {
-        gaps.push({ start: new Date(cursor), end: new Date(busy.start), durationMin: Math.floor(durationMin) });
-      }
+      rawGaps.push({ start: new Date(cursor), end: new Date(busy.start) });
     }
     if (busy.end > cursor) {
       cursor = busy.end;
@@ -81,9 +80,40 @@ export function findGapsForDay(
 
   // Check for gap after last busy period
   if (cursor < dayEnd) {
-    const durationMin = (dayEnd.getTime() - cursor.getTime()) / 60000;
-    if (durationMin >= minSessionMin) {
-      gaps.push({ start: new Date(cursor), end: new Date(dayEnd), durationMin: Math.floor(durationMin) });
+    rawGaps.push({ start: new Date(cursor), end: new Date(dayEnd) });
+  }
+
+  // Split long gaps into chunks of maxSessionMin with 10-min breaks between
+  const gaps: StudyGap[] = [];
+  const breakMin = 10;
+
+  for (const raw of rawGaps) {
+    const totalMin = (raw.end.getTime() - raw.start.getTime()) / 60000;
+
+    if (totalMin < minSessionMin) continue;
+
+    if (totalMin <= maxSessionMin) {
+      gaps.push({ start: raw.start, end: raw.end, durationMin: Math.floor(totalMin) });
+    } else {
+      // Split into sessions with breaks
+      let blockStart = raw.start.getTime();
+      const blockEnd = raw.end.getTime();
+
+      while (blockStart < blockEnd) {
+        const remaining = (blockEnd - blockStart) / 60000;
+        if (remaining < minSessionMin) break;
+
+        const sessionLen = Math.min(maxSessionMin, remaining);
+        const sessionEnd = blockStart + sessionLen * 60000;
+
+        gaps.push({
+          start: new Date(blockStart),
+          end: new Date(sessionEnd),
+          durationMin: Math.floor(sessionLen),
+        });
+
+        blockStart = sessionEnd + breakMin * 60000; // add break
+      }
     }
   }
 

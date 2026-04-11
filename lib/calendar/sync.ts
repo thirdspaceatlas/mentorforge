@@ -118,9 +118,10 @@ async function regenerateWindows(userId: string): Promise<number> {
     .filter((e) => e.busyStatus !== "free")
     .map((e) => ({ start: e.startTime, end: e.endTime }));
 
-  // TODO: Load user preferences for minSessionMin, dayStartHour, dayEndHour
+  // TODO: Load user preferences for dayStartHour, dayEndHour
   const gaps = findGaps(now, sevenDaysOut, busyPeriods, {
-    minSessionMin: 5,
+    minSessionMin: 15,
+    maxSessionMin: 120,
     dayStartHour: 7,
     dayEndHour: 22,
   });
