@@ -70,7 +70,7 @@ export function Navbar() {
         <Logo priority variant="full" className="min-w-0 shrink-0" />
 
         <div className="flex min-w-0 items-center gap-6 md:gap-10 lg:gap-12">
-          <nav className="hidden items-center gap-5 md:flex lg:gap-6" aria-label="Main">
+          <nav className={`hidden items-center gap-5 ${isApp ? "md:flex lg:hidden" : "md:flex"} lg:gap-6`} aria-label="Main">
             {isApp ? (
               <>
                 <Link
@@ -145,7 +145,7 @@ export function Navbar() {
               {mobileOpen ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
             </button>
             {isApp && (
-              <div className="ml-1 shrink-0 scale-90 opacity-[0.88] md:ml-2">
+              <div className="ml-1 shrink-0 scale-90 opacity-[0.88] md:ml-2 lg:hidden">
                 <ThemeToggle />
               </div>
             )}
