@@ -85,6 +85,12 @@ export function Navbar() {
                 >
                   Calendar Coach
                 </Link>
+                <Link
+                  href="/app/account"
+                  className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                >
+                  Account
+                </Link>
                 <button
                   type="button"
                   onClick={async () => {
@@ -160,6 +166,9 @@ export function Navbar() {
                 </Link>
                 <Link href="/app#calendar-coach" className={mobileNavLinkClass} onClick={closeMobile}>
                   Calendar Coach
+                </Link>
+                <Link href="/app/account" className={mobileNavLinkClass} onClick={closeMobile}>
+                  Account
                 </Link>
                 <button
                   type="button"

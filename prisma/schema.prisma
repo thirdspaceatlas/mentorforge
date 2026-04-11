@@ -166,6 +166,7 @@ model SavedStudyPlan {
   planStartDate   String   // ISO date
   weekStartDay    String   // "0"-"6" (0=Sunday)
   levelIIIPathway String?  // null for Level I/II
+  forecastDays    Int      @default(1) // 1, 3, or 5
   weekPlan        Json     // WeekPlan[] with dates as ISO strings
   baseWeekPlan    Json     // original unmodified plan for undo
   actualHours     Json     // (number | null)[]

@@ -24,6 +24,7 @@ export type SavedStudyPlanPayload = {
   planStartDate: string;
   weekStartDay: string;
   levelIIIPathway: string | null;
+  forecastDays?: number;
   weekPlan: WeekPlanSerialized[];
   baseWeekPlan: WeekPlanSerialized[];
   actualHours: (number | null)[];

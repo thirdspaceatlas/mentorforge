@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 /**
@@ -255,6 +255,113 @@ function AllDoneCard({ minutesToday, calendarsConnected }: { minutesToday: numbe
       </button>
       {calendarsConnected > 0 && (
         <CalendarStatus count={calendarsConnected} />
+      )}
+      <ForecastCard />
+    </div>
+  );
+}
+
+function ForecastCard() {
+  const [days, setDays] = useState(1);
+  const [forecast, setForecast] = useState<{ date: string; dayLabel: string; windowCount: number; totalMin: number }[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const initializedRef = useRef(false);
+
+  // Load saved preference on mount
+  useEffect(() => {
+    fetch("/api/study-plan")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.plan?.forecastDays) {
+          setDays(data.plan.forecastDays);
+        }
+        initializedRef.current = true;
+      })
+      .catch(() => { initializedRef.current = true; });
+  }, []);
+
+  // Fetch forecast when days changes
+  useEffect(() => {
+    if (!initializedRef.current) return;
+    setLoading(true);
+    fetch(`/api/calendar/forecast?days=${days}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.forecast) setForecast(data.forecast);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [days]);
+
+  const switchDays = (n: number) => {
+    setDays(n);
+    // Save preference (fire-and-forget)
+    fetch("/api/study-plan")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (!data?.plan) return;
+        fetch("/api/study-plan", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...data.plan, forecastDays: n }),
+        }).catch(() => {});
+      })
+      .catch(() => {});
+  };
+
+  return (
+    <div className="mt-6 border-t border-emerald-200/60 pt-5 dark:border-emerald-900/30">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Coming up
+        </h3>
+        <div
+          role="group"
+          aria-label="Forecast range"
+          className="inline-flex rounded-md border border-slate-300 bg-slate-50 p-0.5 dark:border-slate-600 dark:bg-slate-900/80"
+        >
+          {([1, 3, 5] as const).map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => switchDays(n)}
+              aria-pressed={days === n}
+              className={
+                "min-w-[4rem] rounded px-2.5 py-1.5 text-xs font-medium transition-colors [-webkit-tap-highlight-color:transparent] " +
+                (days === n
+                  ? "bg-sky-500 text-slate-950"
+                  : "text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800")
+              }
+            >
+              {n === 1 ? "Tomorrow" : `${n} Days`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="mt-3 space-y-2">
+          {Array.from({ length: days }).map((_, i) => (
+            <div key={i} className="h-5 w-48 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+          ))}
+        </div>
+      ) : forecast && forecast.length > 0 ? (
+        <div className="mt-3 space-y-1.5">
+          {forecast.map((day) => (
+            <div key={day.date} className="flex items-baseline justify-between gap-2 text-sm">
+              <span className="font-medium text-slate-700 dark:text-slate-300">{day.dayLabel}</span>
+              <span className="text-slate-500 dark:text-slate-400">
+                {day.windowCount > 0
+                  ? `${day.windowCount} window${day.windowCount > 1 ? "s" : ""} · ~${day.totalMin} min`
+                  : "Free day — start a session anytime"}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+          No calendar data yet for upcoming days.
+        </p>
       )}
     </div>
   );
