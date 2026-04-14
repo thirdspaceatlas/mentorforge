@@ -7,7 +7,9 @@
     "postinstall": "npm exec prisma generate && patch-package",
     "build": "npm exec prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "guest:yc": "tsx scripts/create-yc-guest.ts",
+    "guest:yc:grant": "tsx scripts/grant-all-access-by-email.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",
@@ -35,6 +37,7 @@
     "eslint-config-next": "latest",
     "patch-package": "^8.0.1",
     "tailwindcss-animate": "latest",
+    "tsx": "^4.21.0",
     "typescript": "latest",
     "vitest": "^4.1.3"
   }
