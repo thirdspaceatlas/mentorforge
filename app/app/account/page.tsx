@@ -31,6 +31,8 @@ export default function AccountPage() {
   const [calendars, setCalendars] = useState<CalendarConnection[]>([]);
   const [studyPlan, setStudyPlan] = useState<StudyPlanInfo>(null);
   const [loading, setLoading] = useState(true);
+  const [authMessage, setAuthMessage] = useState<string | null>(null);
+  const [linking, setLinking] = useState<"azure" | "google" | null>(null);
   const [resetConfirm, setResetConfirm] = useState("");
   const [calendarResetConfirm, setCalendarResetConfirm] = useState("");
   const [resetting, setResetting] = useState(false);
@@ -57,6 +59,23 @@ export default function AccountPage() {
       .finally(() => setLoading(false));
   }, [user]);
 
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const status = url.searchParams.get("linked");
+    const error = url.searchParams.get("error");
+    if (status === "1") {
+      setAuthMessage("Sign-in method linked.");
+      url.searchParams.delete("linked");
+      window.history.replaceState({}, "", url.toString());
+      return;
+    }
+    if (error === "oauth") {
+      setAuthMessage("Couldn’t link that sign-in method. Please try again.");
+      url.searchParams.delete("error");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, []);
+
   if (userLoading || loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -67,6 +86,9 @@ export default function AccountPage() {
 
   const tierLabel = plan.plan === "all_access" ? "All Access" : plan.plan === "level_pass" ? "Level Pass" : "Free";
   const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const identities = (user?.identities ?? []).map((i) => i.provider);
+  const hasMicrosoft = identities.includes("azure");
+  const hasGoogle = identities.includes("google");
 
   const disconnectCalendar = async (id: string) => {
     await fetch("/api/calendar/connections", {
@@ -100,6 +122,22 @@ export default function AccountPage() {
     setResetting(false);
   };
 
+  const linkProvider = async (provider: "azure" | "google") => {
+    setAuthMessage(null);
+    setLinking(provider);
+    const supabase = createClient();
+    const redirectTo = `${window.location.origin}/app/account?linked=1`;
+    const { error } = await supabase.auth.linkIdentity({
+      provider,
+      options: { redirectTo },
+    });
+    // On success, we redirect away immediately; only handle errors.
+    if (error) {
+      setAuthMessage(error.message);
+      setLinking(null);
+    }
+  };
+
   const signOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -125,6 +163,63 @@ export default function AccountPage() {
             <span className="font-medium text-slate-900 dark:text-slate-100">{tierLabel}</span>
           </div>
         </div>
+
+        <div className="mt-5 border-t border-slate-200/60 pt-5 dark:border-slate-800">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              Linked sign-in methods
+            </h3>
+            <div className="flex items-center gap-2 text-xs">
+              <span
+                className={`rounded-full px-2 py-0.5 font-medium ${
+                  hasMicrosoft ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                }`}
+              >
+                Microsoft
+              </span>
+              <span
+                className={`rounded-full px-2 py-0.5 font-medium ${
+                  hasGoogle ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200" : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                }`}
+              >
+                Google
+              </span>
+              <span className="rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                Email
+              </span>
+            </div>
+          </div>
+
+          {authMessage && (
+            <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
+              {authMessage}
+            </div>
+          )}
+
+          <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+            Linking gives you more ways to sign in. Calendar connections are managed separately.
+          </p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => linkProvider("azure")}
+              disabled={hasMicrosoft || linking != null}
+              className="rounded-md border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-40 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              {hasMicrosoft ? "Microsoft linked" : linking === "azure" ? "Linking…" : "Link Microsoft"}
+            </button>
+            <button
+              type="button"
+              onClick={() => linkProvider("google")}
+              disabled={hasGoogle || linking != null}
+              className="rounded-md border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-40 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              {hasGoogle ? "Google linked" : linking === "google" ? "Linking…" : "Link Google"}
+            </button>
+          </div>
+        </div>
+
         <button
           onClick={signOut}
           className="mt-5 rounded-md border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
