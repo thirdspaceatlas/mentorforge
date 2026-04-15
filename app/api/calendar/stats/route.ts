@@ -60,6 +60,7 @@ export async function GET() {
             completedAt: true,
             interrupted: true,
             actualMin: true,
+            plannedDurationMin: true,
           },
         },
       },
@@ -107,7 +108,10 @@ export async function GET() {
       topicName: w.topicName,
       studyType: w.studyType,
       startTime: w.startTime,
-      durationMin: w.durationMin,
+      durationMin:
+        session?.plannedDurationMin != null
+          ? session.plannedDurationMin
+          : w.durationMin,
       status,
     };
   });

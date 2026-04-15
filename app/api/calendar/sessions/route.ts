@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { windowId } = body;
+  const { windowId, plannedDurationMin } = body;
 
   if (!windowId || typeof windowId !== "string") {
     return NextResponse.json({ error: "windowId is required" }, { status: 400 });
@@ -30,6 +30,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Window not found" }, { status: 404 });
   }
 
+  let planned = window.durationMin;
+  if (plannedDurationMin != null && typeof plannedDurationMin === "number") {
+    const rounded = Math.round(plannedDurationMin);
+    planned = Math.min(window.durationMin, Math.max(5, rounded));
+  }
+
   // Atomic upsert — idempotent, no race condition on concurrent requests
   const session = await prisma.studySession.upsert({
     where: { windowId },
@@ -38,6 +44,7 @@ export async function POST(req: NextRequest) {
       userId: user.id,
       windowId,
       startedAt: new Date(),
+      plannedDurationMin: planned,
     },
   });
 

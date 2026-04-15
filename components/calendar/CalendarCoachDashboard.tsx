@@ -32,7 +32,15 @@ type DashStats = {
   heatmap: HeatmapDay[];
 };
 
-export function CalendarCoachDashboard() {
+type CalendarCoachDashboardProps = {
+  calendarPreferredSessionMin: number;
+  onCalendarPreferredSessionMinChange: (n: number) => void | Promise<void>;
+};
+
+export function CalendarCoachDashboard({
+  calendarPreferredSessionMin,
+  onCalendarPreferredSessionMinChange,
+}: CalendarCoachDashboardProps) {
   const router = useRouter();
   const [stats, setStats] = useState<DashStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,7 +102,7 @@ export function CalendarCoachDashboard() {
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Your calendar looks full, but you can still start a session anytime.
           </p>
-          <AdHocButton />
+          <AdHocButton preferredMin={calendarPreferredSessionMin} />
           {stats.calendarsConnected > 0 && (
             <CalendarStatus count={stats.calendarsConnected} />
           )}
@@ -111,10 +119,18 @@ export function CalendarCoachDashboard() {
     <section className="mb-8" aria-label="Calendar Coach">
       {/* Hero Card */}
       {allDone && (
-        <AllDoneCard minutesToday={stats.minutesToday} calendarsConnected={stats.calendarsConnected} />
+        <AllDoneCard
+          minutesToday={stats.minutesToday}
+          calendarsConnected={stats.calendarsConnected}
+          preferredMin={calendarPreferredSessionMin}
+        />
       )}
       {nextWindow && (
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6">
+          <PreferredSessionControl
+            value={calendarPreferredSessionMin}
+            onChange={onCalendarPreferredSessionMinChange}
+          />
           <p className="text-xs font-semibold uppercase tracking-wide text-sky-500 dark:text-sky-400">
             Next study window
           </p>
@@ -194,39 +210,130 @@ export function CalendarCoachDashboard() {
 
 /* ─── Sub-components ─── */
 
-function AdHocButton() {
-  const router = useRouter();
-  const [starting, setStarting] = useState(false);
+function PreferredSessionControl({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (n: number) => void | Promise<void>;
+}) {
+  const [local, setLocal] = useState(value);
+  useEffect(() => setLocal(value), [value]);
 
   return (
-    <button
-      onClick={async () => {
-        setStarting(true);
-        try {
-          const res = await fetch("/api/calendar/sessions/ad-hoc", { method: "POST" });
-          if (!res.ok) throw new Error();
-          const { windowId } = await res.json();
-          router.push(`/app/session/${windowId}`);
-        } catch {
-          setStarting(false);
-        }
-      }}
-      disabled={starting}
-      className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-md bg-sky-500 px-5 py-2.5 text-sm font-semibold text-sky-950 transition-colors hover:bg-sky-400 disabled:opacity-60 [-webkit-tap-highlight-color:transparent]"
-    >
-      {starting ? "Starting..." : "Start a study session"}
-    </button>
+    <div className="mb-4 rounded-md border border-slate-200 bg-slate-50 px-3 py-3 text-left dark:border-slate-600 dark:bg-slate-800/50">
+      <label className="block text-xs font-medium text-slate-600 dark:text-slate-300">
+        Default session length (splits open calendar time into chunks this size)
+      </label>
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <input
+          type="range"
+          min={5}
+          max={180}
+          step={1}
+          value={local}
+          onChange={(e) => setLocal(Number(e.target.value))}
+          onMouseUp={() => onChange(local)}
+          onTouchEnd={() => onChange(local)}
+          className="min-w-[140px] flex-1 accent-sky-500"
+          aria-valuemin={5}
+          aria-valuemax={180}
+          aria-valuenow={local}
+        />
+        <span className="text-sm font-semibold tabular-nums text-slate-800 dark:text-slate-100">
+          {local} min
+        </span>
+      </div>
+      <p className="mt-1.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        When you start a session, you can shorten it (e.g. 6 or 20 minutes) up to the available window.
+      </p>
+    </div>
   );
 }
 
-function AllDoneCard({ minutesToday, calendarsConnected }: { minutesToday: number; calendarsConnected: number }) {
+function AdHocButton({ preferredMin }: { preferredMin: number }) {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
+  const [durationMin, setDurationMin] = useState(() =>
+    Math.min(180, Math.max(5, preferredMin))
+  );
+
+  useEffect(() => {
+    setDurationMin((d) => Math.min(180, Math.max(5, preferredMin, d)));
+  }, [preferredMin]);
+
+  return (
+    <div className="mt-4 space-y-2">
+      <label className="block text-xs font-medium text-slate-600 dark:text-slate-300">
+        Session length
+      </label>
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          type="range"
+          min={5}
+          max={180}
+          step={1}
+          value={durationMin}
+          onChange={(e) => setDurationMin(Number(e.target.value))}
+          className="min-w-[140px] flex-1 accent-sky-500"
+        />
+        <span className="text-sm font-semibold tabular-nums text-slate-800 dark:text-slate-100">
+          {durationMin} min
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={async () => {
+          setStarting(true);
+          try {
+            const res = await fetch("/api/calendar/sessions/ad-hoc", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ durationMin }),
+            });
+            if (!res.ok) throw new Error();
+            const { windowId } = await res.json();
+            router.push(`/app/session/${windowId}`);
+          } catch {
+            setStarting(false);
+          }
+        }}
+        disabled={starting}
+        className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-md bg-sky-500 px-5 py-2.5 text-sm font-semibold text-sky-950 transition-colors hover:bg-sky-400 disabled:opacity-60 [-webkit-tap-highlight-color:transparent]"
+      >
+        {starting ? "Starting..." : "Start a study session"}
+      </button>
+    </div>
+  );
+}
+
+function AllDoneCard({
+  minutesToday,
+  calendarsConnected,
+  preferredMin,
+}: {
+  minutesToday: number;
+  calendarsConnected: number;
+  preferredMin: number;
+}) {
+  const router = useRouter();
+  const [starting, setStarting] = useState(false);
+  const [durationMin, setDurationMin] = useState(() =>
+    Math.min(180, Math.max(5, preferredMin))
+  );
+
+  useEffect(() => {
+    setDurationMin((d) => Math.min(180, Math.max(5, preferredMin, d)));
+  }, [preferredMin]);
 
   const startAdHoc = async () => {
     setStarting(true);
     try {
-      const res = await fetch("/api/calendar/sessions/ad-hoc", { method: "POST" });
+      const res = await fetch("/api/calendar/sessions/ad-hoc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ durationMin }),
+      });
       if (!res.ok) throw new Error();
       const { windowId } = await res.json();
       router.push(`/app/session/${windowId}`);
@@ -246,10 +353,29 @@ function AllDoneCard({ minutesToday, calendarsConnected }: { minutesToday: numbe
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Want to keep going? Start an extra session anytime.
       </p>
+      <div className="mt-4 space-y-2">
+        <label className="block text-xs font-medium text-emerald-800 dark:text-emerald-300">
+          Next session length
+        </label>
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            type="range"
+            min={5}
+            max={180}
+            step={1}
+            value={durationMin}
+            onChange={(e) => setDurationMin(Number(e.target.value))}
+            className="min-w-[140px] flex-1 accent-emerald-500"
+          />
+          <span className="text-sm font-semibold tabular-nums text-emerald-900 dark:text-emerald-200">
+            {durationMin} min
+          </span>
+        </div>
+      </div>
       <button
         onClick={startAdHoc}
         disabled={starting}
-        className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-md bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:opacity-60 [-webkit-tap-highlight-color:transparent]"
+        className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-md bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:opacity-60 [-webkit-tap-highlight-color:transparent]"
       >
         {starting ? "Starting..." : "Start another session"}
       </button>

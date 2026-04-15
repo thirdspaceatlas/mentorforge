@@ -672,6 +672,8 @@ function PlannerInner() {
   const [showAllWeeks, setShowAllWeeks] = useState(false);
   const [studyPlanAnchor, setStudyPlanAnchor] =
     useState<StudyPlanAnchorMode>("progress");
+  const [calendarPreferredSessionMin, setCalendarPreferredSessionMin] =
+    useState(45);
 
   const examWindows = useMemo(() => getExamWindowsSorted(examLevel), [examLevel]);
 
@@ -700,6 +702,11 @@ function PlannerInner() {
         setPlanStartDate(p.planStartDate);
         setWeekStartDay(p.weekStartDay);
         if (p.levelIIIPathway) setLevelIIIPathway(p.levelIIIPathway as LevelIIIPathway);
+        if (typeof p.calendarPreferredSessionMin === "number") {
+          setCalendarPreferredSessionMin(
+            Math.min(180, Math.max(5, Math.round(p.calendarPreferredSessionMin)))
+          );
+        }
 
         // If weekPlan has data, restore the full plan; otherwise just pre-fill the form
         if (p.weekPlan.length > 0) {
@@ -752,11 +759,12 @@ function PlannerInner() {
       planStartDate,
       weekStartDay,
       levelIIIPathway: examLevel === "III" ? levelIIIPathway : null,
+      calendarPreferredSessionMin,
       weekPlan: serializeWeekPlan(weekPlan),
       baseWeekPlan: serializeWeekPlan(baseWeekPlan),
       actualHours,
     };
-  }, [weekPlan, baseWeekPlan, actualHours, examLevel, examDate, weeklyHoursNum, planStartDate, weekStartDay, levelIIIPathway]);
+  }, [weekPlan, baseWeekPlan, actualHours, examLevel, examDate, weeklyHoursNum, planStartDate, weekStartDay, levelIIIPathway, calendarPreferredSessionMin]);
 
   useEffect(() => {
     if (!user || !weekPlan || !planLoaded) return;
@@ -775,7 +783,7 @@ function PlannerInner() {
     }, 1000);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weekPlan, baseWeekPlan, actualHours, examLevel, examDate, weeklyHoursNum, planStartDate, weekStartDay, levelIIIPathway, planLoaded]);
+  }, [weekPlan, baseWeekPlan, actualHours, examLevel, examDate, weeklyHoursNum, planStartDate, weekStartDay, levelIIIPathway, calendarPreferredSessionMin, planLoaded]);
 
   const makeSummaryInput = (plan: WeekPlan[], actuals: (number | null)[]): BuildSummaryInput => ({
     plan,
@@ -895,7 +903,25 @@ function PlannerInner() {
       {/* Calendar Coach — full dashboard for paid users, teaser for free */}
       <section id="calendar-coach">
         {hasFeatureForPlan(plan, "calendar_view") ? (
-          <CalendarCoachDashboard />
+          <CalendarCoachDashboard
+            calendarPreferredSessionMin={calendarPreferredSessionMin}
+            onCalendarPreferredSessionMinChange={async (n) => {
+              const clamped = Math.min(180, Math.max(5, Math.round(n)));
+              setCalendarPreferredSessionMin(clamped);
+              const res = await fetch("/api/study-plan");
+              const data = res.ok ? await res.json() : null;
+              if (!data?.plan) return;
+              await fetch("/api/study-plan", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  ...data.plan,
+                  calendarPreferredSessionMin: clamped,
+                }),
+              });
+              fetch("/api/calendar/sync", { method: "POST" }).catch(() => {});
+            }}
+          />
         ) : (
           <CalendarCoachTeaser />
         )}

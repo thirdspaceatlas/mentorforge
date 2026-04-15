@@ -25,6 +25,8 @@ export type SavedStudyPlanPayload = {
   weekStartDay: string;
   levelIIIPathway: string | null;
   forecastDays?: number;
+  /** Minutes — default session chunk for Calendar Coach (5–180). */
+  calendarPreferredSessionMin?: number;
   weekPlan: WeekPlanSerialized[];
   baseWeekPlan: WeekPlanSerialized[];
   actualHours: (number | null)[];

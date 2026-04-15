@@ -22,6 +22,15 @@ export async function GET(req: NextRequest) {
   const daysParam = parseInt(url.searchParams.get("days") || "1", 10);
   const days = [1, 3, 5].includes(daysParam) ? daysParam : 1;
 
+  const prefRow = await prisma.savedStudyPlan.findUnique({
+    where: { userId: user.id },
+    select: { calendarPreferredSessionMin: true },
+  });
+  const maxSessionMin = Math.min(
+    180,
+    Math.max(5, prefRow?.calendarPreferredSessionMin ?? 45)
+  );
+
   const now = new Date();
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -80,7 +89,10 @@ export async function GET(req: NextRequest) {
   const forecast: DayForecast[] = [];
   const cursor = new Date(tomorrow);
   for (let i = 0; i < days; i++) {
-    const dayGaps = findGapsForDay(cursor, busyPeriods, { minSessionMin: 15, maxSessionMin: 120 });
+    const dayGaps = findGapsForDay(cursor, busyPeriods, {
+      minSessionMin: 5,
+      maxSessionMin,
+    });
     forecast.push({
       date: cursor.toISOString().slice(0, 10),
       dayLabel: formatDayLabel(cursor),

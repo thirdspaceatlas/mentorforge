@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 
 /**
@@ -28,6 +28,7 @@ type WindowData = {
     completedAt: string | null;
     interrupted: boolean;
     actualMin: number | null;
+    plannedDurationMin?: number | null;
   } | null;
 };
 
@@ -43,10 +44,17 @@ export default function SessionPage() {
   const [fetchError, setFetchError] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [remaining, setRemaining] = useState(0);
+  const [plannedMin, setPlannedMin] = useState<number | null>(null);
+  const [prefFromPlan, setPrefFromPlan] = useState(45);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number | null>(null);
 
-  const totalSeconds = (windowData?.durationMin ?? 12) * 60;
+  const totalSeconds = useMemo(() => {
+    const cap = windowData?.durationMin ?? 12;
+    const pm = plannedMin ?? cap;
+    return Math.min(cap, Math.max(5, pm)) * 60;
+  }, [plannedMin, windowData?.durationMin]);
+
   const topic = windowData?.topicName || "Study session";
   const studyType = (windowData?.studyType as StudyType) || "review";
 
@@ -58,26 +66,52 @@ export default function SessionPage() {
   const sec = remaining % 60;
   const display = `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 
-  // Fetch window data
+  // Fetch window + study plan preference
   useEffect(() => {
-    fetch(`/api/calendar/windows?date=${new Date().toISOString().slice(0, 10)}`)
-      .then((r) => r.json())
-      .then((data) => {
+    const date = new Date().toISOString().slice(0, 10);
+    Promise.all([
+      fetch(`/api/calendar/windows?date=${date}`).then((r) => r.json()),
+      fetch(`/api/study-plan`).then((r) => (r.ok ? r.json() : null)),
+    ])
+      .then(([data, planData]) => {
         const win = data.windows?.find((w: WindowData) => w.id === windowId);
-        if (win) {
-          setWindowData(win);
-          setRemaining(win.durationMin * 60);
-          // If session already exists and is completed, go to complete state
-          if (win.session?.completedAt) {
-            setSessionId(win.session.id);
-            setState("complete");
-          } else if (win.session && !win.session.completedAt) {
-            // Session in progress — resume active state
-            setSessionId(win.session.id);
-            startTimeRef.current = new Date(win.session.startedAt).getTime();
-            setState("active");
-          }
+        const pref =
+          typeof planData?.plan?.calendarPreferredSessionMin === "number"
+            ? Math.min(
+                180,
+                Math.max(5, Math.round(planData.plan.calendarPreferredSessionMin))
+              )
+            : 45;
+        setPrefFromPlan(pref);
+
+        if (!win) return;
+
+        setWindowData(win);
+        const windowMax = win.durationMin;
+
+        if (win.session?.completedAt) {
+          setSessionId(win.session.id);
+          setPlannedMin(win.session.plannedDurationMin ?? win.durationMin);
+          setState("complete");
+          return;
         }
+
+        if (win.session && !win.session.completedAt) {
+          const pm = win.session.plannedDurationMin ?? win.durationMin;
+          setPlannedMin(pm);
+          setSessionId(win.session.id);
+          const started = new Date(win.session.startedAt).getTime();
+          startTimeRef.current = started;
+          setRemaining(
+            Math.max(0, pm * 60 - Math.floor((Date.now() - started) / 1000))
+          );
+          setState("active");
+          return;
+        }
+
+        const initial = Math.min(pref, windowMax);
+        setPlannedMin(initial);
+        setRemaining(initial * 60);
       })
       .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
@@ -93,8 +127,8 @@ export default function SessionPage() {
   // Timer tick
   const tick = useCallback(() => {
     if (!startTimeRef.current) return;
-    const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
-    const next = Math.max(0, totalSeconds - elapsed);
+    const elapsedSec = Math.floor((Date.now() - startTimeRef.current) / 1000);
+    const next = Math.max(0, totalSeconds - elapsedSec);
     setRemaining(next);
     if (next <= 0 && intervalRef.current) clearInterval(intervalRef.current);
   }, [totalSeconds]);
@@ -102,7 +136,7 @@ export default function SessionPage() {
   // Start/stop the timer interval whenever state changes to/from active
   useEffect(() => {
     if (state !== "active") return;
-    tick(); // sync immediately
+    tick();
     intervalRef.current = setInterval(tick, 1000);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -113,34 +147,24 @@ export default function SessionPage() {
   // Recalculate on visibility change
   useEffect(() => {
     if (state !== "active") return;
-    const h = () => { if (document.visibilityState === "visible") tick(); };
+    const h = () => {
+      if (document.visibilityState === "visible") tick();
+    };
     document.addEventListener("visibilitychange", h);
     return () => document.removeEventListener("visibilitychange", h);
   }, [state, tick]);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Enter") {
-        if (state === "ready") startSession();
-        else if (state === "active") completeSession();
-      }
-      if (e.key === "Escape") {
-        if (state === "active") interruptSession();
-        else if (state === "ready") router.push("/app");
-      }
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  });
-
-  async function startSession() {
+  const startSession = useCallback(async () => {
+    if (plannedMin == null || !windowData) return;
     setActionError(null);
     try {
       const res = await fetch("/api/calendar/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ windowId }),
+        body: JSON.stringify({
+          windowId,
+          plannedDurationMin: Math.min(windowData.durationMin, Math.max(5, plannedMin)),
+        }),
       });
 
       if (res.ok) {
@@ -158,9 +182,9 @@ export default function SessionPage() {
     startTimeRef.current = Date.now();
     setRemaining(totalSeconds);
     setState("active");
-  }
+  }, [plannedMin, windowData, windowId, totalSeconds]);
 
-  async function completeSession() {
+  const completeSession = useCallback(async () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     setState("complete");
 
@@ -177,9 +201,9 @@ export default function SessionPage() {
         // Session is marked complete locally. Server sync will catch up.
       }
     }
-  }
+  }, [sessionId]);
 
-  async function interruptSession() {
+  const interruptSession = useCallback(async () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     setRemaining(totalSeconds);
     setState("ready");
@@ -196,10 +220,28 @@ export default function SessionPage() {
       }
       setSessionId(null);
     }
-  }
+  }, [sessionId, totalSeconds]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        if (state === "ready") startSession();
+        else if (state === "active") completeSession();
+      }
+      if (e.key === "Escape") {
+        if (state === "active") interruptSession();
+        else if (state === "ready") router.push("/app");
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [state, startSession, completeSession, interruptSession, router]);
 
   useEffect(() => {
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, []);
 
   if (loading) {
@@ -248,6 +290,9 @@ export default function SessionPage() {
     );
   }
 
+  const maxSelectable = windowData.durationMin;
+  const sliderValue = plannedMin ?? Math.min(prefFromPlan, maxSelectable);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#fafaf9] dark:bg-slate-950">
       <div className="w-full max-w-md px-4 text-center sm:rounded-lg sm:border sm:border-slate-200 sm:bg-white sm:px-8 sm:py-10 sm:shadow-sm sm:dark:border-slate-700 sm:dark:bg-slate-900">
@@ -264,9 +309,38 @@ export default function SessionPage() {
             </h1>
             <div className="mt-1 flex items-center justify-center gap-2.5">
               <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                {windowData.durationMin} min
+                Up to {maxSelectable} min available
               </span>
               <TypeBadge type={studyType} />
+            </div>
+            <div className="mt-6 text-left">
+              <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                Session length (timer)
+              </label>
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <input
+                  type="range"
+                  min={5}
+                  max={maxSelectable}
+                  step={1}
+                  value={sliderValue}
+                  onChange={(e) => {
+                    const n = Number(e.target.value);
+                    setPlannedMin(n);
+                    setRemaining(n * 60);
+                  }}
+                  className="min-w-[160px] flex-1 accent-sky-500"
+                  aria-valuemin={5}
+                  aria-valuemax={maxSelectable}
+                  aria-valuenow={sliderValue}
+                />
+                <span className="text-sm font-semibold tabular-nums text-slate-800 dark:text-slate-100">
+                  {sliderValue} min
+                </span>
+              </div>
+              <p className="mt-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+                Default {Math.min(prefFromPlan, maxSelectable)} min from your Calendar Coach setting — adjust for a short burst or a deep block.
+              </p>
             </div>
             <div className="mt-8 space-y-2">
               <button

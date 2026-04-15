@@ -167,6 +167,8 @@ model SavedStudyPlan {
   weekStartDay    String   // "0"-"6" (0=Sunday)
   levelIIIPathway String?  // null for Level I/II
   forecastDays    Int      @default(1) // 1, 3, or 5
+  /// Default target length (minutes) for Calendar Coach sessions; also caps how large each generated gap chunk is.
+  calendarPreferredSessionMin Int @default(45)
   weekPlan        Json     // WeekPlan[] with dates as ISO strings
   baseWeekPlan    Json     // original unmodified plan for undo
   actualHours     Json     // (number | null)[]
@@ -250,6 +252,8 @@ model StudySession {
   startedAt             DateTime  @default(now())
   completedAt           DateTime?
   interrupted           Boolean   @default(false)
+  /// Target timer length chosen at start (minutes, <= window duration). Null = use full window.
+  plannedDurationMin    Int?
   /// Wall-clock duration in minutes (server-derived: completedAt - startedAt)
   actualMin             Float?
 

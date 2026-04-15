@@ -4,6 +4,15 @@ import { fetchGoogleEvents, fetchOutlookEvents, toBusyPeriods } from "./provider
 import type { ProviderEvent } from "./providers";
 import { findGaps } from "./gap-finder";
 
+async function getPreferredMaxSessionMin(userId: string): Promise<number> {
+  const row = await prisma.savedStudyPlan.findUnique({
+    where: { userId },
+    select: { calendarPreferredSessionMin: true },
+  });
+  const n = row?.calendarPreferredSessionMin ?? 45;
+  return Math.min(180, Math.max(5, n));
+}
+
 /**
  * Sync a single calendar connection:
  * 1. Refresh token if needed
@@ -119,9 +128,11 @@ async function regenerateWindows(userId: string): Promise<number> {
     .map((e) => ({ start: e.startTime, end: e.endTime }));
 
   // TODO: Load user preferences for dayStartHour, dayEndHour
+  const maxSessionMin = await getPreferredMaxSessionMin(userId);
+
   const gaps = findGaps(now, sevenDaysOut, busyPeriods, {
-    minSessionMin: 15,
-    maxSessionMin: 120,
+    minSessionMin: 5,
+    maxSessionMin,
     dayStartHour: 7,
     dayEndHour: 22,
   });

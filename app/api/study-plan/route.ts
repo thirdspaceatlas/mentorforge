@@ -28,6 +28,7 @@ export async function GET() {
       weekStartDay: saved.weekStartDay,
       levelIIIPathway: saved.levelIIIPathway,
       forecastDays: saved.forecastDays,
+      calendarPreferredSessionMin: saved.calendarPreferredSessionMin,
       weekPlan: saved.weekPlan,
       baseWeekPlan: saved.baseWeekPlan,
       actualHours: saved.actualHours,
@@ -46,11 +47,15 @@ export async function PUT(req: NextRequest) {
 
   const body = await req.json();
 
-  const { examLevel, examDate, weeklyHours, planStartDate, weekStartDay, levelIIIPathway, forecastDays, weekPlan, baseWeekPlan, actualHours } = body;
+  const { examLevel, examDate, weeklyHours, planStartDate, weekStartDay, levelIIIPathway, forecastDays, calendarPreferredSessionMin, weekPlan, baseWeekPlan, actualHours } = body;
 
   if (!examLevel || !examDate || weeklyHours == null || !planStartDate || !weekStartDay || !Array.isArray(weekPlan) || !Array.isArray(baseWeekPlan) || !Array.isArray(actualHours)) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
+
+  const prefMin = calendarPreferredSessionMin != null ? Number(calendarPreferredSessionMin) : 45;
+  const calendarPreferredSessionMinClamped =
+    Number.isFinite(prefMin) ? Math.min(180, Math.max(5, Math.round(prefMin))) : 45;
 
   const data = {
     examLevel,
@@ -60,6 +65,7 @@ export async function PUT(req: NextRequest) {
     weekStartDay,
     levelIIIPathway: levelIIIPathway ?? null,
     forecastDays: forecastDays != null ? Number(forecastDays) : 1,
+    calendarPreferredSessionMin: calendarPreferredSessionMinClamped,
     weekPlan,
     baseWeekPlan,
     actualHours,

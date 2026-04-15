@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
           completedAt: true,
           interrupted: true,
           actualMin: true,
+          plannedDurationMin: true,
         },
       },
     },

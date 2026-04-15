@@ -25,7 +25,7 @@ export type StudyGap = {
 export type GapFinderOptions = {
   /** Minimum session length in minutes (default: 15) */
   minSessionMin?: number;
-  /** Maximum session length in minutes (default: 120). Longer gaps are split. */
+  /** Maximum session length in minutes (default: 45). Longer gaps are split. */
   maxSessionMin?: number;
   /** Earliest hour to consider (0-23, default: 7) */
   dayStartHour?: number;
@@ -45,7 +45,7 @@ export function findGapsForDay(
   busyPeriods: BusyPeriod[],
   options: GapFinderOptions = {}
 ): StudyGap[] {
-  const { minSessionMin = 15, maxSessionMin = 120, dayStartHour = 7, dayEndHour = 22 } = options;
+  const { minSessionMin = 15, maxSessionMin = 45, dayStartHour = 7, dayEndHour = 22 } = options;
 
   // Day boundaries in the same timezone as the input date
   const dayStart = new Date(date);
