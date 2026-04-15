@@ -89,11 +89,12 @@ export default function AccountPage() {
 
   const resetCalendarCoach = async () => {
     if (calendarResetConfirm !== "reset") return;
+    const ok = window.confirm(
+      "Are you sure you want to reset Calendar Coach?\n\nThis disconnects all calendars and permanently deletes your Calendar Coach history (study windows, sessions, heatmap, and sync data). Your study plan will not be changed."
+    );
+    if (!ok) return;
     setResetting(true);
-    // Delete all connections (cascade deletes events, windows, sessions)
-    for (const cal of calendars) {
-      await fetch("/api/calendar/connections", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ connectionId: cal.id }) });
-    }
+    await fetch("/api/calendar/reset", { method: "DELETE" });
     setCalendars([]);
     setCalendarResetConfirm("");
     setResetting(false);
@@ -232,12 +233,12 @@ export default function AccountPage() {
         <div className="mt-6 border-t border-rose-200/60 pt-5 dark:border-rose-900/30">
           <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Reset Calendar Coach</p>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Disconnects all calendars and clears all study sessions, windows, and sync data. Your study plan stays intact.
+            Disconnects all calendars and permanently deletes your Calendar Coach history (study windows, sessions, heatmap, and sync data). Your study plan stays intact.
           </p>
           <div className="mt-3 flex items-center gap-3">
             <input
               type="text"
-              placeholder='Type "reset" to confirm'
+              placeholder='Type "reset" to confirm (deletes history)'
               value={calendarResetConfirm}
               onChange={(e) => setCalendarResetConfirm(e.target.value)}
               className="w-48 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"

@@ -453,6 +453,17 @@ const buildFullWeekPlan = (args: {
   });
 };
 
+/**
+ * Recover the pre-rebalance baseline when `baseWeekPlan` was never saved or is empty.
+ * Rebalance math must use baseline planned hours, not post-rebalance totals.
+ */
+const deriveBaseWeekPlanFromDisplay = (plan: WeekPlan[]): WeekPlan[] =>
+  plan.map((w) => ({
+    ...w,
+    plannedHours: Math.max(1, w.plannedHours - (w.rebalancedExtraHours ?? 0)),
+    rebalancedExtraHours: 0,
+  }));
+
 const getStatusContainerClasses = (status: PlanStatus) => {
   switch (status) {
     case "On Track":
@@ -693,7 +704,11 @@ function PlannerInner() {
         // If weekPlan has data, restore the full plan; otherwise just pre-fill the form
         if (p.weekPlan.length > 0) {
           const deserialized = deserializeWeekPlan(p.weekPlan);
-          const deserializedBase = deserializeWeekPlan(p.baseWeekPlan);
+          const rawBase = Array.isArray(p.baseWeekPlan) ? p.baseWeekPlan : [];
+          let deserializedBase = deserializeWeekPlan(rawBase);
+          if (deserializedBase.length === 0 && deserialized.length > 0) {
+            deserializedBase = deriveBaseWeekPlanFromDisplay(deserialized);
+          }
           setWeekPlan(deserialized);
           setBaseWeekPlan(deserializedBase);
           setActualHours(p.actualHours);
@@ -1424,40 +1439,62 @@ function PlannerInner() {
               <FeatureGate
                 locked={!levelGateLocked && !hasFeatureForPlan(plan, "smart_rebalancing")}
               >
-              <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-2 pt-1">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <button
                   type="button"
                   className="inline-flex w-full items-center justify-center rounded-md bg-sky-500 px-3 py-1.5 text-xs font-medium text-slate-950 hover:bg-sky-400 sm:w-auto"
                   onClick={() => {
-                    if (!baseWeekPlan || !weekPlan || !summary) return;
-
-                    let totalMissed = 0;
-                    const lastFilledIndex = actualHours.reduce<number>(
-                      (acc, value, idx) => (value != null ? idx : acc),
-                      -1
-                    );
-
-                    baseWeekPlan.forEach((week, idx) => {
-                      const actual = actualHours[idx];
-                      if (actual != null && actual < week.plannedHours) {
-                        totalMissed += week.plannedHours - actual;
-                      }
-                    });
-
-                    if (totalMissed <= 0 || lastFilledIndex === -1) {
+                    if (!weekPlan || !summary) {
                       setRebalanceMessage(
-                        "No missed hours to rebalance yet. Add actuals to earlier weeks first."
+                        "Planner is still loading. Wait a moment and try again."
                       );
                       return;
                     }
 
-                    const remainingIndexes = baseWeekPlan
-                      .map((_, i) => i)
-                      .filter((i) => i > lastFilledIndex);
+                    const base: WeekPlan[] =
+                      baseWeekPlan != null && baseWeekPlan.length > 0
+                        ? baseWeekPlan
+                        : deriveBaseWeekPlanFromDisplay(weekPlan);
+
+                    if (base.length === 0) {
+                      setRebalanceMessage(
+                        "No plan weeks found. Rebuild your plan and try again."
+                      );
+                      return;
+                    }
+
+                    let totalMissed = 0;
+                    for (let idx = 0; idx < base.length; idx++) {
+                      const actual = actualHours[idx];
+                      const planned = base[idx]!.plannedHours;
+                      if (actual != null && actual < planned) {
+                        totalMissed += planned - actual;
+                      }
+                    }
+
+                    let lastFilledIndex = -1;
+                    for (let idx = 0; idx < base.length; idx++) {
+                      if (actualHours[idx] != null) lastFilledIndex = idx;
+                    }
+
+                    if (totalMissed <= 0 || lastFilledIndex === -1) {
+                      setRebalanceMessage(
+                        "No missed hours to rebalance yet. Enter actual hours where you fell short (earlier weeks first helps)."
+                      );
+                      return;
+                    }
+
+                    const remainingIndexes: number[] = [];
+                    for (let i = lastFilledIndex + 1; i < base.length; i++) {
+                      remainingIndexes.push(i);
+                    }
 
                     if (remainingIndexes.length === 0) {
                       setRebalanceMessage(
-                        "All weeks are in the past. Nothing left to rebalance."
+                        base.length === 1
+                          ? "This plan only has one study week, so missed hours cannot roll forward. Try a longer study window or higher weekly hours."
+                          : "No study weeks left after the last week you logged. Log actuals in order through the week you missed, or extend your exam runway so there is room to absorb extra hours."
                       );
                       return;
                     }
@@ -1466,7 +1503,7 @@ function PlannerInner() {
                       totalMissed / remainingIndexes.length
                     );
                     const remainder = totalMissed % remainingIndexes.length;
-                    const updated = baseWeekPlan.map((week, i) => {
+                    const updated = base.map((week, i) => {
                       const pos = remainingIndexes.indexOf(i);
                       if (pos === -1) {
                         return { ...week, rebalancedExtraHours: 0 };
@@ -1478,6 +1515,13 @@ function PlannerInner() {
                         rebalancedExtraHours: extra
                       };
                     });
+
+                    if (
+                      baseWeekPlan == null ||
+                      baseWeekPlan.length === 0
+                    ) {
+                      setBaseWeekPlan(base);
+                    }
 
                     setWeekPlan(updated);
                     setSummary(buildSummary(makeSummaryInput(updated, actualHours)));
@@ -1518,9 +1562,15 @@ function PlannerInner() {
                 >
                   Reset All Progress
                 </button>
-
+              </div>
                 {rebalanceMessage ? (
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{rebalanceMessage}</p>
+                  <p
+                    className="text-xs text-slate-600 dark:text-slate-300"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {rebalanceMessage}
+                  </p>
                 ) : null}
               </div>
               </FeatureGate>
