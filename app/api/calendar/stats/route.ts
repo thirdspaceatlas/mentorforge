@@ -113,9 +113,21 @@ export async function GET() {
   });
 
   // Next window: first upcoming or current
-  const nextWindow = enrichedWindows.find(
-    (w) => w.status === "current" || w.status === "upcoming"
-  ) ?? null;
+  const nextWindow =
+    enrichedWindows.find((w) => w.status === "current" || w.status === "upcoming") ??
+    null;
+
+  /**
+   * UX rule: at the start of a day, show only ONE suggested session.
+   * If the user completes extra sessions, keep them visible.
+   */
+  const completedToday = enrichedWindows.filter((w) => w.status === "done");
+  const hasCompletedSessionToday = completedToday.length > 0 || minutesToday > 0;
+  const todayWindowsForUI = hasCompletedSessionToday
+    ? [...completedToday, ...(nextWindow ? [nextWindow] : [])]
+    : nextWindow
+    ? [nextWindow]
+    : [];
 
   // TODO: Calculate pacePercent from study plan progress
   // TODO: Calculate daysToExam from exam instance
@@ -125,7 +137,7 @@ export async function GET() {
     pacePercent: 0, // placeholder — needs study plan integration
     daysToExam: 0,  // placeholder — needs exam instance lookup
     calendarsConnected: connections,
-    todayWindows: enrichedWindows,
+    todayWindows: todayWindowsForUI,
     nextWindow,
     heatmap,
   });
