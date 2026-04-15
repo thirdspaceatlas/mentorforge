@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<"azure" | "google" | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +64,25 @@ export default function RegisterPage() {
     }
   };
 
+  const handleOAuth = async (provider: "azure" | "google") => {
+    setError(null);
+    setInfo(null);
+    setOauthLoading(provider);
+
+    const supabase = createClient();
+    const redirectTo = `${window.location.origin}/app`;
+
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo },
+    });
+
+    if (oauthError) {
+      setError(oauthError.message);
+      setOauthLoading(null);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-sm space-y-8 pt-8 sm:pt-12">
       <div className="text-center">
@@ -72,6 +92,36 @@ export default function RegisterPage() {
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
           Open the planner to build and rebalance your CFA study runway.
         </p>
+      </div>
+
+      <div className="space-y-3">
+        <button
+          type="button"
+          onClick={() => handleOAuth("azure")}
+          disabled={loading || oauthLoading != null}
+          className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200"
+        >
+          {oauthLoading === "azure" ? "Connecting\u2026" : "Continue with Microsoft"}
+        </button>
+        <button
+          type="button"
+          onClick={() => handleOAuth("google")}
+          disabled={loading || oauthLoading != null}
+          className="min-h-[2.75rem] w-full touch-manipulation rounded-full border border-slate-200 bg-white py-3 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50 disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-900"
+        >
+          {oauthLoading === "google" ? "Connecting\u2026" : "Continue with Google"}
+        </button>
+      </div>
+
+      <div className="relative py-1">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-white px-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+            Or
+          </span>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">

@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<"azure" | "google" | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +34,27 @@ export default function LoginPage() {
     window.location.href = callbackUrl;
   };
 
+  const handleOAuth = async (provider: "azure" | "google") => {
+    setError(null);
+    setOauthLoading(provider);
+    const supabase = createClient();
+
+    const params = new URLSearchParams(window.location.search);
+    const callbackUrl = params.get("callbackUrl") ?? "/app";
+    const redirectTo = new URL(callbackUrl, window.location.origin).toString();
+
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo },
+    });
+
+    // On success, Supabase redirects away immediately. If we got an error, we stay here.
+    if (oauthError) {
+      setError(oauthError.message);
+      setOauthLoading(null);
+    }
+  };
+
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-sm flex-col justify-center space-y-8 py-12 sm:min-h-[65vh] sm:py-16">
       <div className="text-center">
@@ -42,6 +64,36 @@ export default function LoginPage() {
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
           Sign in to open your study planner.
         </p>
+      </div>
+
+      <div className="space-y-3">
+        <button
+          type="button"
+          onClick={() => handleOAuth("azure")}
+          disabled={loading || oauthLoading != null}
+          className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
+        >
+          {oauthLoading === "azure" ? "Connecting\u2026" : "Continue with Microsoft"}
+        </button>
+        <button
+          type="button"
+          onClick={() => handleOAuth("google")}
+          disabled={loading || oauthLoading != null}
+          className="min-h-[2.75rem] w-full touch-manipulation rounded-full border border-slate-200 bg-white py-3 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50 disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-900"
+        >
+          {oauthLoading === "google" ? "Connecting\u2026" : "Continue with Google"}
+        </button>
+      </div>
+
+      <div className="relative py-1">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-white px-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+            Or
+          </span>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
