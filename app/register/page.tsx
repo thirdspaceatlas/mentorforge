@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getPublicSiteOrigin } from "@/lib/site";
+import { Events, track, referrerSource } from "@/lib/analytics";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -48,6 +49,12 @@ export default function RegisterPage() {
         setError(signUpError.message);
         return;
       }
+
+      track(Events.signup, {
+        provider: "email",
+        referrer_source: referrerSource(),
+        plan_tier: "free",
+      });
 
       if (data.session) {
         window.location.href = "/app";

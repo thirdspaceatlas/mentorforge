@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Events,
+  track,
+  bucketHoursPerWeek,
+  bucketDaysToExam,
+} from "@/lib/analytics";
 
 /**
  * Calendar Coach onboarding — 7-step linear wizard.
@@ -46,6 +52,12 @@ export default function OnboardingPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("calendar") === "connected") {
+      const provider = params.get("provider");
+      track(Events.calendarConnected, {
+        provider: provider === "google" ? "google" : "outlook",
+        is_first_connection: "true",
+        connection_count: "1",
+      });
       setStep(4);
       // Clean up URL
       window.history.replaceState({}, "", "/app/onboarding");
@@ -71,6 +83,21 @@ export default function OnboardingPage() {
       "February 2027": "2027-02-02",
     };
     const examDate = examMonthMap[examWindow] || "2026-05-12";
+
+    const daysToExam = Math.max(
+      0,
+      Math.round(
+        (new Date(examDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+      ),
+    );
+
+    track(Events.onboardingComplete, {
+      level,
+      credential: "CFA",
+      hours_per_week_bucket: bucketHoursPerWeek(hoursPerWeek),
+      days_to_exam_bucket: bucketDaysToExam(daysToExam),
+      employer_type: "skipped",
+    });
 
     fetch("/api/onboarding-preferences", {
       method: "POST",

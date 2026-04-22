@@ -118,5 +118,8 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  return NextResponse.redirect(new URL(returnTo, req.url));
+  const successUrl = new URL(returnTo, req.url);
+  successUrl.searchParams.set("calendar", "connected");
+  successUrl.searchParams.set("provider", "google");
+  return NextResponse.redirect(successUrl);
 }

@@ -10,6 +10,7 @@ import { usePlan } from "@/components/app/PlanProvider";
 import { hasFeatureForPlan } from "@/lib/access";
 import { FeatureGate } from "@/components/app/FeatureGate";
 import { CalendarCoachDashboard } from "@/components/calendar/CalendarCoachDashboard";
+import { Events, track, bucketWeekCount } from "@/lib/analytics";
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -841,12 +842,10 @@ function PlannerInner() {
 
     setPlanBuilderOpen(false);
 
-    window.plausible?.('StudyPlanCreated', {
-      props: {
-        cfaLevel: examLevel,
-        weeklyHours: String(weeklyHoursNum),
-        planWeeks: String(newWeekPlan.length),
-      },
+    track(Events.planGenerated, {
+      level: examLevel,
+      week_count_bucket: bucketWeekCount(newWeekPlan.length),
+      is_first_generation: "true",
     });
   };
 

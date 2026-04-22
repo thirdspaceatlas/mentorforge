@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { postCheckout } from "./checkout-api";
+import { Events, track } from "@/lib/analytics";
 
 type Props = {
   priceId: string;
@@ -18,6 +19,11 @@ export function AllAccessCheckoutButton({ priceId, className, children }: Props)
       setError("Price ID is not configured.");
       return;
     }
+    track(Events.upgradeClicked, {
+      source_location: "pricing_page",
+      cap_type_if_applicable: "none",
+      target_tier: "all_access",
+    });
     setLoading(true);
     setError(null);
     const result = await postCheckout({

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { Events, track, bucketSessionMinutes } from "@/lib/analytics";
 
 /**
  * Session page — three states: ready → active → complete.
@@ -189,6 +190,16 @@ export default function SessionPage() {
     setState("complete");
 
     if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
+
+    const elapsedMin = Math.max(
+      0,
+      Math.round((Date.now() - (startTimeRef.current ?? Date.now())) / 60000),
+    );
+    track(Events.sessionCompleted, {
+      duration_minutes_bucket: bucketSessionMinutes(elapsedMin),
+      was_interrupted: "false",
+      trigger: "scheduled_window",
+    });
 
     if (sessionId) {
       try {

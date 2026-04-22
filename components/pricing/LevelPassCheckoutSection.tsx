@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import type { ExamWindow } from "@/lib/plan/exam-expiry";
 import { postCheckout } from "./checkout-api";
+import { Events, track } from "@/lib/analytics";
 
 const WINDOWS: { value: ExamWindow; label: string }[] = [
   { value: "february", label: "February" },
@@ -37,6 +38,11 @@ export function LevelPassCheckoutSection({ priceId, buttonClassName, footnote }:
       setError("Price ID is not configured.");
       return;
     }
+    track(Events.upgradeClicked, {
+      source_location: "pricing_page",
+      cap_type_if_applicable: "none",
+      target_tier: "level_pass",
+    });
     setLoading(true);
     setError(null);
     const result = await postCheckout({
