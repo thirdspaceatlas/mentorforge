@@ -60,14 +60,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     >
       <body className="min-h-screen overflow-x-hidden bg-[#fafaf9] text-slate-900 dark:bg-slate-950 dark:text-slate-100 dark:antialiased">
         <Script
-          async
-          src="https://plausible.io/js/pa-IT9YPoq3cR4_pXnLQxZTt.js"
+          defer
+          data-domain="www.mentorforge.co"
+          src="https://plausible.io/js/script.js"
           strategy="afterInteractive"
         />
-        <Script id="plausible-init" strategy="afterInteractive">
-          {`window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-  plausible.init()`}
-        </Script>
         <Providers>
           <div className="flex min-h-screen flex-col">
             <Navbar />
