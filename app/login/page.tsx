@@ -41,7 +41,11 @@ export default function LoginPage() {
 
     const params = new URLSearchParams(window.location.search);
     const callbackUrl = params.get("callbackUrl") ?? "/app";
-    const redirectTo = new URL(callbackUrl, window.location.origin).toString();
+    const callbackPath = callbackUrl.startsWith("/") ? callbackUrl : "/app";
+    const redirectTo = new URL(
+      `/auth/callback?next=${encodeURIComponent(callbackPath)}`,
+      window.location.origin,
+    ).toString();
 
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,

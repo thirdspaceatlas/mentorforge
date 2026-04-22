@@ -61,9 +61,7 @@ export default function RegisterPage() {
         return;
       }
 
-      setInfo(
-        "Check your email for a confirmation link, then sign in. You can disable email confirmation in the Supabase dashboard for local testing."
-      );
+      setInfo("Check your email for a confirmation link, then sign in.");
     } catch (err) {
       console.error("[register] unexpected error during signUp:", err);
       setError("Something went wrong.");
@@ -77,7 +75,7 @@ export default function RegisterPage() {
     setOauthLoading(provider);
 
     const supabase = createClient();
-    const redirectTo = `${window.location.origin}/app`;
+    const redirectTo = `${window.location.origin}/auth/callback?next=/app`;
 
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
