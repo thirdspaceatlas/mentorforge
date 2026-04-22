@@ -9,6 +9,23 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Canonical domain redirect. Keeps Supabase auth cookies + OAuth callbacks on one hostname.
+  const canonical = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (canonical) {
+    try {
+      const canonicalUrl = new URL(canonical);
+      const host = request.headers.get("host")?.toLowerCase();
+      if (host && host !== canonicalUrl.host.toLowerCase()) {
+        const url = request.nextUrl.clone();
+        url.protocol = canonicalUrl.protocol;
+        url.host = canonicalUrl.host;
+        return NextResponse.redirect(url, 308);
+      }
+    } catch {
+      // ignore invalid NEXT_PUBLIC_SITE_URL
+    }
+  }
+
   // Stripe webhooks need a clean pass-through (raw body, no session refresh).
   if (pathname === "/api/webhooks/stripe") {
     return NextResponse.next();
