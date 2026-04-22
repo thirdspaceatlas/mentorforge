@@ -348,6 +348,16 @@ export default function AccountPage() {
           </div>
         </div>
       </section>
+
+      <div className="text-center text-xs text-slate-500 dark:text-slate-400">
+        Need help? Text us.{" "}
+        <a
+          href="tel:+16782630101"
+          className="font-medium text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300"
+        >
+          (678) 263-0101
+        </a>
+      </div>
     </div>
   );
 }

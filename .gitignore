@@ -40,6 +40,7 @@ stripe.exe
 
 # Vercel
 .vercel
+.cache
 
 # Prisma local SQLite (do not commit dev databases)
 prisma/*.db
