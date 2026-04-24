@@ -2,6 +2,24 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "./lib/supabase/env";
 
+function isLocalDevHost(host: string): boolean {
+  const h = host.split(":")[0]?.toLowerCase() ?? "";
+  if (!h) return false;
+  if (h === "localhost" || h === "127.0.0.1" || h === "::1" || h === "0.0.0.0") {
+    return true;
+  }
+  // WSL mirrored networking / LAN-style dev hosts
+  if (h.endsWith(".local")) return true;
+  if (h.startsWith("192.168.")) return true;
+  if (h.startsWith("10.")) return true;
+  // 172.16.0.0/12
+  if (h.startsWith("172.")) {
+    const second = Number(h.split(".")[1]);
+    if (!Number.isNaN(second) && second >= 16 && second <= 31) return true;
+  }
+  return false;
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -15,6 +33,10 @@ export async function proxy(request: NextRequest) {
     try {
       const canonicalUrl = new URL(canonical);
       const host = request.headers.get("host")?.toLowerCase();
+      // Never hijack local dev / LAN previews: `.env.local` often copies production NEXT_PUBLIC_SITE_URL.
+      if (host && isLocalDevHost(host)) {
+        return NextResponse.next();
+      }
       if (host && host !== canonicalUrl.host.toLowerCase()) {
         const url = request.nextUrl.clone();
         url.protocol = canonicalUrl.protocol;
