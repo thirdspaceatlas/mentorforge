@@ -10,6 +10,7 @@ import { usePlan } from "@/components/app/PlanProvider";
 import { hasFeatureForPlan } from "@/lib/access";
 import { FeatureGate } from "@/components/app/FeatureGate";
 import { CapHitCard } from "@/components/app/CapHitCard";
+import { FirstNameBackfillPrompt } from "@/components/app/FirstNameBackfillPrompt";
 import { CalendarCoachDashboard } from "@/components/calendar/CalendarCoachDashboard";
 import { Events, track, bucketWeekCount } from "@/lib/analytics";
 
@@ -898,6 +899,8 @@ function PlannerInner() {
 
   return (
     <div className="min-w-0 max-w-full space-y-8">
+      <FirstNameBackfillPrompt />
+
       {/* Calendar Coach — unified dashboard for all plans (Phase 1a). */}
       <section id="calendar-coach" className="space-y-4">
         {calendarCap ? (

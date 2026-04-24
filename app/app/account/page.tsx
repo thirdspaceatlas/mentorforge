@@ -23,6 +23,13 @@ type StudyPlanInfo = {
   weekStartDay: string;
 } | null;
 
+type UsageSnapshot = {
+  plan: "free" | "level_pass" | "all_access";
+  calendars: { used: number; cap: number | null };
+  rebalances: { used: number; cap: number | null; resetsAt: string };
+  nudges: { used: number; cap: number | null; resetsAt: string };
+} | null;
+
 export default function AccountPage() {
   const { user, loading: userLoading } = useSupabaseUser();
   const plan = usePlan();
@@ -30,6 +37,7 @@ export default function AccountPage() {
 
   const [calendars, setCalendars] = useState<CalendarConnection[]>([]);
   const [studyPlan, setStudyPlan] = useState<StudyPlanInfo>(null);
+  const [usage, setUsage] = useState<UsageSnapshot>(null);
   const [loading, setLoading] = useState(true);
   const [authMessage, setAuthMessage] = useState<string | null>(null);
   const [linking, setLinking] = useState<"azure" | "google" | null>(null);
@@ -42,8 +50,9 @@ export default function AccountPage() {
     Promise.all([
       fetch("/api/calendar/connections").then((r) => r.ok ? r.json() : { connections: [] }),
       fetch("/api/study-plan").then((r) => r.ok ? r.json() : { plan: null }),
+      fetch("/api/usage").then((r) => (r.ok ? r.json() : null)),
     ])
-      .then(([calData, planData]) => {
+      .then(([calData, planData, usageData]) => {
         setCalendars(calData.connections || []);
         if (planData.plan) {
           setStudyPlan({
@@ -54,6 +63,7 @@ export default function AccountPage() {
             weekStartDay: planData.plan.weekStartDay,
           });
         }
+        if (usageData) setUsage(usageData);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -265,6 +275,9 @@ export default function AccountPage() {
         </div>
       </section>
 
+      {/* Weekly Usage */}
+      {usage && <UsageSection usage={usage} />}
+
       {/* Study Plan Info */}
       {studyPlan && (
         <section className="rounded-xl border border-slate-200/90 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 sm:p-6">
@@ -359,5 +372,121 @@ export default function AccountPage() {
         </a>
       </div>
     </div>
+  );
+}
+
+function formatResetLabel(resetsAt: string): string {
+  const date = new Date(resetsAt);
+  if (Number.isNaN(date.getTime())) return "";
+  const diffDays = Math.max(
+    0,
+    Math.round((date.getTime() - Date.now()) / (24 * 60 * 60 * 1000))
+  );
+  if (diffDays === 0) return "Resets today";
+  if (diffDays === 1) return "Resets tomorrow";
+  return `Resets in ${diffDays} days`;
+}
+
+function UsageRow({
+  label,
+  used,
+  cap,
+  reset
+}: {
+  label: string;
+  used: number;
+  cap: number | null;
+  reset?: string;
+}) {
+  const unlimited = cap === null;
+  const hit = !unlimited && used >= (cap ?? 0);
+  const pct = unlimited ? 0 : Math.min(100, Math.round((used / Math.max(1, cap ?? 1)) * 100));
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between gap-3 text-sm">
+        <span className="text-slate-500 dark:text-slate-400">{label}</span>
+        <span
+          className={
+            "font-medium tabular-nums " +
+            (hit
+              ? "text-rose-600 dark:text-rose-400"
+              : "text-slate-900 dark:text-slate-100")
+          }
+        >
+          {unlimited ? "Unlimited" : `${used} of ${cap}`}
+        </span>
+      </div>
+      {unlimited ? null : (
+        <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+          <div
+            className={
+              "h-full rounded-full " +
+              (hit ? "bg-rose-500 dark:bg-rose-500" : "bg-accent")
+            }
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
+      {reset && !unlimited ? (
+        <p className="text-xs text-slate-500 dark:text-slate-400">{reset}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function UsageSection({ usage }: { usage: NonNullable<UsageSnapshot> }) {
+  const nudgeReset = formatResetLabel(usage.nudges.resetsAt);
+  const rebalanceReset = formatResetLabel(usage.rebalances.resetsAt);
+  const isFree = usage.plan === "free";
+
+  return (
+    <section className="rounded-xl border border-slate-200/90 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 sm:p-6">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Usage this week
+        </h2>
+        {!isFree ? (
+          <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+            All Access — unlimited
+          </span>
+        ) : null}
+      </div>
+
+      <div className="mt-4 space-y-4">
+        <UsageRow
+          label="Connected calendars"
+          used={usage.calendars.used}
+          cap={usage.calendars.cap}
+        />
+        <UsageRow
+          label="Calendar Coach nudges"
+          used={usage.nudges.used}
+          cap={usage.nudges.cap}
+          reset={nudgeReset}
+        />
+        <UsageRow
+          label="Smart rebalances"
+          used={usage.rebalances.used}
+          cap={usage.rebalances.cap}
+          reset={rebalanceReset}
+        />
+      </div>
+
+      {isFree ? (
+        <div className="mt-5 border-t border-slate-200/60 pt-4 dark:border-slate-800">
+          <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+            Free plan caps reset on a rolling 7-day window.{" "}
+            <Link
+              href="/pricing"
+              className="font-medium text-accent underline decoration-accent/40 underline-offset-2 hover:decoration-accent"
+            >
+              Upgrade to All Access
+            </Link>{" "}
+            for unlimited everything.
+          </p>
+        </div>
+      ) : null}
+    </section>
   );
 }
