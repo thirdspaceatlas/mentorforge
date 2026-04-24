@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { encrypt } from "@/lib/calendar/crypto";
+import { getUserPlan, canUseFeature } from "@/lib/access";
 
 /**
  * GET /api/calendar/oauth/google/callback — Handles Google OAuth code exchange.
@@ -84,6 +85,31 @@ export async function GET(req: NextRequest) {
   if (!providerEmail) {
     console.error(JSON.stringify({ event: "google_profile_no_email" }));
     return NextResponse.redirect(new URL("/app/onboarding?error=oauth", req.url));
+  }
+
+  // Phase 1b cap: free users may connect 1 calendar. A re-auth of an existing row
+  // (same provider + email) is always allowed — we only gate a brand-new connection.
+  const existing = await prisma.calendarConnection.findUnique({
+    where: {
+      userId_provider_providerEmail: {
+        userId: user.id,
+        provider: "google",
+        providerEmail
+      }
+    },
+    select: { id: true }
+  });
+
+  if (!existing) {
+    const userPlan = await getUserPlan(user.id);
+    const capCheck = await canUseFeature(user.id, userPlan.plan, "add_calendar");
+    if (!capCheck.allowed) {
+      const capUrl = new URL(returnTo, req.url);
+      capUrl.searchParams.set("cap", "calendar");
+      capUrl.searchParams.set("used", String(capCheck.used));
+      capUrl.searchParams.set("limit", String(capCheck.cap));
+      return NextResponse.redirect(capUrl);
+    }
   }
 
   // Encrypt tokens before storing

@@ -8,6 +8,7 @@ const marketingLinks = [
   { href: "/about", label: "About" },
   { href: "/pricing", label: "Pricing" },
   { href: "/learn-more", label: "Learn More" },
+  { href: "/privacy", label: "Privacy" },
   { href: "/login", label: "Login" }
 ] as const;
 

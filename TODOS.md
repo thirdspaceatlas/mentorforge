@@ -1,5 +1,19 @@
 # TODOS
 
+## Phase 1b follow-ups (deferred — need cron infra that doesn't exist yet)
+
+### Notification-send cron + 3-per-week nudge cap
+**What:** Build `/api/cron/send-notifications` that fires Calendar Coach web-push / email nudges for upcoming `StudyWindow`s. Before each send, call `canUseFeature(userId, plan, "nudge_sent")` and if allowed, call `recordUsage(userId, "nudge_sent")`. The cap logic and `UsageEvent` rows (action = `"nudge_sent"`) are already wired in `lib/usage.ts` — this item is just the sender itself.
+**Why:** Approach E caps free users at 3 nudges/week. The schema field (`StudyWindow.notified`) exists but no job actually sends.
+**Effort:** M (needs web-push key plumbing + Resend template + Vercel cron registration).
+**Priority:** P1 for full Phase 1b parity.
+
+### Weekly digest cron + first rotating survey question
+**What:** Build `/api/cron/weekly-digest` — Sunday job per profile. Bundle week's sessions + rotating question (`"week2_blocker"`, `"nps_v1"`, etc.). Persist answers via `UserSurveyResponse` (table already migrated). Include unsubscribe link.
+**Why:** Freemium thesis depends on the research loop. Unconverted users stick around if we keep asking them useful questions.
+**Effort:** M. Resend template + cron registration + signed reply-link route to record answers.
+**Priority:** P1 for full Phase 1b parity.
+
 ## Calendar Coach
 
 ### Enterprise Outlook OAuth Testing

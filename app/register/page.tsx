@@ -7,26 +7,36 @@ import { getPublicSiteOrigin } from "@/lib/site";
 import { Events, track, referrerSource } from "@/lib/analytics";
 
 export default function RegisterPage() {
+  const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<"azure" | "google" | null>(null);
+  const [oauthLoading, setOauthLoading] = useState<"google" | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setInfo(null);
+    if (!privacyAccepted) {
+      setError("Please accept the privacy policy to continue.");
+      return;
+    }
     setLoading(true);
 
     try {
       const supabase = createClient();
+      const trimmedFirstName = firstName.trim();
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${getPublicSiteOrigin()}/login`
+          emailRedirectTo: `${getPublicSiteOrigin()}/login`,
+          data: {
+            first_name: trimmedFirstName
+          }
         }
       });
 
@@ -69,9 +79,13 @@ export default function RegisterPage() {
     }
   };
 
-  const handleOAuth = async (provider: "azure" | "google") => {
+  const handleOAuth = async (provider: "google") => {
     setError(null);
     setInfo(null);
+    if (!privacyAccepted) {
+      setError("Please accept the privacy policy to continue.");
+      return;
+    }
     setOauthLoading(provider);
 
     const supabase = createClient();
@@ -99,22 +113,36 @@ export default function RegisterPage() {
         </p>
       </div>
 
+      <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200/90 bg-slate-50/60 px-3.5 py-3 text-sm leading-relaxed text-slate-700 transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300 dark:hover:border-slate-600">
+        <input
+          type="checkbox"
+          checked={privacyAccepted}
+          onChange={(e) => setPrivacyAccepted(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-accent focus:ring-2 focus:ring-accent focus:ring-offset-0 dark:border-slate-600 dark:bg-slate-900"
+          aria-describedby="privacy-accept-hint"
+        />
+        <span id="privacy-accept-hint">
+          I&apos;ve read and accept the{" "}
+          <Link
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent"
+          >
+            privacy policy
+          </Link>
+          .
+        </span>
+      </label>
+
       <div className="space-y-3">
         <button
           type="button"
-          onClick={() => handleOAuth("azure")}
-          disabled={loading || oauthLoading != null}
+          onClick={() => handleOAuth("google")}
+          disabled={loading || oauthLoading != null || !privacyAccepted}
           className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200"
         >
-          {oauthLoading === "azure" ? "Connecting\u2026" : "Continue with Microsoft"}
-        </button>
-        <button
-          type="button"
-          onClick={() => handleOAuth("google")}
-          disabled={loading || oauthLoading != null}
-          className="min-h-[2.75rem] w-full touch-manipulation rounded-full border border-slate-200 bg-white py-3 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50 disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-900"
-        >
-          {oauthLoading === "google" ? "Connecting\u2026" : "Continue with Google"}
+          {oauthLoading === "google" ? "Connecting…" : "Continue with Google"}
         </button>
       </div>
 
@@ -140,6 +168,25 @@ export default function RegisterPage() {
             {info}
           </div>
         )}
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            First name
+          </label>
+          <input
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="min-h-[2.75rem] w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:focus:border-slate-500 sm:text-sm"
+            required
+            minLength={1}
+            maxLength={50}
+            autoComplete="given-name"
+          />
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            So we can address you like a person, not a user ID.
+          </p>
+        </div>
 
         <div className="space-y-1.5">
           <label className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -175,10 +222,10 @@ export default function RegisterPage() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !privacyAccepted}
           className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200"
         >
-          {loading ? "Creating account\u2026" : "Create account"}
+          {loading ? "Creating account…" : "Create account"}
         </button>
       </form>
 

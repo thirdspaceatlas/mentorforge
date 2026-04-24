@@ -9,6 +9,7 @@ import { useSupabaseUser } from "@/lib/supabase/use-supabase-user";
 import { usePlan } from "@/components/app/PlanProvider";
 import { hasFeatureForPlan } from "@/lib/access";
 import { FeatureGate } from "@/components/app/FeatureGate";
+import { CapHitCard } from "@/components/app/CapHitCard";
 import { CalendarCoachDashboard } from "@/components/calendar/CalendarCoachDashboard";
 import { Events, track, bucketWeekCount } from "@/lib/analytics";
 
@@ -621,33 +622,6 @@ const buildSummary = (input: BuildSummaryInput): PlanSummary => {
   };
 };
 
-function CalendarCoachTeaser() {
-  return (
-    <div className="rounded-lg border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-6 dark:border-sky-900/50 dark:from-sky-950/30 dark:to-slate-900">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0 space-y-1.5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-sky-500 dark:text-sky-400">
-            Calendar Coach
-          </p>
-          <p className="font-display text-lg font-semibold text-slate-900 dark:text-slate-100">
-            Find study time in your real schedule
-          </p>
-          <p className="max-w-md text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            Connect Google or Outlook and Calendar Coach scans for open windows, nudges you when
-            it&apos;s time, and tracks your consistency — so you study when life actually allows it.
-          </p>
-        </div>
-        <Link
-          href="/pricing"
-          className="inline-flex min-h-[44px] shrink-0 items-center rounded-md bg-sky-500 px-5 py-2.5 text-sm font-semibold text-sky-950 transition-colors hover:bg-sky-400 [-webkit-tap-highlight-color:transparent]"
-        >
-          Unlock Calendar Coach
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 function PlannerInner() {
   const { user } = useSupabaseUser();
   const [planLoaded, setPlanLoaded] = useState(false);
@@ -667,6 +641,31 @@ function PlannerInner() {
   const [weekPlan, setWeekPlan] = useState<WeekPlan[] | null>(null);
   const [actualHours, setActualHours] = useState<(number | null)[]>([]);
   const [rebalanceMessage, setRebalanceMessage] = useState<string | null>(null);
+  const [rebalanceCap, setRebalanceCap] = useState<
+    { used: number; cap: number; resetsAt?: string } | null
+  >(null);
+  const [calendarCap, setCalendarCap] = useState<
+    { used: number; cap: number } | null
+  >(null);
+
+  // Phase 1b: surface the ?cap=calendar redirect from the OAuth callback.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("cap") !== "calendar") return;
+    const used = Number(params.get("used")) || 1;
+    const cap = Number(params.get("limit")) || 1;
+    setCalendarCap({ used, cap });
+    params.delete("cap");
+    params.delete("used");
+    params.delete("limit");
+    const qs = params.toString();
+    window.history.replaceState(
+      {},
+      "",
+      `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`
+    );
+  }, []);
   const [examLevel, setExamLevel] = useState<CfaLevel>("I");
   const [levelIIIPathway, setLevelIIIPathway] =
     useState<LevelIIIPathway>("portfolioManagement");
@@ -899,31 +898,35 @@ function PlannerInner() {
 
   return (
     <div className="min-w-0 max-w-full space-y-8">
-      {/* Calendar Coach — full dashboard for paid users, teaser for free */}
-      <section id="calendar-coach">
-        {hasFeatureForPlan(plan, "calendar_view") ? (
-          <CalendarCoachDashboard
-            calendarPreferredSessionMin={calendarPreferredSessionMin}
-            onCalendarPreferredSessionMinChange={async (n) => {
-              const clamped = Math.min(180, Math.max(5, Math.round(n)));
-              setCalendarPreferredSessionMin(clamped);
-              const res = await fetch("/api/study-plan");
-              const data = res.ok ? await res.json() : null;
-              if (!data?.plan) return;
-              await fetch("/api/study-plan", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  ...data.plan,
-                  calendarPreferredSessionMin: clamped,
-                }),
-              });
-              fetch("/api/calendar/sync", { method: "POST" }).catch(() => {});
-            }}
+      {/* Calendar Coach — unified dashboard for all plans (Phase 1a). */}
+      <section id="calendar-coach" className="space-y-4">
+        {calendarCap ? (
+          <CapHitCard
+            capType="calendar"
+            used={calendarCap.used}
+            cap={calendarCap.cap}
+            onDismiss={() => setCalendarCap(null)}
           />
-        ) : (
-          <CalendarCoachTeaser />
-        )}
+        ) : null}
+        <CalendarCoachDashboard
+          calendarPreferredSessionMin={calendarPreferredSessionMin}
+          onCalendarPreferredSessionMinChange={async (n) => {
+            const clamped = Math.min(180, Math.max(5, Math.round(n)));
+            setCalendarPreferredSessionMin(clamped);
+            const res = await fetch("/api/study-plan");
+            const data = res.ok ? await res.json() : null;
+            if (!data?.plan) return;
+            await fetch("/api/study-plan", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...data.plan,
+                calendarPreferredSessionMin: clamped,
+              }),
+            });
+            fetch("/api/calendar/sync", { method: "POST" }).catch(() => {});
+          }}
+        />
       </section>
 
       <section className="flex items-center justify-between gap-4">
@@ -1140,9 +1143,7 @@ function PlannerInner() {
           <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Plan summary</h2>
 
           <FeatureGate locked={levelGateLocked}>
-            <FeatureGate
-              locked={!levelGateLocked && !hasFeatureForPlan(plan, "progress_tracking")}
-            >
+            <FeatureGate locked={false}>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-3 sm:col-span-2">
               <div className="text-sm text-slate-500 dark:text-slate-400">
@@ -1262,9 +1263,7 @@ function PlannerInner() {
 
           {weekPlan ? (
             <div className="mt-6 space-y-3">
-              <FeatureGate
-                locked={!levelGateLocked && !hasFeatureForPlan(plan, "calendar_view")}
-              >
+              <FeatureGate locked={false}>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -1381,9 +1380,7 @@ function PlannerInner() {
                           {week.startDateLabel} – {week.endDateLabel}
                         </div>
                       </div>
-                      <FeatureGate
-                        locked={!levelGateLocked && !hasFeatureForPlan(plan, "ethics_spacing")}
-                      >
+                      <FeatureGate locked={false}>
                         <div className="mt-1 text-sm text-slate-800 dark:text-slate-200">
                           {week.topic}
                         </div>
@@ -1397,9 +1394,7 @@ function PlannerInner() {
                           {week.rebalancedExtraHours === 1 ? "" : "s"}
                         </div>
                       ) : null}
-                      <FeatureGate
-                        locked={!levelGateLocked && !hasFeatureForPlan(plan, "progress_tracking")}
-                      >
+                      <FeatureGate locked={false}>
                       <div className="mt-2 space-y-1">
                         <label className="text-xs text-slate-500 dark:text-slate-400">
                           Actual hours completed
@@ -1461,18 +1456,45 @@ function PlannerInner() {
               </div>
               </FeatureGate>
 
-              <FeatureGate
-                locked={!levelGateLocked && !hasFeatureForPlan(plan, "smart_rebalancing")}
-              >
+              <FeatureGate locked={false}>
               <div className="flex flex-col gap-2 pt-1">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <button
                   type="button"
                   className="inline-flex w-full items-center justify-center rounded-md bg-sky-500 px-3 py-1.5 text-xs font-medium text-slate-950 hover:bg-sky-400 sm:w-auto"
-                  onClick={() => {
+                  onClick={async () => {
                     if (!weekPlan || !summary) {
                       setRebalanceMessage(
                         "Planner is still loading. Wait a moment and try again."
+                      );
+                      return;
+                    }
+
+                    // Phase 1b cap gate — free plan = 1 rebalance / 7 days.
+                    setRebalanceCap(null);
+                    try {
+                      const capRes = await fetch("/api/study-plan/rebalance", {
+                        method: "POST"
+                      });
+                      if (capRes.status === 402) {
+                        const data = await capRes.json();
+                        setRebalanceCap({
+                          used: data.used,
+                          cap: data.cap,
+                          resetsAt: data.resetsAt
+                        });
+                        setRebalanceMessage(null);
+                        return;
+                      }
+                      if (!capRes.ok) {
+                        setRebalanceMessage(
+                          "Could not start rebalance. Try again in a moment."
+                        );
+                        return;
+                      }
+                    } catch {
+                      setRebalanceMessage(
+                        "Could not reach server. Check your connection and try again."
                       );
                       return;
                     }
@@ -1596,6 +1618,15 @@ function PlannerInner() {
                   >
                     {rebalanceMessage}
                   </p>
+                ) : null}
+                {rebalanceCap ? (
+                  <CapHitCard
+                    capType="rebalance"
+                    used={rebalanceCap.used}
+                    cap={rebalanceCap.cap}
+                    resetsAt={rebalanceCap.resetsAt}
+                    onDismiss={() => setRebalanceCap(null)}
+                  />
                 ) : null}
               </div>
               </FeatureGate>

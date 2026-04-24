@@ -8,6 +8,7 @@ import {
   bucketHoursPerWeek,
   bucketDaysToExam,
 } from "@/lib/analytics";
+import { subscribeToPush } from "@/lib/push/client";
 
 /**
  * Calendar Coach onboarding — 7-step linear wizard.
@@ -24,7 +25,23 @@ import {
 
 type CfaLevel = "I" | "II" | "III";
 
-const TOTAL_STEPS = 7;
+type CredentialType = "" | "CFA" | "CFP_waitlist" | "other";
+type PrimaryChallenge =
+  | ""
+  | "cant_find_time"
+  | "lose_focus"
+  | "fall_behind"
+  | "dont_know_pace"
+  | "other";
+type EmployerType =
+  | ""
+  | "buy_side"
+  | "sell_side"
+  | "corporate_finance"
+  | "student"
+  | "other";
+
+const TOTAL_STEPS = 8;
 
 const STEP_TITLES = [
   "Get started",
@@ -33,8 +50,33 @@ const STEP_TITLES = [
   "Study preferences",
   "Notifications",
   "Install app",
+  "About you",
   "You're all set",
 ];
+
+const PRIMARY_CHALLENGE_OPTIONS: { value: Exclude<PrimaryChallenge, "">; label: string }[] = [
+  { value: "cant_find_time", label: "I can't find time to study" },
+  { value: "lose_focus", label: "I lose focus when I start" },
+  { value: "fall_behind", label: "I fall behind the plan" },
+  { value: "dont_know_pace", label: "I don't know if I'm on pace" },
+  { value: "other", label: "Something else" }
+];
+
+const EMPLOYER_OPTIONS: { value: Exclude<EmployerType, "">; label: string }[] = [
+  { value: "buy_side", label: "Buy-side" },
+  { value: "sell_side", label: "Sell-side" },
+  { value: "corporate_finance", label: "Corporate finance" },
+  { value: "student", label: "Student / between jobs" },
+  { value: "other", label: "Other" }
+];
+
+const ATTRIBUTION_OPTIONS = [
+  "LinkedIn",
+  "Reddit",
+  "Friend / word of mouth",
+  "Search",
+  "Other"
+] as const;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -43,6 +85,13 @@ export default function OnboardingPage() {
   const [hoursPerWeek, setHoursPerWeek] = useState(8);
   const [minSession, setMinSession] = useState("10");
   const [examWindow, setExamWindow] = useState("May 2026");
+
+  // CRM fields — all optional (step 7: "About you")
+  const [lastName, setLastName] = useState("");
+  const [credentialType, setCredentialType] = useState<CredentialType>("");
+  const [primaryChallenge, setPrimaryChallenge] = useState<PrimaryChallenge>("");
+  const [employerType, setEmployerType] = useState<EmployerType>("");
+  const [attribution, setAttribution] = useState("");
 
   useEffect(() => {
     document.title = `${STEP_TITLES[step - 1]} · MentorForge`;
@@ -93,10 +142,10 @@ export default function OnboardingPage() {
 
     track(Events.onboardingComplete, {
       level,
-      credential: "CFA",
+      credential: credentialType || "CFA",
       hours_per_week_bucket: bucketHoursPerWeek(hoursPerWeek),
       days_to_exam_bucket: bucketDaysToExam(daysToExam),
-      employer_type: "skipped",
+      employer_type: employerType || "skipped",
     });
 
     fetch("/api/onboarding-preferences", {
@@ -107,6 +156,11 @@ export default function OnboardingPage() {
         examDate,
         weeklyHours: hoursPerWeek,
         weekStartDay: "1", // Monday default
+        lastName: lastName || undefined,
+        credentialType: credentialType || undefined,
+        primaryChallenge: primaryChallenge || undefined,
+        employerType: employerType || undefined,
+        attribution: attribution || undefined,
       }),
     }).catch(() => {});
   }
@@ -280,37 +334,103 @@ export default function OnboardingPage() {
 
           {/* ── Step 5: Notifications ── */}
           {step === 5 && (
-            <StepShell>
-              <StepTitle>Get nudged at the right time</StepTitle>
-              <StepSubtitle>
-                Calendar Coach sends study prompts when your calendar opens up.
-                You decide whether to start.
-              </StepSubtitle>
-
-              <div className="mb-6 rounded-lg bg-sky-50 p-5 text-left dark:bg-sky-950/40">
-                <p className="text-sm font-semibold text-sky-900 dark:text-sky-400">
-                  How it works
-                </p>
-                <p className="mt-1 text-[13px] leading-relaxed text-sky-800/80 dark:text-slate-400">
-                  Your 3pm meeting gets cancelled. Your phone buzzes: &ldquo;New 20-min
-                  window. Ethics &amp; Standards review?&rdquo; You tap Start.
-                  That&apos;s it.
-                </p>
-              </div>
-
-              <PrimaryButton onClick={() => goTo(6)}>
-                Enable notifications
-              </PrimaryButton>
-              <SecondaryButton onClick={() => goTo(6)}>Maybe later</SecondaryButton>
-              <SecondaryButton onClick={() => goTo(4)}>Back</SecondaryButton>
-            </StepShell>
+            <NotificationsStep
+              onNext={() => goTo(6)}
+              onBack={() => goTo(4)}
+            />
           )}
 
           {/* ── Step 6: Install App (browser-adaptive) ── */}
           {step === 6 && <InstallStep onNext={() => goTo(7)} onBack={() => goTo(5)} />}
 
-          {/* ── Step 7: All Set ── */}
+          {/* ── Step 7: About you (all optional) ── */}
           {step === 7 && (
+            <StepShell>
+              <StepTitle>Help us make MentorForge better for you.</StepTitle>
+              <StepSubtitle>
+                All optional. Skip anything you&apos;d rather not share — you can always update
+                this later in your account.
+              </StepSubtitle>
+
+              <Field label="Last name">
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  maxLength={50}
+                  autoComplete="family-name"
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+              </Field>
+
+              <Field label="Credential you're preparing for">
+                <select
+                  value={credentialType}
+                  onChange={(e) => setCredentialType(e.target.value as CredentialType)}
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                >
+                  <option value="">Prefer not to say</option>
+                  <option value="CFA">CFA</option>
+                  <option value="CFP_waitlist">CFP (coming soon — add me to the waitlist)</option>
+                  <option value="other">Other</option>
+                </select>
+              </Field>
+
+              <Field label="Biggest study challenge">
+                <select
+                  value={primaryChallenge}
+                  onChange={(e) =>
+                    setPrimaryChallenge(e.target.value as PrimaryChallenge)
+                  }
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                >
+                  <option value="">Prefer not to say</option>
+                  {PRIMARY_CHALLENGE_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="What best describes your work?">
+                <select
+                  value={employerType}
+                  onChange={(e) => setEmployerType(e.target.value as EmployerType)}
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                >
+                  <option value="">Prefer not to say</option>
+                  {EMPLOYER_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="How did you hear about us?">
+                <select
+                  value={attribution}
+                  onChange={(e) => setAttribution(e.target.value)}
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                >
+                  <option value="">Prefer not to say</option>
+                  {ATTRIBUTION_OPTIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <PrimaryButton onClick={() => goTo(8)}>Continue</PrimaryButton>
+              <SecondaryButton onClick={() => goTo(8)}>Skip for now</SecondaryButton>
+              <SecondaryButton onClick={() => goTo(6)}>Back</SecondaryButton>
+            </StepShell>
+          )}
+
+          {/* ── Step 8: All Set ── */}
+          {step === 8 && (
             <StepShell>
               <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-500">
                 <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -436,6 +556,98 @@ function PrivacyItem({ children, muted }: { children: React.ReactNode; muted?: b
         {children}
       </span>
     </div>
+  );
+}
+
+/* ─── Notifications Step (real push subscribe) ─── */
+
+function NotificationsStep({
+  onNext,
+  onBack
+}: {
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  const [state, setState] = useState<
+    "idle" | "requesting" | "enabled" | "denied" | "unsupported" | "error"
+  >("idle");
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function enable() {
+    setState("requesting");
+    setMessage(null);
+    const outcome = await subscribeToPush();
+    if (outcome.ok) {
+      setState("enabled");
+      return;
+    }
+    if (outcome.reason === "unsupported") {
+      setState("unsupported");
+      setMessage(
+        "This browser doesn't support push notifications. You'll still get the weekly digest email."
+      );
+      return;
+    }
+    if (outcome.reason === "denied") {
+      setState("denied");
+      setMessage(
+        "Notifications were blocked. Enable them later from your browser site settings — or skip for now."
+      );
+      return;
+    }
+    if (outcome.reason === "not_configured") {
+      setState("error");
+      setMessage(
+        "Push isn't configured on this build. You can enable notifications after the site updates."
+      );
+      return;
+    }
+    setState("error");
+    setMessage(outcome.message ?? "Something went wrong enabling notifications.");
+  }
+
+  return (
+    <StepShell>
+      <StepTitle>Get nudged at the right time</StepTitle>
+      <StepSubtitle>
+        Calendar Coach sends study prompts when your calendar opens up.
+        You decide whether to start.
+      </StepSubtitle>
+
+      <div className="mb-6 rounded-lg bg-sky-50 p-5 text-left dark:bg-sky-950/40">
+        <p className="text-sm font-semibold text-sky-900 dark:text-sky-400">
+          How it works
+        </p>
+        <p className="mt-1 text-[13px] leading-relaxed text-sky-800/80 dark:text-slate-400">
+          Your 3pm meeting gets cancelled. Your phone buzzes: &ldquo;New 20-min
+          window. Ethics &amp; Standards review?&rdquo; You tap Start.
+          That&apos;s it.
+        </p>
+      </div>
+
+      {state === "enabled" ? (
+        <div className="mb-5 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-left text-[13px] leading-relaxed text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
+          Notifications enabled. You&apos;re set.
+        </div>
+      ) : null}
+      {message ? (
+        <div className="mb-5 rounded-md border border-slate-200 bg-white px-4 py-3 text-left text-[13px] leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+          {message}
+        </div>
+      ) : null}
+
+      {state === "enabled" ? (
+        <PrimaryButton onClick={onNext}>Continue</PrimaryButton>
+      ) : (
+        <PrimaryButton onClick={() => void enable()}>
+          {state === "requesting" ? "Requesting permission…" : "Enable notifications"}
+        </PrimaryButton>
+      )}
+      <SecondaryButton onClick={onNext}>
+        {state === "enabled" ? "Skip" : "Maybe later"}
+      </SecondaryButton>
+      <SecondaryButton onClick={onBack}>Back</SecondaryButton>
+    </StepShell>
   );
 }
 

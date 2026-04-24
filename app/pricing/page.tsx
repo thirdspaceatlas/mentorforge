@@ -1,26 +1,24 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { AllAccessCheckoutButton } from "@/components/pricing/AllAccessCheckoutButton";
-import { LevelPassCheckoutSection } from "@/components/pricing/LevelPassCheckoutSection";
 import { MarketingBottomCTA } from "@/components/marketing/MarketingBottomCTA";
 
-const priceLevelPass = process.env.NEXT_PUBLIC_STRIPE_PRICE_LEVEL_PASS ?? "";
 const priceAllAccess = process.env.NEXT_PUBLIC_STRIPE_PRICE_ALL_ACCESS ?? "";
 
 export const metadata: Metadata = {
   title: "Pricing — MentorForge",
   description:
-    "Free, Level Pass, and All-Access plans for CFA study planning. Level Pass is a one-time purchase; All Access is billed yearly."
+    "Free forever for CFA Level I with calendar-aware scheduling. All Access unlocks unlimited usage and all three levels for $99 a year."
 };
 
 const pricingFaqs = [
   {
-    q: "Do I need to buy again if I move to the next level?",
-    a: "Yes — unless you have All Access, which covers Levels I–III for as long as your subscription is active. With Level Pass, you choose one level when you buy."
+    q: "What's the catch with free?",
+    a: "No catch, no trial timer. Free stays free — you get the full Level I plan, one calendar connection, a few Calendar Coach nudges per week, and basic progress tracking. All Access removes the caps and unlocks Levels II and III."
   },
   {
     q: "What if I fail and need to retake?",
-    a: "Repurchase Level Pass at 50% off using the retake promotion code at checkout (create a 50% coupon in Stripe and share the code here — e.g. CFA50RETAKE). All Access is yearly; cancel or renew in the Stripe Billing Portal as needed."
+    a: "All Access is a yearly subscription — if you're still studying next year, just renew. You keep everything you've built and can keep iterating on your plan through the next exam window."
   },
   {
     q: "Is this a tutoring or prep course?",
@@ -28,7 +26,7 @@ const pricingFaqs = [
   }
 ] as const;
 
-const trustAnchors: { text: string; icon: "benchmark" | "feedback" | "independent" | "retake" }[] = [
+const trustAnchors: { text: string; icon: "benchmark" | "feedback" | "independent" | "cancel" }[] = [
   {
     icon: "benchmark",
     text: "Built around the CFA Institute’s widely cited 300+ study-hour benchmark — grounded in your calendar, not guesswork."
@@ -42,8 +40,8 @@ const trustAnchors: { text: string; icon: "benchmark" | "feedback" | "independen
     text: "Independent study-planning software. Not affiliated with CFA Institute."
   },
   {
-    icon: "retake",
-    text: "50% retake discount on Level Pass repurchase — use your Stripe promotion code at checkout."
+    icon: "cancel",
+    text: "Cancel All Access anytime in the Stripe Billing Portal. Your plan and history stay with you."
   }
 ];
 
@@ -70,7 +68,7 @@ function TrustIcon({ type }: { type: (typeof trustAnchors)[number]["icon"] }) {
           <path d="M12 3l8 4v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z" strokeLinejoin="round" />
         </svg>
       );
-    case "retake":
+    case "cancel":
       return (
         <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
           <path d="M4 12a8 8 0 0113.657-5.657M20 12a8 8 0 01-13.657 5.657" strokeLinecap="round" />
@@ -111,12 +109,12 @@ export default function PricingPage() {
       </header>
 
       <p className="mx-auto max-w-2xl text-center text-[0.95rem] font-medium leading-snug text-slate-800 dark:text-slate-200">
-        Free forever for Level I basics. Level Pass is a one-time purchase; All Access is billed yearly.
+        Free forever. Upgrade to All Access when you want unlimited — or never. No trial, no countdown.
       </p>
 
       <section
         aria-labelledby="pricing-tiers-heading"
-        className="mx-auto max-w-6xl rounded-2xl border border-slate-200/60 bg-white/50 px-4 py-8 dark:border-transparent dark:bg-transparent sm:px-6 sm:py-10"
+        className="mx-auto max-w-5xl rounded-2xl border border-slate-200/60 bg-white/50 px-4 py-8 dark:border-transparent dark:bg-transparent sm:px-6 sm:py-10"
       >
         <div className="text-center">
           <h2
@@ -127,15 +125,17 @@ export default function PricingPage() {
           </h2>
         </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-5">
+        <div className="mt-10 grid gap-6 md:grid-cols-2 md:items-stretch md:gap-5">
           <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-[#fafaf9] p-7 shadow-sm dark:border-slate-700/80 dark:bg-slate-950 sm:p-8">
             <div>
               <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                Free <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
-                <span className="tabular-nums">$0</span>
+                Free
               </p>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                Level I only — plan generation and core scheduling.
+              <p className="mt-3 font-display text-3xl font-medium tabular-nums tracking-tight text-slate-900 dark:text-slate-50">
+                $0
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                Free forever. No card required.
               </p>
             </div>
             <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-500">
@@ -143,9 +143,13 @@ export default function PricingPage() {
             </p>
             <FeatureList
               items={[
-                "Level I plan generation",
-                "Week-by-week topic sequencing",
-                "Exam-weight-based scheduling"
+                "Full Level I plan generation",
+                "1 calendar connection",
+                "Gap finder — open windows in your schedule",
+                "3 Calendar Coach nudges per week",
+                "Basic progress tracking",
+                "1 smart rebalance per week",
+                "Weekly digest email"
               ]}
             />
             <div className="mt-auto pt-8">
@@ -158,39 +162,6 @@ export default function PricingPage() {
             </div>
           </article>
 
-          <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-white p-7 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 sm:p-8">
-            <div>
-              <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                Level Pass <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
-                <span className="tabular-nums">$49</span>{" "}
-                <span className="text-sm font-normal text-slate-500 dark:text-slate-400">one-time</span>
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                Full features for one CFA level. Access ends two weeks after your exam window month ends.
-              </p>
-            </div>
-            <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-500">
-              What&apos;s included
-            </p>
-            <FeatureList
-              items={[
-                "Full plan generation for the level you choose",
-                "Smart rebalancing, progress tracking, ethics spacing",
-                "Calendar + progress views",
-                "Timed access through your exam window (see checkout)"
-              ]}
-            />
-            <LevelPassCheckoutSection
-              priceId={priceLevelPass}
-              buttonClassName="flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
-              footnote={
-                <p className="mt-4 text-center text-sm font-medium leading-snug text-slate-700 dark:text-slate-300">
-                  Less than the cost of one Schweser mock exam.
-                </p>
-              }
-            />
-          </article>
-
           <article className="flex min-h-full flex-col rounded-2xl border-2 border-accent bg-white p-7 shadow-lg shadow-slate-900/10 ring-1 ring-accent/20 dark:border-accent dark:bg-[#141c28] dark:shadow-[0_20px_40px_-12px_rgb(0_0_0/0.5)] dark:ring-accent/30 sm:p-8">
             <div className="mb-5 text-center">
               <span className="inline-block rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-slate-800 dark:border-accent/40 dark:bg-accent/15 dark:text-emerald-100">
@@ -199,12 +170,14 @@ export default function PricingPage() {
             </div>
             <div>
               <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                All Access <span className="font-normal text-slate-500 dark:text-slate-400">—</span>{" "}
-                <span className="tabular-nums">$99</span>
-                <span className="text-sm font-normal text-slate-500 dark:text-slate-400"> /year</span>
+                All Access
               </p>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                All three levels, full features. Renews yearly until you cancel.
+              <p className="mt-3 flex items-baseline gap-1.5 font-display text-3xl font-medium tabular-nums tracking-tight text-slate-900 dark:text-slate-50">
+                $8.25
+                <span className="text-base font-normal text-slate-500 dark:text-slate-400">/month</span>
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                Billed yearly at $99. All three levels, unlimited everything.
               </p>
             </div>
             <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
@@ -212,9 +185,13 @@ export default function PricingPage() {
             </p>
             <FeatureList
               items={[
-                "Everything in Level Pass",
+                "Everything in Free, unlimited",
+                "Unlimited calendar connections",
+                "Unlimited Calendar Coach nudges",
+                "Unlimited smart rebalancing",
+                "Full session history, heatmap, and forecast",
                 "Levels I, II & III unlocked",
-                "Yearly access — renews automatically (manage in Stripe)"
+                "Priority support + direct founder access"
               ]}
             />
             <div className="mt-auto pt-8">
@@ -222,8 +199,11 @@ export default function PricingPage() {
                 priceId={priceAllAccess}
                 className="flex w-full min-h-[2.75rem] items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:ring-offset-[#141c28]"
               >
-                Buy All-Access — Best Value
+                Get All Access — $99/year
               </AllAccessCheckoutButton>
+              <p className="mt-4 text-center text-sm font-medium leading-snug text-slate-700 dark:text-slate-300">
+                Less than the cost of one Schweser mock exam.
+              </p>
             </div>
           </article>
         </div>

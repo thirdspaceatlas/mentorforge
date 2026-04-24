@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<"azure" | "google" | null>(null);
+  const [oauthLoading, setOauthLoading] = useState<"google" | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +34,7 @@ export default function LoginPage() {
     window.location.href = callbackUrl;
   };
 
-  const handleOAuth = async (provider: "azure" | "google") => {
+  const handleOAuth = async (provider: "google") => {
     setError(null);
     setOauthLoading(provider);
     const supabase = createClient();
@@ -73,19 +73,11 @@ export default function LoginPage() {
       <div className="space-y-3">
         <button
           type="button"
-          onClick={() => handleOAuth("azure")}
+          onClick={() => handleOAuth("google")}
           disabled={loading || oauthLoading != null}
           className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
         >
-          {oauthLoading === "azure" ? "Connecting\u2026" : "Continue with Microsoft"}
-        </button>
-        <button
-          type="button"
-          onClick={() => handleOAuth("google")}
-          disabled={loading || oauthLoading != null}
-          className="min-h-[2.75rem] w-full touch-manipulation rounded-full border border-slate-200 bg-white py-3 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50 disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-900"
-        >
-          {oauthLoading === "google" ? "Connecting\u2026" : "Continue with Google"}
+          {oauthLoading === "google" ? "Connecting…" : "Continue with Google"}
         </button>
       </div>
 
@@ -148,7 +140,7 @@ export default function LoginPage() {
           disabled={loading}
           className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
         >
-          {loading ? "Signing in\u2026" : "Sign in"}
+          {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
 

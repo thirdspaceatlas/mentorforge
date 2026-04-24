@@ -2,6 +2,19 @@ import { prisma } from "@/lib/prisma";
 
 export type PlanKind = "free" | "level_pass" | "all_access";
 
+// Phase 1b — usage-metering surface. The lib/usage.ts module holds the counting / cap
+// logic; re-exporting here keeps one import site for server-side access checks.
+export {
+  canUseFeature,
+  countEnabledCalendars,
+  countUsageLast7Days,
+  getCapsForPlan,
+  getUsageSnapshot,
+  nextWeeklyReset,
+  recordUsage
+} from "@/lib/usage";
+export type { CapAction, CapCheck, PlanCaps, UsageSnapshot } from "@/lib/usage";
+
 export type UserPlan = {
   plan: PlanKind;
   accessExpiresAt: Date | null;
@@ -67,16 +80,14 @@ export async function getUserPlan(userId: string): Promise<UserPlan> {
 export async function hasAccess(userId: string, feature: GatedFeature): Promise<boolean> {
   const u = await getUserPlan(userId);
 
-  const premium =
-    u.plan === "all_access" ||
-    (u.plan === "level_pass" && u.accessExpiresAt != null && u.accessExpiresAt > new Date());
-
   switch (feature) {
+    // Phase 1a (2026-04-24): unified product — these features are available to all plans.
+    // Phase 1b will reintroduce gating as weekly usage caps rather than feature locks.
     case "smart_rebalancing":
     case "progress_tracking":
     case "ethics_spacing":
     case "calendar_view":
-      return premium;
+      return true;
     case "level_II":
     case "level_III":
       return u.plan === "all_access";
@@ -105,18 +116,16 @@ export function hasFeatureForPlan(plan: UserPlanSerialized, feature: GatedFeatur
   const now = new Date();
   const exp = plan.accessExpiresAt ? new Date(plan.accessExpiresAt) : null;
 
-  const levelPassActive = plan.plan === "level_pass" && exp != null && exp > now;
   const allAccessActive =
     plan.plan === "all_access" && (exp == null || exp > now);
 
-  const premium = levelPassActive || allAccessActive;
-
   switch (feature) {
+    // Phase 1a (2026-04-24): unified product — available to all plans (caps come in Phase 1b).
     case "smart_rebalancing":
     case "progress_tracking":
     case "ethics_spacing":
     case "calendar_view":
-      return premium;
+      return true;
     case "level_II":
     case "level_III":
       return allAccessActive;

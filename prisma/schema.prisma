@@ -12,6 +12,19 @@ generator client {
 model Profile {
   id        String   @id @db.Uuid
   email     String?
+
+  /// Required at signup from 2026-04-24 onward; nullable for 2 pre-existing users pending backfill (see design doc Open Question #11).
+  firstName        String?
+  lastName         String?
+  /// "CFA" | "CFP_waitlist" | "other" — captured in onboarding.
+  credentialType   String?
+  /// Free-text/enum-ish: "cant_find_time" | "lose_focus" | "fall_behind" | "dont_know_pace" | "other".
+  primaryChallenge String?
+  /// "buy_side" | "sell_side" | "corporate_finance" | "student" | "other".
+  employerType     String?
+  /// How they heard about us: "linkedin" | "reddit" | "friend" | "search" | "other".
+  attribution      String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
@@ -29,6 +42,13 @@ model Profile {
   studySessions       StudySession[]
   sessionPatterns     SessionPattern[]
   snoozedWindows      SnoozedWindow[]
+
+  // Phase 1b — usage metering + survey responses
+  usageEvents         UsageEvent[]
+  surveyResponses    UserSurveyResponse[]
+
+  // Web push subscriptions (one user can have multiple devices).
+  pushSubscriptions   PushSubscription[]
 
   @@map("profiles")
 }
@@ -281,6 +301,61 @@ model SessionPattern {
   @@unique([userId, dayOfWeek, hourSlot])
   @@index([userId])
   @@map("session_patterns")
+}
+
+// ─── Phase 1b: Usage Metering + Research ───
+
+/// Records a capped action (rebalance, nudge_sent, etc.) for weekly usage counting.
+/// Phase 1b freemium caps — count-in-rolling-window, not a per-week counter row.
+model UsageEvent {
+  id        String   @id @default(cuid())
+  userId    String   @db.Uuid
+  /// Enum-ish: "rebalance" | "nudge_sent" | other capped actions.
+  action    String
+  createdAt DateTime @default(now())
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, action, createdAt])
+  @@map("usage_events")
+}
+
+/// Web push subscription (PushManager.subscribe output). One row per device per user.
+/// `endpoint` is unique per subscription; re-subscribes on the same device upsert by endpoint.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String   @db.Uuid
+  /// Provider push URL (FCM / Apple / Mozilla). Used as the natural unique key.
+  endpoint  String   @unique
+  /// base64url ECDH p256 public key from the browser subscription.
+  p256dh    String
+  /// base64url auth secret from the browser subscription.
+  auth      String
+  /// Display-only: "chrome" | "firefox" | "safari" | "edge" | "other".
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+/// One row per survey answer. Questions are rotated in-digest / in-app; answers are analyzed monthly.
+model UserSurveyResponse {
+  id         String   @id @default(cuid())
+  userId     String   @db.Uuid
+  /// Short identifier for the question (e.g. "week2_blocker", "nps_v1", "cap_hit_upgrade_reason").
+  question   String
+  /// The literal answer text (or chosen option key).
+  answer     String
+  answeredAt DateTime @default(now())
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, question])
+  @@map("user_survey_responses")
 }
 
 /// Tracks snoozed notification windows for re-notification.

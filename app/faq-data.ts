@@ -64,13 +64,14 @@ export const fullFaqs: FaqItem[] = [
 /** Homepage — concise set (full list remains on learn-more) */
 export const homepageFaqs: FaqItem[] = [
   {
-    question: "Do I need to buy again if I move to the next level?",
+    question: "What's the catch with free?",
     answer:
-      "Yes — unless you have All-Access. We recommend All-Access if you know you're going all the way."
+      "No catch. Free stays free — full Level I plan, one calendar connection, a few Calendar Coach nudges per week, and basic progress tracking. All Access removes the caps and unlocks Levels II and III."
   },
   {
     question: "What if I fail and need to retake?",
-    answer: "Reach out. We offer a 50% retake discount — no questions asked."
+    answer:
+      "All Access is a yearly subscription. If you're studying again next year, just renew — you keep your plan and everything you've built."
   },
   {
     question: "Is this a tutoring or prep course?",
