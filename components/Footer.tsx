@@ -2,25 +2,54 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
-const marketingLinks = [
+type FooterLink = { href: string; label: string };
+
+const marketingBase: FooterLink[] = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/pricing", label: "Pricing" },
   { href: "/learn-more", label: "Learn More" },
-  { href: "/privacy", label: "Privacy" },
-  { href: "/login", label: "Login" }
-] as const;
+  { href: "/privacy", label: "Privacy" }
+];
 
-const appLinks = [
+const marketingSignedOutTail: FooterLink[] = [{ href: "/login", label: "Login" }];
+
+const marketingSignedInTail: FooterLink[] = [
+  { href: "/app", label: "Open app" },
+  { href: "/app/account", label: "Account" }
+];
+
+const appLinks: FooterLink[] = [
   { href: "/app", label: "Study Plan" },
   { href: "/app#calendar-coach", label: "Calendar Coach" }
-] as const;
+];
 
 export function Footer() {
   const pathname = usePathname();
   const isApp = pathname?.startsWith("/app");
-  const footerLinks = isApp ? appLinks : marketingLinks;
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    let active = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (active) setSignedIn(!!data.user);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active) setSignedIn(!!session?.user);
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  const footerLinks: FooterLink[] = isApp
+    ? appLinks
+    : [...marketingBase, ...(signedIn ? marketingSignedInTail : marketingSignedOutTail)];
 
   return (
     <footer className="mt-auto border-t border-slate-200/80 bg-[#fafaf9]/50 dark:border-slate-800/80 dark:bg-slate-950/50">

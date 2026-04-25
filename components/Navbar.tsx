@@ -30,7 +30,30 @@ export function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const isApp = pathname?.startsWith("/app");
+
+  // Track auth state on marketing pages so the navbar can swap "Sign in / Get
+  // started" for "Open app" when the user already has a session. Without this,
+  // signed-in users land on /pricing or /about and see CTAs that take them to
+  // /login, which is confusing.
+  useEffect(() => {
+    const supabase = createClient();
+    let active = true;
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (active) setSignedIn(!!data.user);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active) setSignedIn(!!session?.user);
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -117,18 +140,37 @@ export function Navbar() {
                 >
                   Pricing
                 </Link>
-                <Link
-                  href="/register"
-                  className="inline-flex shrink-0 items-center justify-center rounded-full bg-slate-900 px-3.5 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
-                >
-                  Get started free
-                </Link>
-                <Link
-                  href="/login"
-                  className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-                >
-                  Log in
-                </Link>
+                {signedIn ? (
+                  <>
+                    <Link
+                      href="/app/account"
+                      className="text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+                    >
+                      Account
+                    </Link>
+                    <Link
+                      href="/app"
+                      className="inline-flex shrink-0 items-center justify-center rounded-full bg-slate-900 px-3.5 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
+                    >
+                      Open app
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/register"
+                      className="inline-flex shrink-0 items-center justify-center rounded-full bg-slate-900 px-3.5 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
+                    >
+                      Get started free
+                    </Link>
+                    <Link
+                      href="/login"
+                      className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                    >
+                      Log in
+                    </Link>
+                  </>
+                )}
               </>
             )}
           </nav>
@@ -191,20 +233,37 @@ export function Navbar() {
                 <Link href="/pricing" className={mobileNavLinkClass} onClick={closeMobile}>
                   Pricing
                 </Link>
-                <Link
-                  href="/register"
-                  className="mt-1 inline-flex min-h-[2.75rem] items-center justify-center rounded-full bg-slate-900 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent dark:bg-white dark:text-slate-950 dark:hover:bg-accent"
-                  onClick={closeMobile}
-                >
-                  Get started free
-                </Link>
-                <Link
-                  href="/login"
-                  className="inline-flex min-h-[2.75rem] items-center justify-center text-sm font-medium text-slate-600 dark:text-slate-400"
-                  onClick={closeMobile}
-                >
-                  Log in
-                </Link>
+                {signedIn ? (
+                  <>
+                    <Link href="/app/account" className={mobileNavLinkClass} onClick={closeMobile}>
+                      Account
+                    </Link>
+                    <Link
+                      href="/app"
+                      className="mt-1 inline-flex min-h-[2.75rem] items-center justify-center rounded-full bg-slate-900 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent dark:bg-white dark:text-slate-950 dark:hover:bg-accent"
+                      onClick={closeMobile}
+                    >
+                      Open app
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/register"
+                      className="mt-1 inline-flex min-h-[2.75rem] items-center justify-center rounded-full bg-slate-900 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent dark:bg-white dark:text-slate-950 dark:hover:bg-accent"
+                      onClick={closeMobile}
+                    >
+                      Get started free
+                    </Link>
+                    <Link
+                      href="/login"
+                      className="inline-flex min-h-[2.75rem] items-center justify-center text-sm font-medium text-slate-600 dark:text-slate-400"
+                      onClick={closeMobile}
+                    >
+                      Log in
+                    </Link>
+                  </>
+                )}
               </>
             )}
           </nav>
