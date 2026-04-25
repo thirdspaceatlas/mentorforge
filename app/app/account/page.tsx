@@ -40,6 +40,11 @@ export default function AccountPage() {
   const [calendars, setCalendars] = useState<CalendarConnection[]>([]);
   const [studyPlan, setStudyPlan] = useState<StudyPlanInfo>(null);
   const [usage, setUsage] = useState<UsageSnapshot>(null);
+  const [firstName, setFirstName] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [savingName, setSavingName] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [authMessage, setAuthMessage] = useState<string | null>(null);
   const [linking, setLinking] = useState<"azure" | "google" | null>(null);
@@ -53,9 +58,11 @@ export default function AccountPage() {
       fetch("/api/calendar/connections").then((r) => r.ok ? r.json() : { connections: [] }),
       fetch("/api/study-plan").then((r) => r.ok ? r.json() : { plan: null }),
       fetch("/api/usage").then((r) => (r.ok ? r.json() : null)),
+      fetch("/api/profile/first-name").then((r) => (r.ok ? r.json() : { firstName: null })),
     ])
-      .then(([calData, planData, usageData]) => {
+      .then(([calData, planData, usageData, nameData]) => {
         setCalendars(calData.connections || []);
+        setFirstName(nameData?.firstName ?? null);
         if (planData.plan) {
           setStudyPlan({
             examLevel: planData.plan.examLevel,
@@ -103,6 +110,46 @@ export default function AccountPage() {
   const identities = (user?.identities ?? []).map((i) => i.provider);
   const hasMicrosoft = identities.includes("azure");
   const hasGoogle = identities.includes("google");
+
+  const startEditName = () => {
+    setNameDraft(firstName ?? "");
+    setNameError(null);
+    setEditingName(true);
+  };
+
+  const cancelEditName = () => {
+    setEditingName(false);
+    setNameDraft("");
+    setNameError(null);
+  };
+
+  const saveName = async () => {
+    const trimmed = nameDraft.trim();
+    if (trimmed.length === 0) {
+      setNameError("Please enter a name.");
+      return;
+    }
+    setSavingName(true);
+    setNameError(null);
+    try {
+      const res = await fetch("/api/profile/first-name", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName: trimmed })
+      });
+      if (!res.ok) {
+        setNameError("Couldn't save — try again in a moment.");
+        setSavingName(false);
+        return;
+      }
+      setFirstName(trimmed);
+      setEditingName(false);
+      setSavingName(false);
+    } catch {
+      setNameError("Couldn't reach the server. Check your connection.");
+      setSavingName(false);
+    }
+  };
 
   const disconnectCalendar = async (id: string) => {
     await fetch("/api/calendar/connections", {
@@ -200,6 +247,61 @@ export default function AccountPage() {
       <section className="rounded-xl border border-slate-200/90 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 sm:p-6">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Profile</h2>
         <div className="mt-4 space-y-3">
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <span className="text-slate-500 dark:text-slate-400">Name</span>
+            {editingName ? (
+              <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+                <input
+                  type="text"
+                  value={nameDraft}
+                  onChange={(e) => setNameDraft(e.target.value)}
+                  maxLength={50}
+                  autoComplete="given-name"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !savingName) {
+                      e.preventDefault();
+                      void saveName();
+                    } else if (e.key === "Escape") {
+                      cancelEditName();
+                    }
+                  }}
+                  className="min-h-[2rem] w-40 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-sm text-slate-900 outline-none focus:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+                <button
+                  type="button"
+                  onClick={() => void saveName()}
+                  disabled={savingName || nameDraft.trim().length === 0}
+                  className="rounded-md bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent-hover disabled:opacity-50"
+                >
+                  {savingName ? "Saving…" : "Save"}
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelEditName}
+                  className="text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-slate-900 dark:text-slate-100">
+                  {firstName ?? "—"}
+                </span>
+                <button
+                  type="button"
+                  onClick={startEditName}
+                  className="text-xs font-medium text-accent transition-colors hover:text-accent-hover"
+                >
+                  {firstName ? "Edit" : "Add"}
+                </button>
+              </div>
+            )}
+          </div>
+          {nameError ? (
+            <p className="text-xs text-rose-600 dark:text-rose-400">{nameError}</p>
+          ) : null}
           <div className="flex items-center justify-between text-sm">
             <span className="text-slate-500 dark:text-slate-400">Email</span>
             <span className="font-medium text-slate-900 dark:text-slate-100">{user?.email}</span>
