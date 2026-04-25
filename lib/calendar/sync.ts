@@ -13,6 +13,24 @@ async function getPreferredMaxSessionMin(userId: string): Promise<number> {
   return Math.min(180, Math.max(5, n));
 }
 
+const DEFAULT_DAY_START = 7;
+const DEFAULT_DAY_END = 22;
+
+async function getWorkingHours(
+  userId: string
+): Promise<{ dayStartHour: number; dayEndHour: number }> {
+  const row = await prisma.savedStudyPlan.findUnique({
+    where: { userId },
+    select: { dayStartHour: true, dayEndHour: true },
+  });
+  const startRaw = row?.dayStartHour ?? DEFAULT_DAY_START;
+  const endRaw = row?.dayEndHour ?? DEFAULT_DAY_END;
+  // Clamp to sane bounds and ensure end > start so the gap finder never inverts.
+  const dayStartHour = Math.min(23, Math.max(0, startRaw));
+  const dayEndHour = Math.min(24, Math.max(dayStartHour + 1, endRaw));
+  return { dayStartHour, dayEndHour };
+}
+
 /**
  * Sync a single calendar connection:
  * 1. Refresh token if needed
@@ -102,11 +120,16 @@ export async function syncConnection(connectionId: string): Promise<{
  * Regenerate study windows for a user from all their calendar events.
  * This is called after syncing any single connection.
  *
- * Strategy:
+ * Strategy (idempotent — safe to re-run on every sync without bloating the DB):
  * 1. Gather all busy periods from all enabled connections (next 7 days)
- * 2. Run gap finder
- * 3. Compare with existing windows
- * 4. Create new windows, mark expired ones
+ * 2. Run gap finder against the current calendar state
+ * 3. Diff existing future windows against current gaps:
+ *    - Window matches a current gap → keep (preserves `notified`, `topicName`, sessions)
+ *    - Window doesn't match AND has no session → stale, delete
+ *    - Window doesn't match AND has a session → keep (study history)
+ *    - Current gap with no matching window → create new
+ *
+ * Past windows (startTime < now) are never touched — they're history.
  */
 async function regenerateWindows(userId: string): Promise<number> {
   const now = new Date();
@@ -127,39 +150,70 @@ async function regenerateWindows(userId: string): Promise<number> {
     .filter((e) => e.busyStatus !== "free")
     .map((e) => ({ start: e.startTime, end: e.endTime }));
 
-  // TODO: Load user preferences for dayStartHour, dayEndHour
   const maxSessionMin = await getPreferredMaxSessionMin(userId);
+  const { dayStartHour, dayEndHour } = await getWorkingHours(userId);
 
   const gaps = findGaps(now, sevenDaysOut, busyPeriods, {
     minSessionMin: 5,
     maxSessionMin,
-    dayStartHour: 7,
-    dayEndHour: 22,
+    dayStartHour,
+    dayEndHour,
   });
 
-  // Get existing windows to avoid duplicates
+  // Existing future windows + whether each has a started session attached.
   const existingWindows = await prisma.studyWindow.findMany({
     where: {
       userId,
       startTime: { gte: now },
       endTime: { lte: sevenDaysOut },
     },
-    select: { id: true, startTime: true, endTime: true },
+    select: {
+      id: true,
+      startTime: true,
+      endTime: true,
+      sessions: { select: { id: true }, take: 1 },
+    },
   });
 
-  // Simple dedup: a gap matches an existing window if start/end are within 1 minute
-  const isMatch = (gap: { start: Date; end: Date }, win: { startTime: Date; endTime: Date }) => {
+  // A gap matches an existing window if start/end are within 1 minute.
+  const isMatch = (
+    gap: { start: Date; end: Date },
+    win: { startTime: Date; endTime: Date }
+  ) => {
     const startDiff = Math.abs(gap.start.getTime() - win.startTime.getTime());
     const endDiff = Math.abs(gap.end.getTime() - win.endTime.getTime());
     return startDiff < 60000 && endDiff < 60000;
   };
 
-  let created = 0;
+  const matchedWindowIds = new Set<string>();
+  const newGaps: typeof gaps = [];
 
   for (const gap of gaps) {
-    const alreadyExists = existingWindows.some((w) => isMatch(gap, w));
-    if (!alreadyExists) {
-      await prisma.studyWindow.create({
+    const match = existingWindows.find((w) => isMatch(gap, w));
+    if (match) {
+      matchedWindowIds.add(match.id);
+    } else {
+      newGaps.push(gap);
+    }
+  }
+
+  // Stale: future window no longer matches a real gap and was never started.
+  const staleWindowIds = existingWindows
+    .filter(
+      (w) => !matchedWindowIds.has(w.id) && w.sessions.length === 0
+    )
+    .map((w) => w.id);
+
+  // Single transaction: delete stale, then create new gaps. Atomic so a partial
+  // failure can't leave the DB worse off than before.
+  await prisma.$transaction(async (tx) => {
+    if (staleWindowIds.length > 0) {
+      await tx.studyWindow.deleteMany({
+        where: { id: { in: staleWindowIds } },
+      });
+    }
+    for (const gap of newGaps) {
+      await tx.studyWindow.create({
         data: {
           userId,
           startTime: gap.start,
@@ -168,11 +222,10 @@ async function regenerateWindows(userId: string): Promise<number> {
           // TODO: Run topic recommender to fill topicName + studyType
         },
       });
-      created++;
     }
-  }
+  });
 
-  return created;
+  return newGaps.length;
 }
 
 /**

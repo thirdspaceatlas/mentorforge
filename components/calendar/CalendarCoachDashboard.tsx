@@ -178,30 +178,8 @@ export function CalendarCoachDashboard({
         </div>
       )}
 
-      {/* Today's Timeline */}
-      <div className="mt-8">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          Today
-        </h3>
-        <div className="flex flex-col" role="list">
-          {todayWindows.map((w, i) => (
-            <div key={w.id} className="relative flex items-start gap-3 py-2.5" role="listitem">
-              {i < todayWindows.length - 1 && (
-                <div className="absolute left-[11px] top-9 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700" />
-              )}
-              <TimelineDot status={w.status} />
-              <div className="min-w-0 flex-1">
-                <p className={`text-sm font-medium ${w.status === "done" ? "text-slate-400 dark:text-slate-500" : "text-slate-900 dark:text-slate-100"}`}>
-                  {w.topicName || "Study session"}
-                </p>
-                <p className="text-xs text-slate-400 dark:text-slate-500">
-                  {new Date(w.startTime).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} &middot; {w.durationMin} min
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Today's Timeline — grouped: earlier (collapsed) / current / up next (3) / more (collapsed) */}
+      <TodayTimeline windows={todayWindows} />
 
       <Heatmap heatmap={heatmap} />
     </section>
@@ -600,6 +578,134 @@ function TypeBadge({ type }: { type: StudyType }) {
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${styles[type]}`}>
       {type.charAt(0).toUpperCase() + type.slice(1)}
     </span>
+  );
+}
+
+const UP_NEXT_VISIBLE = 3;
+
+function WindowRow({
+  window,
+  showConnector
+}: {
+  window: DashWindow;
+  showConnector: boolean;
+}) {
+  const isDone = window.status === "done";
+  return (
+    <div className="relative flex items-start gap-3 py-2.5" role="listitem">
+      {showConnector && (
+        <div className="absolute left-[11px] top-9 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700" />
+      )}
+      <TimelineDot status={window.status} />
+      <div className="min-w-0 flex-1">
+        <p
+          className={
+            "text-sm font-medium " +
+            (isDone
+              ? "text-slate-400 dark:text-slate-500"
+              : "text-slate-900 dark:text-slate-100")
+          }
+        >
+          {window.topicName || "Study session"}
+        </p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">
+          {new Date(window.startTime).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit"
+          })}{" "}
+          &middot; {window.durationMin} min
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Today's timeline, grouped to keep the dashboard scannable even when the day
+ * has many windows:
+ *   - "Earlier today (N)" — disclosure, collapsed by default. Holds all `done`.
+ *   - Current (if any) + first {UP_NEXT_VISIBLE} upcoming, always visible.
+ *   - "Show N more" — disclosure for the rest of upcoming.
+ */
+function TodayTimeline({ windows }: { windows: DashWindow[] }) {
+  const [showEarlier, setShowEarlier] = useState(false);
+  const [showLater, setShowLater] = useState(false);
+
+  const earlier = windows.filter((w) => w.status === "done");
+  const live = windows.filter((w) => w.status !== "done");
+  const visibleLive = live.slice(0, UP_NEXT_VISIBLE);
+  const hiddenLive = live.slice(UP_NEXT_VISIBLE);
+
+  if (windows.length === 0) return null;
+
+  return (
+    <div className="mt-8">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        Today
+      </h3>
+
+      {earlier.length > 0 ? (
+        <div className="mb-2">
+          <button
+            type="button"
+            onClick={() => setShowEarlier((v) => !v)}
+            aria-expanded={showEarlier}
+            className="flex items-center gap-2 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+          >
+            <span aria-hidden className={"transition-transform " + (showEarlier ? "rotate-90" : "")}>
+              ›
+            </span>
+            Earlier today ({earlier.length})
+          </button>
+          {showEarlier ? (
+            <div className="flex flex-col" role="list">
+              {earlier.map((w, i) => (
+                <WindowRow
+                  key={w.id}
+                  window={w}
+                  showConnector={i < earlier.length - 1 || live.length > 0}
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="flex flex-col" role="list">
+        {visibleLive.map((w, i) => (
+          <WindowRow
+            key={w.id}
+            window={w}
+            showConnector={
+              i < visibleLive.length - 1 || (showLater && hiddenLive.length > 0)
+            }
+          />
+        ))}
+        {showLater
+          ? hiddenLive.map((w, i) => (
+              <WindowRow
+                key={w.id}
+                window={w}
+                showConnector={i < hiddenLive.length - 1}
+              />
+            ))
+          : null}
+      </div>
+
+      {hiddenLive.length > 0 ? (
+        <button
+          type="button"
+          onClick={() => setShowLater((v) => !v)}
+          aria-expanded={showLater}
+          className="mt-2 flex items-center gap-2 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+        >
+          <span aria-hidden className={"transition-transform " + (showLater ? "rotate-90" : "")}>
+            ›
+          </span>
+          {showLater ? "Show fewer" : `Show ${hiddenLive.length} more window${hiddenLive.length === 1 ? "" : "s"}`}
+        </button>
+      ) : null}
+    </div>
   );
 }
 

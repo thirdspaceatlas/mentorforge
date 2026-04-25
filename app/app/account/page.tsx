@@ -21,6 +21,8 @@ type StudyPlanInfo = {
   weeklyHours: number;
   planStartDate: string;
   weekStartDay: string;
+  dayStartHour: number;
+  dayEndHour: number;
 } | null;
 
 type UsageSnapshot = {
@@ -61,6 +63,8 @@ export default function AccountPage() {
             weeklyHours: planData.plan.weeklyHours,
             planStartDate: planData.plan.planStartDate,
             weekStartDay: planData.plan.weekStartDay,
+            dayStartHour: planData.plan.dayStartHour ?? 7,
+            dayEndHour: planData.plan.dayEndHour ?? 22,
           });
         }
         if (usageData) setUsage(usageData);
@@ -107,6 +111,38 @@ export default function AccountPage() {
       body: JSON.stringify({ connectionId: id }),
     });
     setCalendars((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const saveWorkingHours = async (
+    nextStart: number,
+    nextEnd: number
+  ): Promise<{ ok: boolean; reason?: string }> => {
+    if (!studyPlan) return { ok: false, reason: "no_plan" };
+    if (nextEnd <= nextStart) return { ok: false, reason: "invalid_range" };
+
+    const res = await fetch("/api/study-plan");
+    if (!res.ok) return { ok: false, reason: "load_failed" };
+    const data = await res.json();
+    if (!data?.plan) return { ok: false, reason: "no_plan" };
+
+    const put = await fetch("/api/study-plan", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...data.plan,
+        dayStartHour: nextStart,
+        dayEndHour: nextEnd,
+      }),
+    });
+    if (!put.ok) return { ok: false, reason: "save_failed" };
+
+    setStudyPlan((prev) =>
+      prev ? { ...prev, dayStartHour: nextStart, dayEndHour: nextEnd } : prev
+    );
+    // Re-run sync so existing windows outside the new hours get pruned by the
+    // idempotent regenerateWindows() pass.
+    fetch("/api/calendar/sync", { method: "POST" }).catch(() => {});
+    return { ok: true };
   };
 
   const resetStudyPlan = async () => {
@@ -275,6 +311,15 @@ export default function AccountPage() {
         </div>
       </section>
 
+      {/* Study Hours */}
+      {studyPlan && (
+        <StudyHoursSection
+          dayStartHour={studyPlan.dayStartHour}
+          dayEndHour={studyPlan.dayEndHour}
+          onSave={saveWorkingHours}
+        />
+      )}
+
       {/* Weekly Usage */}
       {usage && <UsageSection usage={usage} />}
 
@@ -372,6 +417,148 @@ export default function AccountPage() {
         </a>
       </div>
     </div>
+  );
+}
+
+function formatHourLabel(hour: number): string {
+  // 0 → "12am", 7 → "7am", 12 → "12pm", 22 → "10pm", 24 → "12am (next day)"
+  if (hour === 0) return "12am";
+  if (hour === 12) return "12pm";
+  if (hour === 24) return "12am";
+  if (hour < 12) return `${hour}am`;
+  return `${hour - 12}pm`;
+}
+
+function StudyHoursSection({
+  dayStartHour,
+  dayEndHour,
+  onSave
+}: {
+  dayStartHour: number;
+  dayEndHour: number;
+  onSave: (start: number, end: number) => Promise<{ ok: boolean; reason?: string }>;
+}) {
+  const [start, setStart] = useState(dayStartHour);
+  const [end, setEnd] = useState(dayEndHour);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const dirty = start !== dayStartHour || end !== dayEndHour;
+  const invalid = end <= start;
+
+  async function handleSave() {
+    setMessage(null);
+    setSaving(true);
+    const result = await onSave(start, end);
+    setSaving(false);
+    if (result.ok) {
+      setMessage("Saved. Calendar Coach is re-syncing your windows.");
+    } else if (result.reason === "invalid_range") {
+      setMessage("End time has to be later than start time.");
+    } else if (result.reason === "no_plan") {
+      setMessage("Build your study plan first to set working hours.");
+    } else {
+      setMessage("Couldn't save. Try again in a moment.");
+    }
+  }
+
+  function handleReset() {
+    setStart(dayStartHour);
+    setEnd(dayEndHour);
+    setMessage(null);
+  }
+
+  return (
+    <section className="rounded-xl border border-slate-200/90 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 sm:p-6">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Study hours
+        </h2>
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          {formatHourLabel(dayStartHour)}–{formatHourLabel(dayEndHour)}
+        </span>
+      </div>
+
+      <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+        Calendar Coach will only suggest study windows inside this range. Set it to
+        match when you actually want to study — sleep, family time, and dinner stay
+        protected.
+      </p>
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Earliest start
+          </label>
+          <select
+            value={start}
+            onChange={(e) => setStart(Number(e.target.value))}
+            className="min-h-[2.75rem] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          >
+            {Array.from({ length: 24 }, (_, h) => (
+              <option key={h} value={h}>
+                {formatHourLabel(h)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Latest end
+          </label>
+          <select
+            value={end}
+            onChange={(e) => setEnd(Number(e.target.value))}
+            className="min-h-[2.75rem] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          >
+            {Array.from({ length: 24 }, (_, i) => {
+              const h = i + 1; // 1 through 24
+              return (
+                <option key={h} value={h}>
+                  {formatHourLabel(h)}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+      </div>
+
+      {message ? (
+        <p
+          className={
+            "mt-3 text-xs " +
+            (message.startsWith("Saved")
+              ? "text-emerald-700 dark:text-emerald-300"
+              : "text-rose-600 dark:text-rose-400")
+          }
+          role="status"
+          aria-live="polite"
+        >
+          {message}
+        </p>
+      ) : null}
+
+      <div className="mt-4 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => void handleSave()}
+          disabled={!dirty || invalid || saving}
+          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover disabled:opacity-50"
+        >
+          {saving ? "Saving…" : "Save changes"}
+        </button>
+        {dirty && !saving ? (
+          <button
+            type="button"
+            onClick={handleReset}
+            className="text-xs font-medium text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+          >
+            Reset
+          </button>
+        ) : null}
+      </div>
+    </section>
   );
 }
 

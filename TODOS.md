@@ -1,18 +1,15 @@
 # TODOS
 
-## Phase 1b follow-ups (deferred — need cron infra that doesn't exist yet)
+## Infrastructure constraints
 
-### Notification-send cron + 3-per-week nudge cap
-**What:** Build `/api/cron/send-notifications` that fires Calendar Coach web-push / email nudges for upcoming `StudyWindow`s. Before each send, call `canUseFeature(userId, plan, "nudge_sent")` and if allowed, call `recordUsage(userId, "nudge_sent")`. The cap logic and `UsageEvent` rows (action = `"nudge_sent"`) are already wired in `lib/usage.ts` — this item is just the sender itself.
-**Why:** Approach E caps free users at 3 nudges/week. The schema field (`StudyWindow.notified`) exists but no job actually sends.
-**Effort:** M (needs web-push key plumbing + Resend template + Vercel cron registration).
-**Priority:** P1 for full Phase 1b parity.
-
-### Weekly digest cron + first rotating survey question
-**What:** Build `/api/cron/weekly-digest` — Sunday job per profile. Bundle week's sessions + rotating question (`"week2_blocker"`, `"nps_v1"`, etc.). Persist answers via `UserSurveyResponse` (table already migrated). Include unsubscribe link.
-**Why:** Freemium thesis depends on the research loop. Unconverted users stick around if we keep asking them useful questions.
-**Effort:** M. Resend template + cron registration + signed reply-link route to record answers.
-**Priority:** P1 for full Phase 1b parity.
+### Vercel Hobby limits crons to once per day — nudges are not real-time
+**What:** `/api/cron/send-notifications` currently runs at `0 7 * * *` (daily at 07:00 UTC). Each run looks 60 minutes ahead for `StudyWindow` rows where `notified = false` and sends web-push nudges. Windows starting later in the day don't get nudged until the next run — by which time they're in the past and skipped (`notified` flipped to `true` without sending).
+**Why it's like this:** We originally shipped `*/5 * * * *` (every 5 min), which Vercel Hobby silently rejects. Invalid `vercel.json` blocked production deploys entirely until resolved (2026-04-25). Daily is the only schedule Hobby accepts for this path.
+**Functional consequence:** Nudges behave like a once-a-day "morning digest of today's first window," not a real-time "15 min before your window" prompt. For the founder as the sole active user this is acceptable; once traffic justifies it, upgrade.
+**Fix paths (pick one when warranted):**
+  1. **Upgrade to Vercel Pro** — unlocks sub-daily crons. Simplest fix, `vercel.json` just needs the schedule changed back.
+  2. **Move cron to an external scheduler** that can POST to `/api/cron/send-notifications` with the `CRON_SECRET` bearer token. Options: Upstash QStash (generous free tier), a GitHub Actions workflow on a schedule, an AWS EventBridge rule, a simple VPS cron.
+**Priority:** P2 — revisit when ≥5 active weekly users report missed nudges, or when upgrading to Pro for other reasons.
 
 ## Calendar Coach
 

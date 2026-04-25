@@ -189,6 +189,10 @@ model SavedStudyPlan {
   forecastDays    Int      @default(1) // 1, 3, or 5
   /// Default target length (minutes) for Calendar Coach sessions; also caps how large each generated gap chunk is.
   calendarPreferredSessionMin Int @default(45)
+  /// Earliest hour Calendar Coach will suggest a study window (0-23). Default 7 (7am).
+  dayStartHour                Int @default(7)
+  /// Latest hour Calendar Coach will suggest a study window (1-24). Default 22 (10pm).
+  dayEndHour                  Int @default(22)
   weekPlan        Json     // WeekPlan[] with dates as ISO strings
   baseWeekPlan    Json     // original unmodified plan for undo
   actualHours     Json     // (number | null)[]

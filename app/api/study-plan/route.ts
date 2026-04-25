@@ -29,6 +29,8 @@ export async function GET() {
       levelIIIPathway: saved.levelIIIPathway,
       forecastDays: saved.forecastDays,
       calendarPreferredSessionMin: saved.calendarPreferredSessionMin,
+      dayStartHour: saved.dayStartHour,
+      dayEndHour: saved.dayEndHour,
       weekPlan: saved.weekPlan,
       baseWeekPlan: saved.baseWeekPlan,
       actualHours: saved.actualHours,
@@ -47,7 +49,7 @@ export async function PUT(req: NextRequest) {
 
   const body = await req.json();
 
-  const { examLevel, examDate, weeklyHours, planStartDate, weekStartDay, levelIIIPathway, forecastDays, calendarPreferredSessionMin, weekPlan, baseWeekPlan, actualHours } = body;
+  const { examLevel, examDate, weeklyHours, planStartDate, weekStartDay, levelIIIPathway, forecastDays, calendarPreferredSessionMin, dayStartHour, dayEndHour, weekPlan, baseWeekPlan, actualHours } = body;
 
   if (!examLevel || !examDate || weeklyHours == null || !planStartDate || !weekStartDay || !Array.isArray(weekPlan) || !Array.isArray(baseWeekPlan) || !Array.isArray(actualHours)) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -56,6 +58,16 @@ export async function PUT(req: NextRequest) {
   const prefMin = calendarPreferredSessionMin != null ? Number(calendarPreferredSessionMin) : 45;
   const calendarPreferredSessionMinClamped =
     Number.isFinite(prefMin) ? Math.min(180, Math.max(5, Math.round(prefMin))) : 45;
+
+  // Working-hours range: clamp 0-23 for start, ensure end > start, max 24.
+  const startRaw = dayStartHour != null ? Number(dayStartHour) : 7;
+  const endRaw = dayEndHour != null ? Number(dayEndHour) : 22;
+  const dayStartHourClamped = Number.isFinite(startRaw)
+    ? Math.min(23, Math.max(0, Math.round(startRaw)))
+    : 7;
+  const dayEndHourClamped = Number.isFinite(endRaw)
+    ? Math.min(24, Math.max(dayStartHourClamped + 1, Math.round(endRaw)))
+    : Math.max(dayStartHourClamped + 1, 22);
 
   const data = {
     examLevel,
@@ -66,6 +78,8 @@ export async function PUT(req: NextRequest) {
     levelIIIPathway: levelIIIPathway ?? null,
     forecastDays: forecastDays != null ? Number(forecastDays) : 1,
     calendarPreferredSessionMin: calendarPreferredSessionMinClamped,
+    dayStartHour: dayStartHourClamped,
+    dayEndHour: dayEndHourClamped,
     weekPlan,
     baseWeekPlan,
     actualHours,

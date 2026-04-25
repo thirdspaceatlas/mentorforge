@@ -342,7 +342,7 @@ export default function LandingPage() {
                 <PricingCheckList
                   items={[
                     "Everything in Free, unlimited",
-                    "Unlimited calendar connections",
+                    "Unlimited calendars — work, personal, and shared all count against study time",
                     "Unlimited Calendar Coach nudges",
                     "Unlimited smart rebalancing",
                     "Full session history, heatmap, and forecast",
