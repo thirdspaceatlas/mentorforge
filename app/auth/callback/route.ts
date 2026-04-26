@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createSupabaseRouteHandlerClient } from "@/lib/supabase/route-handler";
 
 /**
  * OAuth callback handler for Supabase PKCE flow.
@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
   const errorParam = url.searchParams.get("error");
   const errorDescription = url.searchParams.get("error_description");
 
+  const { supabase, applyCookiesToResponse } = createSupabaseRouteHandlerClient(request);
+
   if (errorParam) {
     console.error("[auth/callback] OAuth error:", errorParam, errorDescription);
     const loginUrl = new URL("/login", url.origin);
@@ -32,7 +34,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
@@ -45,5 +46,6 @@ export async function GET(request: NextRequest) {
 
   // Only allow same-origin redirects to prevent open-redirect attacks
   const safeNext = next.startsWith("/") ? next : "/app";
-  return NextResponse.redirect(new URL(safeNext, url.origin));
+  const redirect = NextResponse.redirect(new URL(safeNext, url.origin));
+  return applyCookiesToResponse(redirect);
 }
