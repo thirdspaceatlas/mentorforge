@@ -98,19 +98,19 @@ export function Navbar() {
               <>
                 <Link
                   href="/app"
-                  className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                  className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 >
                   Study Plan
                 </Link>
                 <Link
                   href="/app#calendar-coach"
-                  className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                  className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 >
                   Calendar Coach
                 </Link>
                 <Link
                   href="/app/account"
-                  className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                  className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 >
                   Account
                 </Link>
@@ -121,7 +121,7 @@ export function Navbar() {
                     await supabase.auth.signOut();
                     window.location.href = "/";
                   }}
-                  className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                  className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 >
                   Sign out
                 </button>
@@ -130,13 +130,13 @@ export function Navbar() {
               <>
                 <Link
                   href="/about"
-                  className="text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+                  className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                 >
                   About
                 </Link>
                 <Link
                   href="/pricing"
-                  className="text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+                  className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                 >
                   Pricing
                 </Link>
@@ -144,13 +144,13 @@ export function Navbar() {
                   <>
                     <Link
                       href="/app/account"
-                      className="text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+                      className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                     >
                       Account
                     </Link>
                     <Link
                       href="/app"
-                      className="inline-flex shrink-0 items-center justify-center rounded-full bg-slate-900 px-3.5 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
+                      className="inline-flex min-h-[2.75rem] shrink-0 items-center justify-center rounded-full bg-slate-900 px-4 text-xs font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
                     >
                       Open app
                     </Link>
@@ -159,13 +159,13 @@ export function Navbar() {
                   <>
                     <Link
                       href="/register"
-                      className="inline-flex shrink-0 items-center justify-center rounded-full bg-slate-900 px-3.5 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
+                      className="inline-flex min-h-[2.75rem] shrink-0 items-center justify-center rounded-full bg-slate-900 px-4 text-xs font-medium text-white shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
                     >
                       Get started free
                     </Link>
                     <Link
                       href="/login"
-                      className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                      className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
                     >
                       Log in
                     </Link>
