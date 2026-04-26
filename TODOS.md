@@ -72,3 +72,22 @@
 **Effort:** M (human: 3 days / CC: 30 min)
 **Priority:** P3
 **Depends on:** Having 100+ active users (not needed before then).
+
+## Design (deferred from /design-review 2026-04-25)
+
+### Section rhythm on `/` is templated AI-era SaaS pattern
+
+**What:** Homepage section sequence (hero → 6-card feature grid 3x2 → 4-step "how it works" → pricing → FAQ → CTA) is the most recognizable AI-generated SaaS landing template. The 6-card feature grid (icon + bold title + 2-line description, repeated symmetrically) is verbatim AI Slop blacklist item #2.
+**Why:** Even with disciplined typography (Fraunces + Plus Jakarta Sans), the section *architecture* signals "this was generated, not designed." A human designer at a respected studio would not ship this layout. Saved from C grade by typography taste, but the AI Slop score stays C+ until the rhythm changes.
+**Fix path:** Run `/plan-design-review` focused on "what's the 10-star landing page that doesn't look like every other tool?" Possible directions: replace feature grid with 1-2 large editorial-style sections, lean harder into product UI screenshots, or move the Calendar Coach demo into an interactive section instead of a static feature card.
+**Effort:** M (human: 2-3 days / CC: 1-2 hours of plan + ~4 hours of implementation).
+**Priority:** P2 — flagged but not blocking. Worth doing before significant paid traffic.
+**Source:** `/design-review` finding 005, audit dated 2026-04-25.
+
+### Heading scale ratio uneven (52 → 34.4 → 18.4)
+
+**What:** Type scale jumps from H1 (52px) to H2 (34.4px, ratio 1.51) to H3 (18.4px, ratio 1.87). The 1.87 jump is too steep for a calm reading rhythm.
+**Fix:** Add a 24-26px intermediate size for sub-section headings.
+**Why deferred:** Touches many components and would compound the scope of any section-architecture rework. Wait until `/plan-design-review` happens, then bake the scale fix into the same change set.
+**Priority:** P3.
+**Source:** `/design-review` finding 006.
