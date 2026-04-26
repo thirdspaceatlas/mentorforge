@@ -275,7 +275,7 @@ export default function LandingPage() {
             <div className="text-center">
               <h2
                 id="home-pricing-heading"
-                className="font-display text-[1.35rem] font-medium tracking-tight text-slate-900 dark:text-slate-50 sm:text-[1.5rem]"
+                className="font-display text-[clamp(1.65rem,4vw,2.15rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50"
               >
                 Pricing tiers
               </h2>
