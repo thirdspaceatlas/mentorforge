@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { consumeOAuthClientRedirectMessage } from "@/lib/supabase/oauth-client-error";
 import { getPublicSiteOrigin } from "@/lib/site";
 import { Events, track, referrerSource } from "@/lib/analytics";
 
@@ -17,15 +18,8 @@ export default function RegisterPage() {
   const [oauthLoading, setOauthLoading] = useState<"google" | "azure" | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const err = params.get("error");
-    const reason = params.get("reason");
-    if (!err) return;
-    setError(reason?.trim() ? reason : err);
-    const u = new URL(window.location.href);
-    u.searchParams.delete("error");
-    u.searchParams.delete("reason");
-    window.history.replaceState({}, "", u.toString());
+    const msg = consumeOAuthClientRedirectMessage();
+    if (msg) setError(msg);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,7 +99,10 @@ export default function RegisterPage() {
 
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo },
+      options: {
+        redirectTo,
+        ...(provider === "azure" ? { scopes: "email" } : {}),
+      },
     });
 
     if (oauthError) {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSupabaseUser } from "@/lib/supabase/use-supabase-user";
 import { usePlan } from "@/components/app/PlanProvider";
 import { createClient } from "@/lib/supabase/client";
+import { consumeOAuthHashMessage } from "@/lib/supabase/oauth-client-error";
 
 type CalendarConnection = {
   id: string;
@@ -81,6 +82,11 @@ export default function AccountPage() {
   }, [user]);
 
   useEffect(() => {
+    const oauthMsg = consumeOAuthHashMessage();
+    if (oauthMsg) {
+      setAuthMessage(oauthMsg);
+    }
+
     const url = new URL(window.location.href);
     const status = url.searchParams.get("linked");
     const error = url.searchParams.get("error");
@@ -222,7 +228,10 @@ export default function AccountPage() {
     const redirectTo = `${window.location.origin}/app/account?linked=1`;
     const { error } = await supabase.auth.linkIdentity({
       provider,
-      options: { redirectTo },
+      options: {
+        redirectTo,
+        ...(provider === "azure" ? { scopes: "email" } : {}),
+      },
     });
     // On success, we redirect away immediately; only handle errors.
     if (error) {
