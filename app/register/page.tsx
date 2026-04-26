@@ -136,6 +136,11 @@ export default function RegisterPage() {
       </label>
 
       <div className="space-y-3">
+        {!privacyAccepted ? (
+          <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+            Accept the privacy policy above to continue.
+          </p>
+        ) : null}
         <button
           type="button"
           onClick={() => handleOAuth("google")}
