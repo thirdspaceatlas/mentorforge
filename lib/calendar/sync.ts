@@ -32,18 +32,14 @@ async function getWorkingHours(
 }
 
 /**
- * Sync a single calendar connection:
- * 1. Refresh token if needed
- * 2. Fetch events from provider (next 7 days)
- * 3. Upsert CalendarEvent rows
- * 4. Run gap finder across all user connections
- * 5. Upsert StudyWindow rows (detect new gaps for notifications)
- *
- * Returns the number of new windows created.
+ * Sync a single calendar connection's events into the CalendarEvent table.
+ * Does NOT regenerate StudyWindow rows — callers must invoke
+ * regenerateWindows(userId) exactly once after all of a user's connections
+ * have been synced. Calling regenerate per-connection would race when a user
+ * has multiple connections syncing in parallel and produce duplicate windows.
  */
 export async function syncConnection(connectionId: string): Promise<{
   eventsUpserted: number;
-  windowsCreated: number;
   error?: string;
 }> {
   const connection = await prisma.calendarConnection.findUniqueOrThrow({
@@ -51,7 +47,7 @@ export async function syncConnection(connectionId: string): Promise<{
   });
 
   if (!connection.enabled) {
-    return { eventsUpserted: 0, windowsCreated: 0 };
+    return { eventsUpserted: 0 };
   }
 
   let accessToken: string;
@@ -64,7 +60,7 @@ export async function syncConnection(connectionId: string): Promise<{
         where: { id: connectionId },
         data: { enabled: false },
       });
-      return { eventsUpserted: 0, windowsCreated: 0, error: err.message };
+      return { eventsUpserted: 0, error: err.message };
     }
     throw err;
   }
@@ -80,7 +76,7 @@ export async function syncConnection(connectionId: string): Promise<{
   } else if (connection.provider === "outlook") {
     events = await fetchOutlookEvents(accessToken, timeMin, timeMax);
   } else {
-    return { eventsUpserted: 0, windowsCreated: 0, error: `Unknown provider: ${connection.provider}` };
+    return { eventsUpserted: 0, error: `Unknown provider: ${connection.provider}` };
   }
 
   // Upsert events into CalendarEvent table
@@ -110,15 +106,16 @@ export async function syncConnection(connectionId: string): Promise<{
     eventsUpserted++;
   }
 
-  // Now run gap finder across ALL of this user's connections (unified timeline)
-  const windowsCreated = await regenerateWindows(connection.userId);
-
-  return { eventsUpserted, windowsCreated };
+  return { eventsUpserted };
 }
 
 /**
  * Regenerate study windows for a user from all their calendar events.
- * This is called after syncing any single connection.
+ *
+ * Race-safety: takes a Postgres transaction-scoped advisory lock keyed on the
+ * userId so two concurrent regenerate calls for the same user serialize. Without
+ * this lock, parallel runs read the same `existingWindows` snapshot and each
+ * inserts its own copy of every gap, producing 2× duplicates per synced calendar.
  *
  * Strategy (idempotent — safe to re-run on every sync without bloating the DB):
  * 1. Gather all busy periods from all enabled connections (next 7 days)
@@ -131,105 +128,109 @@ export async function syncConnection(connectionId: string): Promise<{
  *
  * Past windows (startTime < now) are never touched — they're history.
  */
-async function regenerateWindows(userId: string): Promise<number> {
+export async function regenerateWindows(userId: string): Promise<number> {
   const now = new Date();
   const sevenDaysOut = new Date();
   sevenDaysOut.setDate(sevenDaysOut.getDate() + 7);
 
-  // Get all events across all enabled connections
-  const allEvents = await prisma.calendarEvent.findMany({
-    where: {
-      connection: { userId, enabled: true },
-      startTime: { lte: sevenDaysOut },
-      endTime: { gte: now },
-    },
-    select: { startTime: true, endTime: true, busyStatus: true },
-  });
-
-  const busyPeriods = allEvents
-    .filter((e) => e.busyStatus !== "free")
-    .map((e) => ({ start: e.startTime, end: e.endTime }));
-
   const maxSessionMin = await getPreferredMaxSessionMin(userId);
   const { dayStartHour, dayEndHour } = await getWorkingHours(userId);
 
-  const gaps = findGaps(now, sevenDaysOut, busyPeriods, {
-    minSessionMin: 5,
-    maxSessionMin,
-    dayStartHour,
-    dayEndHour,
-  });
+  return prisma.$transaction(
+    async (tx) => {
+      // Per-user advisory lock — auto-released when transaction ends.
+      // Concurrent regen calls for the same user serialize on this lock; the
+      // first one runs, the second waits and then re-reads existingWindows so
+      // it doesn't reinsert the gaps the first call already wrote.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}), 0)`;
 
-  // Existing future windows + whether each has a started session attached.
-  const existingWindows = await prisma.studyWindow.findMany({
-    where: {
-      userId,
-      startTime: { gte: now },
-      endTime: { lte: sevenDaysOut },
-    },
-    select: {
-      id: true,
-      startTime: true,
-      endTime: true,
-      sessions: { select: { id: true }, take: 1 },
-    },
-  });
-
-  // A gap matches an existing window if start/end are within 1 minute.
-  const isMatch = (
-    gap: { start: Date; end: Date },
-    win: { startTime: Date; endTime: Date }
-  ) => {
-    const startDiff = Math.abs(gap.start.getTime() - win.startTime.getTime());
-    const endDiff = Math.abs(gap.end.getTime() - win.endTime.getTime());
-    return startDiff < 60000 && endDiff < 60000;
-  };
-
-  const matchedWindowIds = new Set<string>();
-  const newGaps: typeof gaps = [];
-
-  for (const gap of gaps) {
-    const match = existingWindows.find((w) => isMatch(gap, w));
-    if (match) {
-      matchedWindowIds.add(match.id);
-    } else {
-      newGaps.push(gap);
-    }
-  }
-
-  // Stale: future window no longer matches a real gap and was never started.
-  const staleWindowIds = existingWindows
-    .filter(
-      (w) => !matchedWindowIds.has(w.id) && w.sessions.length === 0
-    )
-    .map((w) => w.id);
-
-  // Single transaction: delete stale, then create new gaps. Atomic so a partial
-  // failure can't leave the DB worse off than before.
-  await prisma.$transaction(async (tx) => {
-    if (staleWindowIds.length > 0) {
-      await tx.studyWindow.deleteMany({
-        where: { id: { in: staleWindowIds } },
+      const allEvents = await tx.calendarEvent.findMany({
+        where: {
+          connection: { userId, enabled: true },
+          startTime: { lte: sevenDaysOut },
+          endTime: { gte: now },
+        },
+        select: { startTime: true, endTime: true, busyStatus: true },
       });
-    }
-    for (const gap of newGaps) {
-      await tx.studyWindow.create({
-        data: {
+
+      const busyPeriods = allEvents
+        .filter((e) => e.busyStatus !== "free")
+        .map((e) => ({ start: e.startTime, end: e.endTime }));
+
+      const gaps = findGaps(now, sevenDaysOut, busyPeriods, {
+        minSessionMin: 5,
+        maxSessionMin,
+        dayStartHour,
+        dayEndHour,
+      });
+
+      const existingWindows = await tx.studyWindow.findMany({
+        where: {
           userId,
-          startTime: gap.start,
-          endTime: gap.end,
-          durationMin: gap.durationMin,
-          // TODO: Run topic recommender to fill topicName + studyType
+          startTime: { gte: now },
+          endTime: { lte: sevenDaysOut },
+        },
+        select: {
+          id: true,
+          startTime: true,
+          endTime: true,
+          sessions: { select: { id: true }, take: 1 },
         },
       });
-    }
-  });
 
-  return newGaps.length;
+      const isMatch = (
+        gap: { start: Date; end: Date },
+        win: { startTime: Date; endTime: Date }
+      ) => {
+        const startDiff = Math.abs(gap.start.getTime() - win.startTime.getTime());
+        const endDiff = Math.abs(gap.end.getTime() - win.endTime.getTime());
+        return startDiff < 60000 && endDiff < 60000;
+      };
+
+      const matchedWindowIds = new Set<string>();
+      const newGaps: typeof gaps = [];
+
+      for (const gap of gaps) {
+        const match = existingWindows.find((w) => isMatch(gap, w));
+        if (match) {
+          matchedWindowIds.add(match.id);
+        } else {
+          newGaps.push(gap);
+        }
+      }
+
+      const staleWindowIds = existingWindows
+        .filter((w) => !matchedWindowIds.has(w.id) && w.sessions.length === 0)
+        .map((w) => w.id);
+
+      if (staleWindowIds.length > 0) {
+        await tx.studyWindow.deleteMany({
+          where: { id: { in: staleWindowIds } },
+        });
+      }
+      for (const gap of newGaps) {
+        await tx.studyWindow.create({
+          data: {
+            userId,
+            startTime: gap.start,
+            endTime: gap.end,
+            durationMin: gap.durationMin,
+          },
+        });
+      }
+
+      return newGaps.length;
+    },
+    // 15s covers gap-find + writes plus any time spent waiting on the lock when
+    // a sibling regen for the same user is still running.
+    { timeout: 15000, maxWait: 10000 }
+  );
 }
 
 /**
- * Sync all enabled connections for a single user.
+ * Sync all enabled connections for a single user, then regenerate windows once.
+ * Event syncs run in parallel (independent per connection); regenerate runs once
+ * after all event upserts complete to avoid the race.
  */
 export async function syncUser(userId: string) {
   const connections = await prisma.calendarConnection.findMany({
@@ -241,8 +242,22 @@ export async function syncUser(userId: string) {
     connections.map((c) => syncConnection(c.id))
   );
 
-  return results.map((r, i) => ({
-    connectionId: connections[i].id,
-    ...(r.status === "fulfilled" ? r.value : { error: String(r.reason), eventsUpserted: 0, windowsCreated: 0 }),
-  }));
+  let windowsCreated = 0;
+  let regenError: string | undefined;
+  try {
+    windowsCreated = await regenerateWindows(userId);
+  } catch (err) {
+    regenError = err instanceof Error ? err.message : String(err);
+  }
+
+  return {
+    windowsCreated,
+    regenError,
+    connections: results.map((r, i) => ({
+      connectionId: connections[i].id,
+      ...(r.status === "fulfilled"
+        ? r.value
+        : { error: String(r.reason), eventsUpserted: 0 }),
+    })),
+  };
 }

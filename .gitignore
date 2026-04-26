@@ -35,6 +35,15 @@ Thumbs.db
 # TypeScript / testing
 *.tsbuildinfo
 
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Local agent tooling (session transcripts, etc.)
+.claude/
+
 # Stripe CLI (local binary; do not commit)
 stripe.exe
 

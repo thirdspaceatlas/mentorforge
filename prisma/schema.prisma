@@ -263,6 +263,7 @@ model StudyWindow {
   sessions StudySession[]
   snoozes  SnoozedWindow[]
 
+  @@unique([userId, startTime, endTime], name: "study_windows_user_time_unique")
   @@index([userId, startTime])
   @@map("study_windows")
 }

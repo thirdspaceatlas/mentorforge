@@ -7,7 +7,7 @@ import { syncUser } from "@/lib/calendar/sync";
  * POST /api/calendar/sync — Trigger calendar sync for the authenticated user.
  * Called on demand (e.g. after onboarding, or manual refresh).
  *
- * Returns sync results per connection.
+ * Returns per-connection event sync results plus a single post-sync window regen summary.
  */
 export async function POST() {
   const supabase = await createClient();

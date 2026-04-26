@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { syncConnection } from "@/lib/calendar/sync";
+import { syncConnection, regenerateWindows } from "@/lib/calendar/sync";
 
 /**
  * GET /api/cron/sync-calendars — Hourly calendar sync for all users.
  *
  * Vercel Cron sends GET requests with Authorization: Bearer <CRON_SECRET>.
  *
- * Processing strategy:
- * - Fetches all enabled connections
- * - Processes in parallel batches (Promise.allSettled) to prevent one failure from blocking others
- * - Cursor-based: processes connections by ID order so crashes can resume
- * - Structured JSON logging for observability
+ * Two-phase processing:
+ *  Phase 1: fan out event syncs across all connections in parallel batches.
+ *  Phase 2: regenerate study windows once per affected user, in parallel across
+ *           users. Per-connection regenerate would race for users with multiple
+ *           calendars and produce duplicate windows.
  */
 export async function GET(req: NextRequest) {
   const secret = req.headers.get("authorization");
@@ -22,7 +22,6 @@ export async function GET(req: NextRequest) {
 
   const startTime = Date.now();
 
-  // Fetch all enabled connections, ordered by ID for cursor-based resume
   const connections = await prisma.calendarConnection.findMany({
     where: { enabled: true },
     select: { id: true, userId: true, provider: true },
@@ -37,13 +36,11 @@ export async function GET(req: NextRequest) {
     })
   );
 
-  // Process in batches of 10 to avoid overwhelming provider APIs
   const BATCH_SIZE = 10;
-  const results: {
+  const eventResults: {
     connectionId: string;
     userId: string;
     eventsUpserted: number;
-    windowsCreated: number;
     error?: string;
   }[] = [];
 
@@ -59,14 +56,13 @@ export async function GET(req: NextRequest) {
       const result = batchResults[j];
 
       if (result.status === "fulfilled") {
-        results.push({ connectionId: conn.id, userId: conn.userId, ...result.value });
+        eventResults.push({ connectionId: conn.id, userId: conn.userId, ...result.value });
       } else {
         const errorMsg = result.reason instanceof Error ? result.reason.message : String(result.reason);
-        results.push({
+        eventResults.push({
           connectionId: conn.id,
           userId: conn.userId,
           eventsUpserted: 0,
-          windowsCreated: 0,
           error: errorMsg,
         });
         console.error(
@@ -81,18 +77,48 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // Phase 2: regenerate windows once per user whose event sync didn't fail wholesale.
+  const affectedUserIds = Array.from(
+    new Set(eventResults.filter((r) => !r.error).map((r) => r.userId))
+  );
+
+  let totalWindows = 0;
+  let regenErrors = 0;
+  for (let i = 0; i < affectedUserIds.length; i += BATCH_SIZE) {
+    const batch = affectedUserIds.slice(i, i + BATCH_SIZE);
+    const regenResults = await Promise.allSettled(
+      batch.map((uid) => regenerateWindows(uid))
+    );
+    for (let j = 0; j < batch.length; j++) {
+      const r = regenResults[j];
+      if (r.status === "fulfilled") {
+        totalWindows += r.value;
+      } else {
+        regenErrors++;
+        console.error(
+          JSON.stringify({
+            event: "cron_regen_error",
+            userId: batch[j],
+            error: r.reason instanceof Error ? r.reason.message : String(r.reason),
+          })
+        );
+      }
+    }
+  }
+
   const duration = Date.now() - startTime;
-  const totalEvents = results.reduce((s, r) => s + r.eventsUpserted, 0);
-  const totalWindows = results.reduce((s, r) => s + r.windowsCreated, 0);
-  const errors = results.filter((r) => r.error).length;
+  const totalEvents = eventResults.reduce((s, r) => s + r.eventsUpserted, 0);
+  const eventErrors = eventResults.filter((r) => r.error).length;
 
   console.log(
     JSON.stringify({
       event: "cron_sync_complete",
       connections: connections.length,
+      users: affectedUserIds.length,
       events_upserted: totalEvents,
       windows_created: totalWindows,
-      errors,
+      event_errors: eventErrors,
+      regen_errors: regenErrors,
       duration_ms: duration,
       ts: new Date().toISOString(),
     })
@@ -100,9 +126,11 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     synced: connections.length,
+    users: affectedUserIds.length,
     events: totalEvents,
     windows: totalWindows,
-    errors,
+    eventErrors,
+    regenErrors,
     durationMs: duration,
   });
 }
