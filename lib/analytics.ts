@@ -13,6 +13,8 @@ export const Events = {
   calendarConnected: "calendar_connected",
   sessionCompleted: "session_completed",
   upgradeClicked: "upgrade_clicked",
+  pricingViewed: "pricing_viewed",
+  purchaseCompleted: "purchase_completed",
 } as const;
 
 export type EventName = (typeof Events)[keyof typeof Events];

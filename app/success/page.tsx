@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Events } from "@/lib/analytics";
+import { TrackEventOnMount } from "@/components/analytics/TrackEventOnMount";
 
 export const metadata = {
   title: "Payment successful"
@@ -7,6 +9,7 @@ export const metadata = {
 export default function SuccessPage() {
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col justify-center space-y-8 py-12 sm:min-h-[65vh] sm:py-16">
+      <TrackEventOnMount event={Events.purchaseCompleted} />
       <div className="text-center">
         <h1 className="font-display text-3xl font-medium tracking-tight text-slate-900 dark:text-slate-50">
           You&apos;re all set

@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { AllAccessCheckoutButton } from "@/components/pricing/AllAccessCheckoutButton";
 import { MarketingBottomCTA } from "@/components/marketing/MarketingBottomCTA";
+import { Events } from "@/lib/analytics";
+import { TrackEventOnMount } from "@/components/analytics/TrackEventOnMount";
 
 const priceAllAccess = process.env.NEXT_PUBLIC_STRIPE_PRICE_ALL_ACCESS ?? "";
 
@@ -96,6 +98,7 @@ function FeatureList({ items }: { items: readonly string[] }) {
 export default function PricingPage() {
   return (
     <div className="space-y-16 pb-16 sm:space-y-20 sm:pb-20">
+      <TrackEventOnMount event={Events.pricingViewed} />
       <header className="mx-auto max-w-3xl border-b border-slate-200/70 pb-14 text-center dark:border-slate-800/80 sm:pb-16">
         <p className="mb-5 font-display text-[0.7rem] font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
           Pricing

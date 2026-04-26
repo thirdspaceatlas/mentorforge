@@ -2,12 +2,21 @@
   "name": "mentorforge",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "postinstall": "npm exec prisma generate && patch-package",
     "build": "npm exec prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
+    "playwright:install": "playwright install chromium",
+    "test": "npm run test:unit",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:list": "playwright test --list",
     "guest:yc": "tsx scripts/create-yc-guest.ts",
     "guest:yc:grant": "tsx scripts/grant-all-access-by-email.ts"
   },
@@ -33,6 +42,7 @@
     "zod": "latest"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "25.5.0",
     "@types/react": "^19.0.0",
