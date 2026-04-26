@@ -31,12 +31,6 @@ const features: Feature[] = [
     emphasis: true
   },
   {
-    title: "Levels I, II & III",
-    description:
-      "Topic sequencing, exam weights, and level-specific study tactics update when you switch levels. Level III reflects all three registration pathways.",
-    icon: "levels"
-  },
-  {
     title: "Smart rebalancing",
     description:
       "Log actual hours when life gets in the way. Missed load rolls forward into remaining weeks so your runway stays honest and achievable.",
@@ -49,6 +43,12 @@ const features: Feature[] = [
       "Mark weeks complete, scan status pills (not started / partial / complete), and watch your plan status and readiness narrative stay in sync with what you log.",
     icon: "progress",
     emphasis: true
+  },
+  {
+    title: "Levels I, II & III",
+    description:
+      "Topic sequencing, exam weights, and level-specific study tactics update when you switch levels. Level III reflects all three registration pathways.",
+    icon: "levels"
   },
   {
     title: "Calendar & progress views",
