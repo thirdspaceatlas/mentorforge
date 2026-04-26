@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<"google" | null>(null);
+  const [oauthLoading, setOauthLoading] = useState<"google" | "azure" | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +34,7 @@ export default function LoginPage() {
     window.location.href = callbackUrl;
   };
 
-  const handleOAuth = async (provider: "google") => {
+  const handleOAuth = async (provider: "google" | "azure") => {
     setError(null);
     setOauthLoading(provider);
     const supabase = createClient();
@@ -71,6 +71,14 @@ export default function LoginPage() {
       </div>
 
       <div className="space-y-3">
+        <button
+          type="button"
+          onClick={() => handleOAuth("azure")}
+          disabled={loading || oauthLoading != null}
+          className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-accent dark:hover:text-accent-foreground"
+        >
+          {oauthLoading === "azure" ? "Connecting…" : "Continue with Microsoft"}
+        </button>
         <button
           type="button"
           onClick={() => handleOAuth("google")}
