@@ -1125,8 +1125,14 @@ function PlannerInner() {
       )}
 
       {summary ? (
-        <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/90 dark:bg-slate-900/60 p-4">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Plan summary</h2>
+        <section className="rounded-2xl border border-hair bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-7">
+          <p className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.16em] text-amber-mf">
+            <span aria-hidden className="inline-block h-px w-4 bg-amber-mf" />
+            Summary
+          </p>
+          <h2 className="mt-2 font-display text-2xl font-medium leading-tight tracking-tight text-ink dark:text-slate-100 sm:text-[26px]">
+            Plan summary.
+          </h2>
 
           <FeatureGate locked={levelGateLocked}>
             <FeatureGate locked={false}>
@@ -1250,19 +1256,20 @@ function PlannerInner() {
           {weekPlan ? (
             <div className="mt-6 space-y-3">
               <FeatureGate locked={false}>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    Study plan{" "}
-                    <span className="ml-1 text-xs font-normal text-slate-500 dark:text-slate-400">
-                      {showAllWeeks || weekPlan.length <= VISIBLE_WEEKS_DEFAULT
-                        ? `${weekPlan.length} week${weekPlan.length === 1 ? "" : "s"}`
-                        : `Weeks ${weekPlan[sliceStart]!.week}\u2013${
-                            weekPlan[sliceStart + visibleWeekPlan.length - 1]!.week
-                          } of ${weekPlan.length}`}
-                    </span>
+                  <p className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.16em] text-amber-mf">
+                    <span aria-hidden className="inline-block h-px w-4 bg-amber-mf" />
+                    Weeks
+                  </p>
+                  <h3 className="mt-2 font-display text-2xl font-medium leading-tight tracking-tight text-ink dark:text-slate-100 sm:text-[26px]">
+                    {showAllWeeks || weekPlan.length <= VISIBLE_WEEKS_DEFAULT
+                      ? `${weekPlan.length} week${weekPlan.length === 1 ? "" : "s"}.`
+                      : `Weeks ${weekPlan[sliceStart]!.week}\u2013${
+                          weekPlan[sliceStart + visibleWeekPlan.length - 1]!.week
+                        } of ${weekPlan.length}.`}
                   </h3>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  <p className="mt-1 text-[12.5px] text-slate-600 dark:text-slate-400">
                     Window follows{" "}
                     {studyPlanAnchor === "progress"
                       ? "your progress (first incomplete week)."
@@ -1332,7 +1339,7 @@ function PlannerInner() {
                     <div
                       key={week.week}
                       className={
-                        "rounded-lg border border-slate-200 bg-slate-100 p-3 dark:border-slate-800 dark:bg-slate-950/40 " +
+                        "rounded-lg border border-hair bg-white p-3 dark:border-slate-700 dark:bg-slate-900 " +
                         (isFocusWeek
                           ? "ring-2 ring-emerald-500/45 ring-offset-2 ring-offset-paper dark:ring-offset-slate-950"
                           : "")
@@ -1340,8 +1347,8 @@ function PlannerInner() {
                     >
                       <div className="flex items-baseline justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                            Week {week.week}
+                          <span className="text-sm font-medium text-ink dark:text-slate-100">
+                            Week <span className="font-mono tabular-nums">{week.week}</span>
                           </span>
                           {isFocusWeek ? (
                             <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-800 dark:text-emerald-300">
@@ -1362,7 +1369,7 @@ function PlannerInner() {
                             </span>
                           )}
                         </div>
-                        <div className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
+                        <div className="shrink-0 font-mono text-xs tabular-nums text-slate-500 dark:text-slate-400">
                           {week.startDateLabel} – {week.endDateLabel}
                         </div>
                       </div>
