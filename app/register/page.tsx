@@ -186,7 +186,7 @@ export default function RegisterPage() {
           </div>
         )}
         {info && (
-          <div className="rounded-lg border border-sky-200/90 bg-sky-50/90 px-4 py-3 text-sm text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-100">
+          <div className="rounded-lg border border-blue-200/90 bg-blue-50/90 px-4 py-3 text-sm text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-100">
             {info}
           </div>
         )}

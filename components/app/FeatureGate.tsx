@@ -46,7 +46,7 @@ export function FeatureGate({ locked, children, className }: FeatureGateProps) {
         <LockIcon className="h-8 w-8 shrink-0 text-slate-100 drop-shadow" />
         <Link
           href="/pricing"
-          className="pointer-events-auto rounded-md bg-sky-500 px-4 py-2 text-sm font-medium text-slate-950 shadow-sm transition hover:bg-sky-400"
+          className="pointer-events-auto rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-800 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
         >
           Upgrade to unlock
         </Link>

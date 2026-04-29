@@ -258,7 +258,7 @@ export default function SessionPage() {
   if (loading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#fafaf9] dark:bg-slate-950">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
       </div>
     );
   }
@@ -273,7 +273,7 @@ export default function SessionPage() {
           <p className="mt-1 text-sm text-slate-500">Couldn&apos;t load this study window.</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 inline-flex items-center rounded-md bg-sky-500 px-4 py-2 text-sm font-medium text-sky-950 hover:bg-sky-400"
+            className="mt-4 inline-flex items-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
           >
             Try again
           </button>
@@ -292,7 +292,7 @@ export default function SessionPage() {
           <p className="mt-1 text-sm text-slate-500">This study window may have passed.</p>
           <button
             onClick={() => router.push("/app/today")}
-            className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-sky-500 hover:text-sky-400"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
             Back to dashboard
           </button>
@@ -340,7 +340,7 @@ export default function SessionPage() {
                     setPlannedMin(n);
                     setRemaining(n * 60);
                   }}
-                  className="min-w-[160px] flex-1 accent-sky-500"
+                  className="min-w-[160px] flex-1 accent-emerald-600"
                   aria-valuemin={5}
                   aria-valuemax={maxSelectable}
                   aria-valuenow={sliderValue}
@@ -356,7 +356,7 @@ export default function SessionPage() {
             <div className="mt-8 space-y-2">
               <button
                 onClick={startSession}
-                className="flex min-h-[48px] w-full items-center justify-center rounded-md bg-sky-500 px-6 py-3 text-base font-semibold text-sky-950 transition-colors hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 [-webkit-tap-highlight-color:transparent]"
+                className="flex min-h-[48px] w-full items-center justify-center rounded-md bg-emerald-700 px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400 [-webkit-tap-highlight-color:transparent]"
               >
                 Start Now
               </button>
@@ -385,7 +385,7 @@ export default function SessionPage() {
             <div className="mt-8 space-y-2">
               <button
                 onClick={completeSession}
-                className="flex min-h-[48px] w-full items-center justify-center rounded-md bg-sky-500 px-6 py-3 text-base font-semibold text-sky-950 transition-colors hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 [-webkit-tap-highlight-color:transparent]"
+                className="flex min-h-[48px] w-full items-center justify-center rounded-md bg-emerald-700 px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400 [-webkit-tap-highlight-color:transparent]"
               >
                 Done
               </button>

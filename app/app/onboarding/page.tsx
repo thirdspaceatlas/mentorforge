@@ -201,7 +201,7 @@ export default function OnboardingPage() {
               key={i}
               className={`h-[3px] flex-1 rounded-full transition-colors duration-300 ${
                 i < step
-                  ? "bg-sky-500 dark:bg-sky-400"
+                  ? "bg-emerald-600 dark:bg-emerald-500"
                   : "bg-slate-200 dark:bg-slate-700"
               }`}
             />
@@ -242,7 +242,7 @@ export default function OnboardingPage() {
                     onClick={() => setLevel(l)}
                     className={`min-h-[44px] flex-1 border-r border-slate-200 py-3 text-sm font-semibold transition-colors last:border-r-0 dark:border-slate-700 ${
                       level === l
-                        ? "bg-sky-500 text-sky-950"
+                        ? "bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950"
                         : "bg-transparent text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                     } [-webkit-tap-highlight-color:transparent]`}
                     aria-pressed={level === l}
@@ -266,8 +266,8 @@ export default function OnboardingPage() {
 
               {/* Privacy grid */}
               <div className="mb-6 grid grid-cols-2 gap-3">
-                <div className="rounded-md bg-sky-50 p-4 text-[13px] leading-relaxed dark:bg-sky-950/40">
-                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-400">
+                <div className="rounded-md bg-emerald-50 p-4 text-[13px] leading-relaxed dark:bg-emerald-950/40">
+                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
                     We see
                   </span>
                   <PrivacyItem>Start time</PrivacyItem>
@@ -310,7 +310,7 @@ export default function OnboardingPage() {
                   max={40}
                   value={hoursPerWeek}
                   onChange={(e) => setHoursPerWeek(Number(e.target.value))}
-                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 />
               </Field>
 
@@ -318,7 +318,7 @@ export default function OnboardingPage() {
                 <select
                   value={minSession}
                   onChange={(e) => setMinSession(e.target.value)}
-                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
                   <option value="5">5 minutes</option>
                   <option value="10">10 minutes</option>
@@ -331,7 +331,7 @@ export default function OnboardingPage() {
                 <select
                   value={examWindow}
                   onChange={(e) => setExamWindow(e.target.value)}
-                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
                   <option>May 2026</option>
                   <option>August 2026</option>
@@ -372,7 +372,7 @@ export default function OnboardingPage() {
                   onChange={(e) => setLastName(e.target.value)}
                   maxLength={50}
                   autoComplete="family-name"
-                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 />
               </Field>
 
@@ -380,7 +380,7 @@ export default function OnboardingPage() {
                 <select
                   value={credentialType}
                   onChange={(e) => setCredentialType(e.target.value as CredentialType)}
-                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
                   <option value="">Prefer not to say</option>
                   <option value="CFA">CFA</option>
@@ -396,7 +396,7 @@ export default function OnboardingPage() {
                     onChange={(e) => setCredentialOther(e.target.value)}
                     maxLength={80}
                     placeholder="Tell us what you're preparing for"
-                    className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                    className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                   />
                 </Field>
               ) : null}
@@ -407,7 +407,7 @@ export default function OnboardingPage() {
                   onChange={(e) =>
                     setPrimaryChallenge(e.target.value as PrimaryChallenge)
                   }
-                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
                   <option value="">Prefer not to say</option>
                   {PRIMARY_CHALLENGE_OPTIONS.map((o) => (
@@ -425,7 +425,7 @@ export default function OnboardingPage() {
                     onChange={(e) => setPrimaryChallengeOther(e.target.value)}
                     maxLength={120}
                     placeholder="Optional"
-                    className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                    className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                   />
                 </Field>
               ) : null}
@@ -434,7 +434,7 @@ export default function OnboardingPage() {
                 <select
                   value={employerType}
                   onChange={(e) => setEmployerType(e.target.value as EmployerType)}
-                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
                   <option value="">Prefer not to say</option>
                   {EMPLOYER_OPTIONS.map((o) => (
@@ -452,7 +452,7 @@ export default function OnboardingPage() {
                     onChange={(e) => setEmployerOther(e.target.value)}
                     maxLength={120}
                     placeholder="Optional"
-                    className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                    className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                   />
                 </Field>
               ) : null}
@@ -461,7 +461,7 @@ export default function OnboardingPage() {
                 <select
                   value={attribution}
                   onChange={(e) => setAttribution(e.target.value)}
-                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
                   <option value="">Prefer not to say</option>
                   {ATTRIBUTION_OPTIONS.map((o) => (
@@ -479,7 +479,7 @@ export default function OnboardingPage() {
                     onChange={(e) => setAttributionOther(e.target.value)}
                     maxLength={120}
                     placeholder="Optional"
-                    className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                    className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                   />
                 </Field>
               ) : null}
@@ -504,7 +504,7 @@ export default function OnboardingPage() {
                 will appear within a few minutes.
               </StepSubtitle>
               <div className="mt-4 flex items-center justify-center gap-2 text-sm text-slate-400">
-                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
                 Syncing calendars...
               </div>
               <div className="mt-8">
@@ -546,7 +546,7 @@ function PrimaryButton({ children, onClick }: { children: React.ReactNode; onCli
   return (
     <button
       onClick={onClick}
-      className="flex min-h-[48px] w-full items-center justify-center rounded-md bg-sky-500 px-6 py-3 text-[15px] font-semibold text-sky-950 transition-colors hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 [-webkit-tap-highlight-color:transparent]"
+      className="flex min-h-[48px] w-full items-center justify-center rounded-md bg-emerald-700 px-6 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400 [-webkit-tap-highlight-color:transparent]"
     >
       {children}
     </button>
@@ -610,10 +610,10 @@ function PrivacyItem({ children, muted }: { children: React.ReactNode; muted?: b
     <div className="flex items-start gap-1.5">
       <span
         className={`mt-[0.45em] h-1 w-1 shrink-0 rounded-full ${
-          muted ? "bg-slate-400" : "bg-sky-500 dark:bg-sky-400"
+          muted ? "bg-slate-400" : "bg-emerald-600 dark:bg-emerald-500"
         }`}
       />
-      <span className={muted ? "text-slate-500 dark:text-slate-400" : "text-sky-900 dark:text-sky-300"}>
+      <span className={muted ? "text-slate-500 dark:text-slate-400" : "text-ink dark:text-emerald-300"}>
         {children}
       </span>
     </div>
@@ -675,11 +675,11 @@ function NotificationsStep({
         You decide whether to start.
       </StepSubtitle>
 
-      <div className="mb-6 rounded-lg bg-sky-50 p-5 text-left dark:bg-sky-950/40">
-        <p className="text-sm font-semibold text-sky-900 dark:text-sky-400">
+      <div className="mb-6 rounded-lg border border-emerald-200/60 bg-emerald-50 p-5 text-left dark:border-emerald-900/40 dark:bg-emerald-950/40">
+        <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-400">
           How it works
         </p>
-        <p className="mt-1 text-[13px] leading-relaxed text-sky-800/80 dark:text-slate-400">
+        <p className="mt-1 text-[13px] leading-relaxed text-emerald-900/80 dark:text-slate-400">
           Your 3pm meeting gets cancelled. Your phone buzzes: &ldquo;New 20-min
           window. Ethics &amp; Standards review?&rdquo; You tap Start.
           That&apos;s it.
@@ -782,7 +782,7 @@ function InstallStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
               i < steps.length - 1 ? "border-b border-slate-200 dark:border-slate-700" : ""
             }`}
           >
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-500 text-xs font-bold text-sky-950">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-xs font-bold text-white dark:bg-emerald-500 dark:text-emerald-950">
               {i + 1}
             </span>
             <span
@@ -801,7 +801,7 @@ function InstallStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
             onClick={() => setBrowser(b)}
             className={`rounded-full px-3 py-1 text-[11px] font-medium transition-colors ${
               browser === b
-                ? "bg-sky-500 text-sky-950"
+                ? "bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950"
                 : "border border-slate-200 text-slate-400 hover:text-slate-600 dark:border-slate-700 dark:hover:text-slate-300"
             } [-webkit-tap-highlight-color:transparent]`}
           >
