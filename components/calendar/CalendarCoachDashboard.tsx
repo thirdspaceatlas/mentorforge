@@ -770,7 +770,7 @@ function CalendarStatus({ count }: { count: number }) {
   const [showTip, setShowTip] = useState(false);
 
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+    <div className="mt-3 flex min-h-[44px] flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
       <span className="flex items-center gap-1.5">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
         {count} calendar{count > 1 ? "s" : ""} synced
@@ -779,14 +779,24 @@ function CalendarStatus({ count }: { count: number }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
+          className="inline-flex min-h-[44px] items-center font-medium text-emerald-700 transition-colors hover:text-emerald-800 [-webkit-tap-highlight-color:transparent] dark:text-emerald-400 dark:hover:text-emerald-300"
         >
           + Add calendar
         </button>
       ) : (
-        <span className="flex items-center gap-2">
-          <a href="/api/calendar/oauth/google?returnTo=/app" className="font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300">Google</a>
-          <a href="/api/calendar/oauth/outlook?returnTo=/app" className="font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300">Outlook</a>
+        <span className="flex items-center gap-3">
+          <a
+            href="/api/calendar/oauth/google?returnTo=/app"
+            className="inline-flex min-h-[44px] items-center font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
+          >
+            Google
+          </a>
+          <a
+            href="/api/calendar/oauth/outlook?returnTo=/app"
+            className="inline-flex min-h-[44px] items-center font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
+          >
+            Outlook
+          </a>
         </span>
       )}
       <div className="relative">
@@ -794,9 +804,14 @@ function CalendarStatus({ count }: { count: number }) {
           type="button"
           onClick={() => setShowTip(!showTip)}
           aria-label="Why connect multiple calendars?"
-          className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold text-slate-400 transition-colors hover:border-emerald-500 hover:text-emerald-700 dark:border-slate-600 dark:hover:border-emerald-400 dark:hover:text-emerald-400"
+          className="group -m-3 inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-400 transition-colors hover:text-emerald-700 [-webkit-tap-highlight-color:transparent] dark:hover:text-emerald-400"
         >
-          ?
+          <span
+            aria-hidden
+            className="flex h-5 w-5 items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold transition-colors group-hover:border-emerald-500 dark:border-slate-600 dark:group-hover:border-emerald-400"
+          >
+            ?
+          </span>
         </button>
         {showTip && (
           <div className="absolute bottom-7 left-1/2 z-20 w-72 -translate-x-1/2 rounded-lg border border-slate-200 bg-white p-4 text-left shadow-lg dark:border-slate-700 dark:bg-slate-800 sm:w-80">
