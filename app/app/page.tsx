@@ -890,9 +890,7 @@ function PlannerInner() {
 
   if (!planLoaded) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
-      </div>
+      <PlanPageSkeleton />
     );
   }
 
@@ -1649,11 +1647,7 @@ export default function PlannerPage() {
   const { user, loading } = useSupabaseUser();
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
-      </div>
-    );
+    return <PlanPageSkeleton />;
   }
 
   if (!user) {
@@ -1661,4 +1655,49 @@ export default function PlannerPage() {
   }
 
   return <PlannerInner />;
+}
+
+/**
+ * Skeleton matching the Plan page's editorial frame so the loading state
+ * doesn't snap to a blank cream surface and a spinner. Mimics the heading
+ * eyebrow + Fraunces title, the level toggle row, and the Plan summary card.
+ */
+function PlanPageSkeleton() {
+  return (
+    <div className="min-w-0 max-w-full space-y-8" aria-busy="true" aria-label="Loading study plan">
+      {/* Header: eyebrow + Fraunces title */}
+      <section className="flex items-end justify-between gap-4">
+        <div className="space-y-2">
+          <div className="h-3 w-16 animate-pulse rounded bg-amber-mf/30" />
+          <div className="h-8 w-56 animate-pulse rounded bg-ink/10 dark:bg-slate-700/60 sm:h-10 sm:w-72" />
+        </div>
+      </section>
+
+      {/* Level + window summary strip */}
+      <div className="rounded-2xl border border-hair bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <div className="h-4 w-20 animate-pulse rounded bg-ink/10 dark:bg-slate-700/60" />
+          <div className="h-4 w-28 animate-pulse rounded bg-ink/10 dark:bg-slate-700/60" />
+          <div className="h-4 w-24 animate-pulse rounded bg-ink/10 dark:bg-slate-700/60" />
+          <div className="h-4 w-20 animate-pulse rounded bg-ink/10 dark:bg-slate-700/60" />
+        </div>
+      </div>
+
+      {/* Plan summary card */}
+      <section className="rounded-2xl border border-hair bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-7">
+        <div className="space-y-2">
+          <div className="h-3 w-20 animate-pulse rounded bg-amber-mf/30" />
+          <div className="h-7 w-44 animate-pulse rounded bg-ink/10 dark:bg-slate-700/60 sm:h-8 sm:w-56" />
+        </div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-20 animate-pulse rounded-lg border border-hair bg-paper/60 dark:border-slate-800 dark:bg-slate-950/40"
+            />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
 }

@@ -104,11 +104,7 @@ export default function AccountPage() {
   }, []);
 
   if (userLoading || loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
-      </div>
-    );
+    return <AccountPageSkeleton />;
   }
 
   const tierLabel = plan.plan === "all_access" ? "All Access" : plan.plan === "level_pass" ? "Level Pass" : "Free";
@@ -786,5 +782,37 @@ function UsageSection({ usage }: { usage: NonNullable<UsageSnapshot> }) {
         </div>
       ) : null}
     </section>
+  );
+}
+
+/**
+ * Skeleton matching the Account page's eventual layout — Profile card,
+ * Connected calendars card, Study hours card, Plan card. Replaces the
+ * generic emerald spinner so the page lands gracefully on the editorial
+ * frame while user + plan data fetch.
+ */
+function AccountPageSkeleton() {
+  return (
+    <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-8 sm:px-6 sm:py-10" aria-busy="true" aria-label="Loading account">
+      {/* Page title */}
+      <div className="h-8 w-32 animate-pulse rounded bg-ink/10 dark:bg-slate-700/60 sm:h-10 sm:w-40" />
+
+      {/* Cards: Profile / Calendars / Study Hours / Plan */}
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div
+          key={i}
+          className="rounded-xl border border-hair bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6"
+        >
+          <div className="space-y-3">
+            <div className="h-3 w-16 animate-pulse rounded bg-amber-mf/30" />
+            <div className="space-y-2">
+              <div className="h-4 w-full max-w-[280px] animate-pulse rounded bg-ink/10 dark:bg-slate-700/60" />
+              <div className="h-4 w-full max-w-[200px] animate-pulse rounded bg-ink/10 dark:bg-slate-700/60" />
+              <div className="h-4 w-full max-w-[240px] animate-pulse rounded bg-ink/10 dark:bg-slate-700/60" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
