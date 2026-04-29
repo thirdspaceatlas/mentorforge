@@ -38,6 +38,8 @@ type EmployerType =
   | "buy_side"
   | "sell_side"
   | "corporate_finance"
+  | "wealth_management"
+  | "banking"
   | "student"
   | "other";
 
@@ -65,15 +67,17 @@ const PRIMARY_CHALLENGE_OPTIONS: { value: Exclude<PrimaryChallenge, "">; label: 
 const EMPLOYER_OPTIONS: { value: Exclude<EmployerType, "">; label: string }[] = [
   { value: "buy_side", label: "Buy-side" },
   { value: "sell_side", label: "Sell-side" },
-  { value: "corporate_finance", label: "Corporate finance" },
-  { value: "student", label: "Student / between jobs" },
+  { value: "wealth_management", label: "Wealth Management" },
+  { value: "banking", label: "Banking" },
+  { value: "corporate_finance", label: "Corporate Finance" },
+  { value: "student", label: "Student / Between Jobs" },
   { value: "other", label: "Other" }
 ];
 
 const ATTRIBUTION_OPTIONS = [
   "LinkedIn",
   "Reddit",
-  "Friend / word of mouth",
+  "Friend / Word of Mouth",
   "Search",
   "Other"
 ] as const;
@@ -92,6 +96,10 @@ export default function OnboardingPage() {
   const [primaryChallenge, setPrimaryChallenge] = useState<PrimaryChallenge>("");
   const [employerType, setEmployerType] = useState<EmployerType>("");
   const [attribution, setAttribution] = useState("");
+  const [credentialOther, setCredentialOther] = useState("");
+  const [primaryChallengeOther, setPrimaryChallengeOther] = useState("");
+  const [employerOther, setEmployerOther] = useState("");
+  const [attributionOther, setAttributionOther] = useState("");
 
   useEffect(() => {
     document.title = `${STEP_TITLES[step - 1]} · MentorForge`;
@@ -158,9 +166,14 @@ export default function OnboardingPage() {
         weekStartDay: "1", // Monday default
         lastName: lastName || undefined,
         credentialType: credentialType || undefined,
+        credentialOther: credentialType === "other" ? (credentialOther || undefined) : undefined,
         primaryChallenge: primaryChallenge || undefined,
+        primaryChallengeOther: primaryChallenge === "other" ? (primaryChallengeOther || undefined) : undefined,
         employerType: employerType || undefined,
-        attribution: attribution || undefined,
+        employerTypeOther: employerType === "other" ? (employerOther || undefined) : undefined,
+        attribution: attribution === "Other"
+          ? (attributionOther ? `Other: ${attributionOther}` : "Other")
+          : (attribution || undefined),
       }),
     }).catch(() => {});
   }
@@ -375,6 +388,18 @@ export default function OnboardingPage() {
                   <option value="other">Other</option>
                 </select>
               </Field>
+              {credentialType === "other" ? (
+                <Field label="Other (optional)">
+                  <input
+                    type="text"
+                    value={credentialOther}
+                    onChange={(e) => setCredentialOther(e.target.value)}
+                    maxLength={80}
+                    placeholder="Tell us what you're preparing for"
+                    className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                </Field>
+              ) : null}
 
               <Field label="Biggest study challenge">
                 <select
@@ -392,6 +417,18 @@ export default function OnboardingPage() {
                   ))}
                 </select>
               </Field>
+              {primaryChallenge === "other" ? (
+                <Field label="Something else (optional)">
+                  <input
+                    type="text"
+                    value={primaryChallengeOther}
+                    onChange={(e) => setPrimaryChallengeOther(e.target.value)}
+                    maxLength={120}
+                    placeholder="Optional"
+                    className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                </Field>
+              ) : null}
 
               <Field label="What best describes your work?">
                 <select
@@ -407,6 +444,18 @@ export default function OnboardingPage() {
                   ))}
                 </select>
               </Field>
+              {employerType === "other" ? (
+                <Field label="Other (optional)">
+                  <input
+                    type="text"
+                    value={employerOther}
+                    onChange={(e) => setEmployerOther(e.target.value)}
+                    maxLength={120}
+                    placeholder="Optional"
+                    className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                </Field>
+              ) : null}
 
               <Field label="How did you hear about us?">
                 <select
@@ -422,6 +471,18 @@ export default function OnboardingPage() {
                   ))}
                 </select>
               </Field>
+              {attribution === "Other" ? (
+                <Field label="Other (optional)">
+                  <input
+                    type="text"
+                    value={attributionOther}
+                    onChange={(e) => setAttributionOther(e.target.value)}
+                    maxLength={120}
+                    placeholder="Optional"
+                    className="min-h-[44px] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                </Field>
+              ) : null}
 
               <PrimaryButton onClick={() => goTo(8)}>Continue</PrimaryButton>
               <SecondaryButton onClick={() => goTo(8)}>Skip for now</SecondaryButton>

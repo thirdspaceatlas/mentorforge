@@ -26,6 +26,8 @@ const EMPLOYER_TYPES = new Set([
   "buy_side",
   "sell_side",
   "corporate_finance",
+  "wealth_management",
+  "banking",
   "student",
   "other"
 ]);
