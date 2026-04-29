@@ -450,7 +450,10 @@ export function TodaysDocket({
 
       {/* Mobile vertical list */}
       <div className="sm:hidden">
-        <TodayTimeline windows={windows} />
+        <TodayTimeline
+          windows={windows}
+          highlightId={nextWindow?.id ?? null}
+        />
       </div>
     </div>
   );
@@ -844,10 +847,12 @@ const UP_NEXT_VISIBLE = 3;
 
 function WindowRow({
   window,
-  showConnector
+  showConnector,
+  isHighlight = false
 }: {
   window: DashWindow;
   showConnector: boolean;
+  isHighlight?: boolean;
 }) {
   const isDone = window.status === "done";
   return (
@@ -855,14 +860,15 @@ function WindowRow({
       {showConnector && (
         <div className="absolute left-[11px] top-9 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700" />
       )}
-      <TimelineDot status={window.status} />
+      <TimelineDot status={window.status} isHighlight={isHighlight} />
       <div className="min-w-0 flex-1">
         <p
           className={
-            "text-sm font-medium " +
+            (isHighlight ? "font-semibold " : "font-medium ") +
+            "text-sm " +
             (isDone
               ? "text-slate-400 dark:text-slate-500"
-              : "text-slate-900 dark:text-slate-100")
+              : "text-ink dark:text-slate-100")
           }
         >
           {window.topicName || "Study session"}
@@ -886,7 +892,13 @@ function WindowRow({
  *   - Current (if any) + first {UP_NEXT_VISIBLE} upcoming, always visible.
  *   - "Show N more" — disclosure for the rest of upcoming.
  */
-function TodayTimeline({ windows }: { windows: DashWindow[] }) {
+function TodayTimeline({
+  windows,
+  highlightId = null,
+}: {
+  windows: DashWindow[];
+  highlightId?: string | null;
+}) {
   const [showEarlier, setShowEarlier] = useState(false);
   const [showLater, setShowLater] = useState(false);
 
@@ -919,6 +931,7 @@ function TodayTimeline({ windows }: { windows: DashWindow[] }) {
                   key={w.id}
                   window={w}
                   showConnector={i < earlier.length - 1 || live.length > 0}
+                  isHighlight={w.id === highlightId}
                 />
               ))}
             </div>
@@ -934,6 +947,7 @@ function TodayTimeline({ windows }: { windows: DashWindow[] }) {
             showConnector={
               i < visibleLive.length - 1 || (showLater && hiddenLive.length > 0)
             }
+            isHighlight={w.id === highlightId}
           />
         ))}
         {showLater
@@ -942,6 +956,7 @@ function TodayTimeline({ windows }: { windows: DashWindow[] }) {
                 key={w.id}
                 window={w}
                 showConnector={i < hiddenLive.length - 1}
+                isHighlight={w.id === highlightId}
               />
             ))
           : null}
@@ -964,7 +979,13 @@ function TodayTimeline({ windows }: { windows: DashWindow[] }) {
   );
 }
 
-function TimelineDot({ status }: { status: WindowStatus }) {
+function TimelineDot({
+  status,
+  isHighlight = false,
+}: {
+  status: WindowStatus;
+  isHighlight?: boolean;
+}) {
   if (status === "done") {
     return (
       <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-500">
@@ -972,9 +993,9 @@ function TimelineDot({ status }: { status: WindowStatus }) {
       </div>
     );
   }
-  if (status === "current") {
+  if (status === "current" || isHighlight) {
     return (
-      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-500 ring-[3px] ring-amber-500/15 dark:bg-amber-500/15">
+      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-mf-soft text-amber-mf ring-[3px] ring-amber-mf/15 dark:bg-amber-mf/15">
         <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="currentColor" /></svg>
       </div>
     );
