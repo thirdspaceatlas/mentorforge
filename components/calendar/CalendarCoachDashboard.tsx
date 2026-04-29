@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { DayRibbon } from "./DayRibbon";
+import { RecentConsistencyBars } from "./RecentConsistencyBars";
+import { TrendsDisclosure } from "./TrendsDisclosure";
 
 /**
  * Calendar Coach dashboard section — renders above the study planner.
@@ -82,7 +85,7 @@ export function CalendarCoachDashboard({
           </p>
           <button
             onClick={() => router.push("/app/onboarding")}
-            className="mt-4 inline-flex min-h-[44px] items-center rounded-md bg-sky-500 px-5 py-2.5 text-sm font-semibold text-sky-950 transition-colors hover:bg-sky-400"
+            className="mt-4 inline-flex min-h-[44px] items-center rounded-md bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
           >
             Set up Calendar Coach
           </button>
@@ -107,7 +110,9 @@ export function CalendarCoachDashboard({
             <CalendarStatus count={stats.calendarsConnected} />
           )}
         </div>
-        <Heatmap heatmap={stats.heatmap} />
+        <TrendsDisclosure>
+          <RecentConsistencyBars days={stats.heatmap} />
+        </TrendsDisclosure>
       </section>
     );
   }
@@ -126,67 +131,353 @@ export function CalendarCoachDashboard({
         />
       )}
       {nextWindow && (
-        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6">
-          <PreferredSessionControl
-            value={calendarPreferredSessionMin}
-            onChange={onCalendarPreferredSessionMinChange}
-          />
-          <p className="text-xs font-semibold uppercase tracking-wide text-sky-500 dark:text-sky-400">
-            Next study window
-          </p>
-          <h2 className="mt-2 font-display text-2xl font-semibold leading-tight text-slate-900 dark:text-slate-100">
-            {nextWindow.topicName || "Study session"}
-          </h2>
-          <div className="mt-1 flex items-center gap-2.5">
-            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              {nextWindow.durationMin} min &middot; starts at{" "}
-              {new Date(nextWindow.startTime).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-            </span>
-            {nextWindow.studyType && (
-              <TypeBadge type={nextWindow.studyType as StudyType} />
-            )}
-          </div>
-          <button
-            onClick={() => router.push(`/app/session/${nextWindow.id}`)}
-            className="mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-md bg-sky-500 px-5 py-2.5 text-sm font-semibold text-sky-950 transition-colors hover:bg-sky-400 [-webkit-tap-highlight-color:transparent]"
-          >
-            Go
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 8h10M9 4l4 4-4 4" />
-            </svg>
-          </button>
-
-          {/* Stats */}
-          <div className="mt-4 border-t border-slate-200 pt-3.5 dark:border-slate-700">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              <span className="font-semibold text-slate-900 dark:text-slate-100">{stats.minutesToday} min</span> today
-              {stats.pacePercent > 0 && (
-                <>
-                  <span className="mx-1 text-slate-300 dark:text-slate-600">&middot;</span>
-                  <span className="font-semibold text-slate-900 dark:text-slate-100">{stats.pacePercent}%</span> on pace
-                </>
-              )}
-              {stats.daysToExam > 0 && (
-                <>
-                  <span className="mx-1 text-slate-300 dark:text-slate-600">&middot;</span>
-                  <span className="font-semibold text-slate-900 dark:text-slate-100">{stats.daysToExam} days</span> to exam
-                </>
-              )}
-            </p>
-            <CalendarStatus count={stats.calendarsConnected} />
-          </div>
-        </div>
+        <HeroNextSession
+          nextWindow={nextWindow}
+          todayWindows={todayWindows}
+          minutesToday={stats.minutesToday}
+          pacePercent={stats.pacePercent}
+          daysToExam={stats.daysToExam}
+          calendarsConnected={stats.calendarsConnected}
+          calendarPreferredSessionMin={calendarPreferredSessionMin}
+          onCalendarPreferredSessionMinChange={onCalendarPreferredSessionMinChange}
+          onBegin={() => router.push(`/app/session/${nextWindow.id}`)}
+        />
       )}
 
-      {/* Today's Timeline — grouped: earlier (collapsed) / current / up next (3) / more (collapsed) */}
-      <TodayTimeline windows={todayWindows} />
+      {/* Today's docket — editorial header + DayRibbon (≥sm) / vertical list (<sm) */}
+      <TodaysDocket
+        windows={todayWindows}
+        nextWindow={nextWindow}
+        minutesToday={stats.minutesToday}
+      />
 
-      <Heatmap heatmap={heatmap} />
+      <TrendsDisclosure>
+        <RecentConsistencyBars days={heatmap} />
+      </TrendsDisclosure>
     </section>
   );
 }
 
 /* ─── Sub-components ─── */
+
+export function HeroNextSession({
+  nextWindow,
+  todayWindows,
+  minutesToday,
+  pacePercent,
+  daysToExam,
+  calendarsConnected,
+  calendarPreferredSessionMin,
+  onCalendarPreferredSessionMinChange,
+  onBegin,
+}: {
+  nextWindow: DashWindow;
+  todayWindows: DashWindow[];
+  minutesToday: number;
+  pacePercent: number;
+  daysToExam: number;
+  calendarsConnected: number;
+  calendarPreferredSessionMin: number;
+  onCalendarPreferredSessionMinChange: (n: number) => void | Promise<void>;
+  onBegin: () => void;
+}) {
+  const totalPlannedMin = todayWindows.reduce((s, w) => s + w.durationMin, 0);
+  const donePct =
+    totalPlannedMin > 0
+      ? Math.min(100, Math.round((minutesToday / totalPlannedMin) * 100))
+      : 0;
+  const doneCount = todayWindows.filter((w) => w.status === "done").length;
+  const startTime = new Date(nextWindow.startTime).toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-hair bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-9">
+      {/* Editorial date stamp — absolute top-right */}
+      <div
+        className="pointer-events-none absolute right-5 top-5 hidden font-mono text-[10px] uppercase tracking-[0.1em] text-slate-500 dark:text-slate-500 sm:block"
+        aria-hidden
+      >
+        {formatStampDate(new Date())}
+      </div>
+
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-7">
+        <div className="min-w-0 flex-1">
+          {/* Eyebrow — amber rule + uppercase tracked */}
+          <p className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.16em] text-amber-mf">
+            <span aria-hidden className="inline-block h-px w-4 bg-amber-mf" />
+            Next study session
+          </p>
+
+          {/* Title — Fraunces, ink */}
+          <h2 className="mt-2.5 font-display text-3xl font-medium leading-[1.05] tracking-tight text-ink dark:text-slate-100 sm:text-4xl">
+            {nextWindow.topicName || "Study session"}
+            <span className="text-slate-400 dark:text-slate-500">.</span>
+          </h2>
+
+          {/* Meta — clock icon + mono timestamp */}
+          <div className="mt-3 flex flex-wrap items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 13 13"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+              className="shrink-0"
+            >
+              <circle cx="6.5" cy="6.5" r="5.25" />
+              <path d="M6.5 3.5v3l2 1.25" />
+            </svg>
+            <span>
+              <span className="font-medium tabular-nums">{nextWindow.durationMin} min</span>
+              <span className="mx-1.5 text-slate-300 dark:text-slate-600">&middot;</span>
+              starts <span className="font-mono tabular-nums">{startTime}</span>
+            </span>
+            {nextWindow.studyType && (
+              <TypeBadge type={nextWindow.studyType as StudyType} />
+            )}
+          </div>
+        </div>
+
+        {/* Begin button — emerald primary, pill */}
+        <button
+          onClick={onBegin}
+          className="inline-flex min-h-[44px] items-center gap-2 self-start rounded-full bg-emerald-700 px-6 py-3 text-sm font-semibold text-white shadow-[0_4px_14px_rgb(4_120_87_/_0.25)] transition-colors hover:bg-emerald-800 [-webkit-tap-highlight-color:transparent] dark:bg-emerald-500 dark:text-emerald-950 dark:shadow-[0_4px_14px_rgb(16_185_129_/_0.3)] dark:hover:bg-emerald-400 sm:self-auto"
+        >
+          Begin session
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M2.5 7h9M8 3l4 4-4 4" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Today's allocation strip */}
+      {totalPlannedMin > 0 && (
+        <div className="mt-7 border-t border-hair pt-5 dark:border-slate-700">
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">
+              Today&apos;s allocation
+            </span>
+            <span className="flex items-baseline gap-1.5">
+              <span className="font-display text-base font-medium text-ink dark:text-slate-100">
+                {formatHM(minutesToday)}
+              </span>
+              <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
+                / {formatHM(totalPlannedMin)}
+              </span>
+            </span>
+          </div>
+
+          {/* Track */}
+          <div
+            className="relative mt-3 h-2 overflow-visible rounded bg-paper dark:bg-slate-800"
+            role="progressbar"
+            aria-valuenow={donePct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Today's study allocation"
+          >
+            <div
+              className="h-full rounded bg-ink dark:bg-slate-200"
+              style={{ width: `${donePct}%` }}
+            />
+            {donePct < 100 && (
+              <div
+                className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white bg-amber-mf shadow-[0_2px_6px_rgb(201_132_43_/_0.4)] dark:border-slate-900"
+                style={{ left: `calc(${donePct}% - 7px)` }}
+                aria-hidden
+              />
+            )}
+          </div>
+
+          {/* Legend */}
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11.5px] text-slate-600 dark:text-slate-400">
+            <span className="flex items-center gap-1.5">
+              <span aria-hidden className="inline-block h-2 w-2 bg-ink dark:bg-slate-200" />
+              {doneCount} session{doneCount === 1 ? "" : "s"} logged
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span aria-hidden className="inline-block h-2 w-2 bg-amber-mf" />
+              Up next <span className="font-mono tabular-nums">· {startTime}</span>
+            </span>
+            {(pacePercent > 0 || daysToExam > 0) && (
+              <span className="ml-auto font-mono text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
+                {pacePercent > 0 && `${pacePercent}% on pace`}
+                {pacePercent > 0 && daysToExam > 0 && " · "}
+                {daysToExam > 0 && `${daysToExam}d to exam`}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      <CalendarStatus count={calendarsConnected} />
+
+      {/* Default-session-length setting — collapsed by default; lives in the hero
+          so it's reachable from the dashboard, but doesn't hijack the layout. */}
+      <details className="group mt-4">
+        <summary className="flex cursor-pointer list-none items-center gap-2 rounded-md border border-hair px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-paper dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800/40 [&::-webkit-details-marker]:hidden">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+            <circle cx="6" cy="6" r="2" />
+            <path d="M6 1v1.5M6 9.5V11M1 6h1.5M9.5 6H11M2.5 2.5l1 1M8.5 8.5l1 1M2.5 9.5l1-1M8.5 3.5l1-1" />
+          </svg>
+          Default session length:
+          <span className="font-mono tabular-nums text-slate-800 dark:text-slate-200">
+            {calendarPreferredSessionMin} min
+          </span>
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 10 10"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+            className="ml-auto transition-transform group-open:rotate-180"
+          >
+            <path d="M2.5 4l2.5 2.5L7.5 4" />
+          </svg>
+        </summary>
+        <div className="mt-2">
+          <PreferredSessionControl
+            value={calendarPreferredSessionMin}
+            onChange={onCalendarPreferredSessionMinChange}
+          />
+        </div>
+      </details>
+    </div>
+  );
+}
+
+function formatStampDate(d: Date): string {
+  const wd = d.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase();
+  const day = d.getDate();
+  const mo = d.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+  const yr = d.getFullYear();
+  return `${wd} · ${day} ${mo} ${yr}`;
+}
+
+function formatHM(min: number): string {
+  if (min < 60) return `${min}m`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
+export function TodaysDocket({
+  windows,
+  nextWindow,
+  minutesToday,
+}: {
+  windows: DashWindow[];
+  nextWindow: DashWindow | null;
+  minutesToday: number;
+}) {
+  if (windows.length === 0) return null;
+
+  const totalPlannedMin = windows.reduce((s, w) => s + w.durationMin, 0);
+  const doneCount = windows.filter((w) => w.status === "done").length;
+  const remainingMin = Math.max(0, totalPlannedMin - minutesToday);
+
+  const nextLabel = nextWindow
+    ? new Date(nextWindow.startTime).toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : null;
+
+  const titleSubject = `${capitalize(numberWord(windows.length))} ${
+    windows.length === 1 ? "session" : "sessions"
+  }.`;
+  const titleObject =
+    doneCount > 0 ? `${capitalize(numberWord(doneCount))} done.` : null;
+
+  return (
+    <div className="mt-[18px] rounded-2xl border border-hair bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-7">
+      {/* Editorial header */}
+      <p className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.16em] text-amber-mf">
+        <span aria-hidden className="inline-block h-px w-4 bg-amber-mf" />
+        Today&apos;s docket
+      </p>
+      <h2 className="mt-2 font-display text-2xl font-medium leading-tight tracking-tight text-ink dark:text-slate-100 sm:text-[26px]">
+        {titleSubject}
+        {titleObject && (
+          <>
+            {" "}
+            <span className="text-slate-400 dark:text-slate-500">·</span>{" "}
+            {titleObject}
+          </>
+        )}
+      </h2>
+      <p className="mt-1 text-[12.5px] text-slate-600 dark:text-slate-400">
+        <span className="font-semibold text-ink dark:text-slate-100">
+          {formatHM(remainingMin)}
+        </span>{" "}
+        remaining
+        {nextLabel && (
+          <>
+            {" "}
+            <span className="text-slate-300 dark:text-slate-600">·</span> next
+            at <span className="font-mono tabular-nums">{nextLabel}</span>
+          </>
+        )}
+      </p>
+
+      {/* Desktop ribbon */}
+      <div className="hidden sm:block">
+        <DayRibbon
+          windows={windows}
+          highlightId={nextWindow?.id ?? null}
+        />
+      </div>
+
+      {/* Mobile vertical list */}
+      <div className="sm:hidden">
+        <TodayTimeline windows={windows} />
+      </div>
+    </div>
+  );
+}
+
+function numberWord(n: number): string {
+  const words = [
+    "zero",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+    "eleven",
+    "twelve",
+  ];
+  return n >= 0 && n <= 12 ? words[n] : String(n);
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 function PreferredSessionControl({
   value,
@@ -213,7 +504,7 @@ function PreferredSessionControl({
           onChange={(e) => setLocal(Number(e.target.value))}
           onMouseUp={() => onChange(local)}
           onTouchEnd={() => onChange(local)}
-          className="min-w-[140px] flex-1 accent-sky-500"
+          className="min-w-[140px] flex-1 accent-emerald-600"
           aria-valuemin={5}
           aria-valuemax={180}
           aria-valuenow={local}
@@ -253,7 +544,7 @@ function AdHocButton({ preferredMin }: { preferredMin: number }) {
           step={1}
           value={durationMin}
           onChange={(e) => setDurationMin(Number(e.target.value))}
-          className="min-w-[140px] flex-1 accent-sky-500"
+          className="min-w-[140px] flex-1 accent-emerald-600"
         />
         <span className="text-sm font-semibold tabular-nums text-slate-800 dark:text-slate-100">
           {durationMin} min
@@ -277,7 +568,7 @@ function AdHocButton({ preferredMin }: { preferredMin: number }) {
           }
         }}
         disabled={starting}
-        className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-md bg-sky-500 px-5 py-2.5 text-sm font-semibold text-sky-950 transition-colors hover:bg-sky-400 disabled:opacity-60 [-webkit-tap-highlight-color:transparent]"
+        className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-md bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 [-webkit-tap-highlight-color:transparent] dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
       >
         {starting ? "Starting..." : "Start a study session"}
       </button>
@@ -433,7 +724,7 @@ function ForecastCard() {
               className={
                 "min-w-[4rem] rounded px-2.5 py-1.5 text-xs font-medium transition-colors [-webkit-tap-highlight-color:transparent] " +
                 (days === n
-                  ? "bg-sky-500 text-slate-950"
+                  ? "bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950"
                   : "text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800")
               }
             >
@@ -485,14 +776,14 @@ function CalendarStatus({ count }: { count: number }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="font-medium text-sky-500 transition-colors hover:text-sky-400"
+          className="font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
         >
           + Add calendar
         </button>
       ) : (
         <span className="flex items-center gap-2">
-          <a href="/api/calendar/oauth/google?returnTo=/app" className="font-medium text-sky-500 transition-colors hover:text-sky-400">Google</a>
-          <a href="/api/calendar/oauth/outlook?returnTo=/app" className="font-medium text-sky-500 transition-colors hover:text-sky-400">Outlook</a>
+          <a href="/api/calendar/oauth/google?returnTo=/app" className="font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300">Google</a>
+          <a href="/api/calendar/oauth/outlook?returnTo=/app" className="font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300">Outlook</a>
         </span>
       )}
       <div className="relative">
@@ -500,7 +791,7 @@ function CalendarStatus({ count }: { count: number }) {
           type="button"
           onClick={() => setShowTip(!showTip)}
           aria-label="Why connect multiple calendars?"
-          className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold text-slate-400 transition-colors hover:border-sky-400 hover:text-sky-500 dark:border-slate-600 dark:hover:border-sky-500"
+          className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold text-slate-400 transition-colors hover:border-emerald-500 hover:text-emerald-700 dark:border-slate-600 dark:hover:border-emerald-400 dark:hover:text-emerald-400"
         >
           ?
         </button>
@@ -531,38 +822,6 @@ function CalendarStatus({ count }: { count: number }) {
             </p>
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function Heatmap({ heatmap }: { heatmap: HeatmapDay[] }) {
-  if (heatmap.length === 0) return null;
-  const daysWithStudy = heatmap.filter((d) => d.minutes > 0).length;
-
-  return (
-    <div className="mt-8">
-      <h3 className="mb-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-        Last 14 days
-      </h3>
-      <div className="flex flex-col items-center">
-        <div className="mb-1 grid w-full max-w-[320px] grid-cols-7 gap-1">
-          {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
-            <span key={i} className="text-center text-[10px] font-medium text-slate-400">{d}</span>
-          ))}
-        </div>
-        <div
-          className="grid w-full max-w-[320px] grid-cols-7 gap-1"
-          role="img"
-          aria-label={`Activity heatmap showing ${daysWithStudy} of 14 days with study sessions`}
-        >
-          {heatmap.map((day) => (
-            <div key={day.date} className={`aspect-square rounded ${heatmapColor(day.minutes)}`} aria-label={`${day.date}, ${day.minutes} minutes`} />
-          ))}
-        </div>
-        <p className="mt-3 text-center text-sm text-slate-500 dark:text-slate-400">
-          You&apos;ve studied {daysWithStudy} of the last 14 days.
-        </p>
       </div>
     </div>
   );
@@ -639,11 +898,7 @@ function TodayTimeline({ windows }: { windows: DashWindow[] }) {
   if (windows.length === 0) return null;
 
   return (
-    <div className="mt-8">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-        Today
-      </h3>
-
+    <div className="mt-4">
       {earlier.length > 0 ? (
         <div className="mb-2">
           <button
@@ -731,10 +986,3 @@ function TimelineDot({ status }: { status: WindowStatus }) {
   );
 }
 
-function heatmapColor(minutes: number): string {
-  if (minutes === 0) return "bg-slate-100 dark:bg-[#283548]";
-  if (minutes <= 8) return "bg-sky-300 dark:bg-sky-700";
-  if (minutes <= 18) return "bg-sky-400 dark:bg-sky-600";
-  if (minutes <= 30) return "bg-sky-500 dark:bg-sky-500";
-  return "bg-sky-600 dark:bg-sky-400";
-}

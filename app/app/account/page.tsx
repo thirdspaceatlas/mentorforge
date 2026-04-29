@@ -106,7 +106,7 @@ export default function AccountPage() {
   if (userLoading || loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
       </div>
     );
   }
@@ -413,10 +413,10 @@ export default function AccountPage() {
           </div>
         )}
         <div className="mt-4 flex items-center gap-3">
-          <a href="/api/calendar/oauth/google?returnTo=/app/account" className="text-sm font-medium text-sky-500 transition-colors hover:text-sky-400">
+          <a href="/api/calendar/oauth/google?returnTo=/app/account" className="text-sm font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300">
             + Google
           </a>
-          <a href="/api/calendar/oauth/outlook?returnTo=/app/account" className="text-sm font-medium text-sky-500 transition-colors hover:text-sky-400">
+          <a href="/api/calendar/oauth/outlook?returnTo=/app/account" className="text-sm font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300">
             + Outlook
           </a>
         </div>
@@ -458,7 +458,7 @@ export default function AccountPage() {
           </div>
           <Link
             href="/app"
-            className="mt-4 inline-flex text-sm font-medium text-sky-500 transition-colors hover:text-sky-400"
+            className="mt-4 inline-flex text-sm font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
             Edit plan settings →
           </Link>
@@ -522,7 +522,7 @@ export default function AccountPage() {
         Need help? Text us.{" "}
         <a
           href="tel:+16782630101"
-          className="font-medium text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300"
+          className="font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
         >
           (678) 263-0101
         </a>

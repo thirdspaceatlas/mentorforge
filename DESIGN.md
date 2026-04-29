@@ -18,9 +18,9 @@
 - **Body:** Plus Jakarta Sans 400/500/600/700 — geometric sans that reads clean at all sizes. Used for all body copy, UI labels, navigation, buttons. Loaded via `next/font/google`
 - **UI/Labels:** Plus Jakarta Sans 600, text-sm, uppercase tracking-wide for section labels
 - **Data/Tables:** Plus Jakarta Sans 500 with `font-variant-numeric: tabular-nums` for aligned numbers
-- **Code:** JetBrains Mono (if needed in future)
+- **Data/Mono:** JetBrains Mono 400/500/700 — timestamps, axis labels, eyebrow data, calendar header. Scoped narrowly: never body, never UI labels. Loaded via `next/font/google`
 - **Loading:** Google Fonts via `next/font/google` (automatic optimization, no layout shift)
-- **CSS variables:** `--font-sans` (Plus Jakarta Sans), `--font-display` (Fraunces)
+- **CSS variables:** `--font-sans` (Plus Jakarta Sans), `--font-display` (Fraunces), `--font-mono` (JetBrains Mono)
 - **Scale:**
   - Timer: Fraunces 700, text-5xl (tabular-nums)
   - Display heading: Fraunces 600, text-2xl
@@ -30,17 +30,25 @@
   - Small/meta: Plus Jakarta Sans 400, text-xs
 
 ## Color
-- **Approach:** Restrained. Emerald is the single accent, used sparingly for actions and success states. Color is meaningful, not decorative
-- **Primary accent:** emerald-700 (#047857) light / emerald-400 (#34d399) dark — represents progress, action, "go"
+- **Approach:** Restrained. Emerald is the **primary** accent for actions and success states. Amber is a **secondary** accent reserved for time-aware moments (up-next, eyebrows, axis emphasis) on the Plan and Dashboard surfaces. Color is meaningful, not decorative
+- **Primary accent:** emerald-700 (#047857) light / emerald-400 (#34d399) dark — represents progress, action, "go". Used for Begin/Start/Done buttons, success states, "On track" indicators
 - **Accent hover:** emerald-800 (#065f46) light / emerald-500 (#10b981) dark
 - **Accent subtle:** emerald-100 (#d1fae5) light / emerald-900 (#064e3b) dark
 - **Accent foreground:** white light / slate-900 (#0f172a) dark
+- **Secondary accent (editorial):** amber `#C9842B` light / `#E8A33D` dark — used for: eyebrow rules above section heads, "next" markers on timelines, today's bar in trend charts, attention-pulls that are about *time* rather than *action*. Never used on primary buttons. Never used as decoration
+- **Amber soft:** `#F4E8D2` light — halo behind today's marker, soft chip backgrounds
 - **CSS variables (RGB triplets for alpha compositing):**
   - `--mf-accent`: `4 120 87` / dark: `52 211 153`
   - `--mf-accent-hover`: `6 95 70` / dark: `16 185 129`
   - `--mf-accent-foreground`: `255 255 255` / dark: `15 23 42`
   - `--mf-accent-subtle`: `209 250 229` / dark: `6 78 59`
-- **Neutrals:** Slate scale (cool gray). Background: #fafaf9 (stone-50, warm) light / slate-950 dark
+  - `--mf-paper`: `239 235 226` (#EFEBE2) / dark: `2 6 23` — page bg for Plan + Dashboard
+  - `--mf-ink`: `14 26 43` (#0E1A2B) / dark: `248 250 252` — editorial deep neutral (slightly warmer than slate-900); used on editorial section heads and ink-pill buttons
+  - `--mf-amber`: `201 132 43` / dark: `232 163 61`
+  - `--mf-amber-soft`: `244 232 210` / dark: `54 40 18`
+  - `--mf-hair`: `230 228 222` (#E6E4DE) / dark: `30 41 59` — hairline border on cream surfaces
+- **Tailwind tokens:** `bg-paper`, `text-ink`, `text-amber-mf`, `bg-amber-mf-soft`, `border-hair`, `font-mono`
+- **Neutrals:** Slate scale (cool gray) for body and chrome. Editorial surfaces use cream `--mf-paper` page bg; non-editorial surfaces (session page, marketing) keep `#fafaf9` / slate-950
 - **Semantic:**
   - Success: emerald-500 (#10b981) — completed sessions, checkmarks
   - Warning: amber-500 (#f59e0b) — current/active windows
@@ -49,6 +57,15 @@
 - **Window states:** emerald (done), amber-500 (current), slate-300 (upcoming)
 - **Dark mode:** Class-based (`.dark`). Surfaces darken to slate-950, accent flips to lighter emerald for contrast. All custom properties swap via `.dark` selector
 - **Selection:** slate-900/10 on light, white/20 on dark
+
+## Information Architecture
+- **Two app surfaces, two jobs:**
+  - **Plan** (`/app/app`): build-and-edit. Exam, level, sitting, weekly hours, week-by-week sequencing. Read-mostly after setup; edits when life changes. *"What's my prep look like?"*
+  - **Dashboard** (`/app/calendar`, will rename to `/app/today`): execute-and-glance. Hero with next session, DayRibbon timeline of today's windows, optional trends. *"What now, what today?"*
+- **Default Dashboard is calm.** Hero + today's timeline only. Heatmap and trend stats live behind a `<details>` "Show trends" toggle, **collapsed by default**, last-state remembered in localStorage. Data is available on demand, not pushed every load
+- **Editorial surfaces** (Plan + Dashboard) use `bg-paper`, eyebrow + Fraunces section heads, mono for timestamps and axis labels. The session page and marketing pages stay on the original neutrals
+- **Nav labels:** "Plan" and "Dashboard". Active state uses a 2px amber rail on the left edge of the nav item
+- **Streak-free, reaffirmed.** Bar charts on Dashboard may visualize minutes per day, but never streak counters, "best run," or missed-day rust dots. ADHD-aware decision from 2026-04-08 stands
 
 ## Spacing
 - **Base unit:** 4px (Tailwind default)
@@ -117,3 +134,7 @@
 | 2026-04-08 | Quiet completion UX | Emerald checkmark + "Session logged." No stats, no comparisons. Micro-dopamine without pressure |
 | 2026-04-08 | Intentional motion with reduced-motion support | Staggered entrance adds polish. Reduced-motion override ensures no barriers |
 | 2026-04-08 | Design system formalized | Created by /design-consultation from CEO plan + design review decisions |
+| 2026-04-28 | Editorial refresh — additive tokens | Borrow cream paper (`#EFEBE2`), ink (`#0E1A2B`), amber-as-secondary (`#C9842B`), and JetBrains Mono for data. Inspired by editorial/financial-newspaper handoff. Emerald stays primary; not a brand swap |
+| 2026-04-28 | Two-surface IA: Plan vs Dashboard | App felt disjointed — one page tried to be both architecture and execution. Plan = build/edit, Dashboard = today/execute. Trends collapsed by default on Dashboard |
+| 2026-04-28 | Streak-free reaffirmed | Editorial handoff included streak counter + missed-day rust dots; explicitly rejected. ADHD-aware thesis from 2026-04-08 stands |
+| 2026-04-28 | RecentConsistencyBars replaces heatmap | Inside Trends disclosure: 16-day bar chart with 60m target line, ink for studied days, amber + halo for today, hairline tick at baseline for quiet days (no rust). Reframes the handoff's StreakBars without reversing streak-free: stat labels "Days studied (last 16)", "Hours logged", "Above target days"; coach copy is data-aware and neutral ("Holding steady this stretch.", "Quiet stretch. No worries."). Bars convey more per pixel than the 14-day heatmap and let users glance at end-of-day to gauge effectiveness without guilt |

@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
  *
  * Returns:
  *   minutesToday, pacePercent, daysToExam, calendarsConnected,
- *   heatmap (last 14 days), todayWindows, nextWindow.
+ *   heatmap (last 16 days, oldest → today), todayWindows, nextWindow.
  */
 export async function GET() {
   const supabase = await createClient();
@@ -20,9 +20,9 @@ export async function GET() {
   const todayEnd = new Date(now);
   todayEnd.setHours(23, 59, 59, 999);
 
-  // 14-day range for heatmap
+  // 16-day range for the recent-consistency chart (today inclusive)
   const fourteenDaysAgo = new Date(todayStart);
-  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 13);
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 15);
 
   const [
     todaySessions,
@@ -83,9 +83,9 @@ export async function GET() {
     todaySessions.reduce((sum, s) => sum + (s.actualMin ?? 0), 0)
   );
 
-  // Heatmap: aggregate minutes per day
+  // Recent-consistency chart: aggregate minutes per day
   const heatmap: { date: string; minutes: number }[] = [];
-  for (let i = 0; i < 14; i++) {
+  for (let i = 0; i < 16; i++) {
     const day = new Date(fourteenDaysAgo);
     day.setDate(day.getDate() + i);
     const dateStr = day.toISOString().slice(0, 10);

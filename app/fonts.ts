@@ -1,4 +1,4 @@
-import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
+import { Fraunces, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 
 /** Body — clean readable sans */
 export const fontSans = Plus_Jakarta_Sans({
@@ -12,4 +12,11 @@ export const fontDisplay = Fraunces({
   subsets: ["latin"],
   variable: "--font-display",
   weight: ["400", "500", "600", "700"]
+});
+
+/** Data — timestamps, axis labels, eyebrow data. Never body, never UI. */
+export const fontMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400", "500", "700"]
 });

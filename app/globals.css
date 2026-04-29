@@ -8,6 +8,15 @@
   --mf-accent-hover: 6 95 70;
   --mf-accent-foreground: 255 255 255;
   --mf-accent-subtle: 209 250 229;
+
+  /* Editorial system — applied to Plan + Dashboard surfaces only.
+     Amber is a SECONDARY accent (up-next, time markers, eyebrows).
+     It does not replace --mf-accent for primary actions. */
+  --mf-paper: 239 235 226;        /* #EFEBE2 cream page bg */
+  --mf-ink: 14 26 43;             /* #0E1A2B editorial deep neutral */
+  --mf-amber: 201 132 43;         /* #C9842B secondary accent */
+  --mf-amber-soft: 244 232 210;   /* #F4E8D2 amber halo / soft chip */
+  --mf-hair: 230 228 222;         /* #E6E4DE hairline border on cream */
 }
 
 .dark {
@@ -15,6 +24,14 @@
   --mf-accent-hover: 16 185 129;
   --mf-accent-foreground: 15 23 42;
   --mf-accent-subtle: 6 78 59;
+
+  /* Dark equivalents — paper collapses to existing slate-950 page bg
+     so dark-mode surfaces are unchanged until explicitly opted in. */
+  --mf-paper: 2 6 23;             /* matches body bg in dark */
+  --mf-ink: 248 250 252;          /* slate-50, for editorial heads on dark */
+  --mf-amber: 232 163 61;         /* #E8A33D brighter amber for dark contrast */
+  --mf-amber-soft: 54 40 18;      /* darkened amber bg */
+  --mf-hair: 30 41 59;            /* slate-800 hairline */
 }
 
 html {

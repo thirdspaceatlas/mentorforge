@@ -11,7 +11,6 @@ import { hasFeatureForPlan } from "@/lib/access";
 import { FeatureGate } from "@/components/app/FeatureGate";
 import { CapHitCard } from "@/components/app/CapHitCard";
 import { FirstNameBackfillPrompt } from "@/components/app/FirstNameBackfillPrompt";
-import { CalendarCoachDashboard } from "@/components/calendar/CalendarCoachDashboard";
 import { Events, track, bucketWeekCount } from "@/lib/analytics";
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
@@ -892,7 +891,7 @@ function PlannerInner() {
   if (!planLoaded) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
       </div>
     );
   }
@@ -901,41 +900,25 @@ function PlannerInner() {
     <div className="min-w-0 max-w-full space-y-8">
       <FirstNameBackfillPrompt />
 
-      {/* Calendar Coach — unified dashboard for all plans (Phase 1a). */}
-      <section id="calendar-coach" className="space-y-4">
-        {calendarCap ? (
-          <CapHitCard
-            capType="calendar"
-            used={calendarCap.used}
-            cap={calendarCap.cap}
-            onDismiss={() => setCalendarCap(null)}
-          />
-        ) : null}
-        <CalendarCoachDashboard
-          calendarPreferredSessionMin={calendarPreferredSessionMin}
-          onCalendarPreferredSessionMinChange={async (n) => {
-            const clamped = Math.min(180, Math.max(5, Math.round(n)));
-            setCalendarPreferredSessionMin(clamped);
-            const res = await fetch("/api/study-plan");
-            const data = res.ok ? await res.json() : null;
-            if (!data?.plan) return;
-            await fetch("/api/study-plan", {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                ...data.plan,
-                calendarPreferredSessionMin: clamped,
-              }),
-            });
-            fetch("/api/calendar/sync", { method: "POST" }).catch(() => {});
-          }}
+      {calendarCap ? (
+        <CapHitCard
+          capType="calendar"
+          used={calendarCap.used}
+          cap={calendarCap.cap}
+          onDismiss={() => setCalendarCap(null)}
         />
-      </section>
+      ) : null}
 
-      <section className="flex items-center justify-between gap-4">
-        <h1 className="font-display text-[clamp(1.35rem,4.5vw,1.875rem)] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
-          Study Plan
-        </h1>
+      <section className="flex items-end justify-between gap-4">
+        <div>
+          <p className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.16em] text-amber-mf">
+            <span aria-hidden className="inline-block h-px w-4 bg-amber-mf" />
+            Plan
+          </p>
+          <h1 className="mt-2 font-display text-[clamp(1.5rem,4.5vw,2rem)] font-medium leading-tight tracking-tight text-ink dark:text-slate-50 sm:text-[2rem]">
+            Your study plan.
+          </h1>
+        </div>
         {weekPlan && !planBuilderOpen && (
           <button
             type="button"
@@ -991,7 +974,7 @@ function PlannerInner() {
                 className={
                   "min-h-[2.75rem] flex-1 touch-manipulation rounded px-3 py-2 text-sm font-medium transition-colors [-webkit-tap-highlight-color:transparent] " +
                   (examLevel === level
-                    ? "bg-sky-500 text-slate-950"
+                    ? "bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950"
                     : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800/80")
                 }
               >
@@ -1034,7 +1017,7 @@ function PlannerInner() {
                   className={
                     "min-h-[2.75rem] touch-manipulation rounded px-3 py-2 text-left text-sm font-medium transition-colors [-webkit-tap-highlight-color:transparent] sm:flex-1 sm:text-center " +
                     (levelIIIPathway === key
-                      ? "bg-sky-500 text-slate-950"
+                      ? "bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950"
                       : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800/80")
                   }
                 >
@@ -1053,7 +1036,7 @@ function PlannerInner() {
             <select
               value={examDate}
               onChange={(e) => setExamDate(e.target.value)}
-              className="min-h-[2.75rem] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 outline-none focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:text-sm"
+              className="min-h-[2.75rem] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:text-sm"
               required
             >
               {examWindows.map((w) => (
@@ -1077,7 +1060,7 @@ function PlannerInner() {
               type="date"
               value={planStartDate}
               onChange={(e) => setPlanStartDate(e.target.value)}
-              className="w-full rounded-md border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 dark:text-slate-100"
+              className="w-full rounded-md border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:text-slate-100"
               required
             />
           </div>
@@ -1103,7 +1086,7 @@ function PlannerInner() {
                 if (Number.isNaN(next)) return;
                 setWeeklyHours(next);
               }}
-              className="min-h-[2.75rem] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 outline-none focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:text-sm"
+              className="min-h-[2.75rem] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:text-sm"
               required
             />
             <p className="text-sm text-slate-500 dark:text-slate-400">Be realistic, not ideal.</p>
@@ -1116,7 +1099,7 @@ function PlannerInner() {
             <select
               value={weekStartDay}
               onChange={(e) => setWeekStartDay(e.target.value)}
-              className="min-h-[2.75rem] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 outline-none focus:border-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:text-sm"
+              className="min-h-[2.75rem] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:text-sm"
             >
               <option value="0">Sunday</option>
               <option value="1">Monday</option>
@@ -1134,7 +1117,7 @@ function PlannerInner() {
 
         <button
           type="submit"
-          className="inline-flex min-h-[2.75rem] touch-manipulation items-center justify-center rounded-md bg-sky-500 px-5 py-2.5 text-sm font-medium text-slate-950 hover:bg-sky-400 [-webkit-tap-highlight-color:transparent]"
+          className="inline-flex min-h-[2.75rem] touch-manipulation items-center justify-center rounded-md bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-800 [-webkit-tap-highlight-color:transparent] dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
         >
           Build my plan
         </button>
@@ -1299,7 +1282,7 @@ function PlannerInner() {
                       className={
                         "min-h-[2.5rem] min-w-[5.5rem] touch-manipulation rounded px-3 py-2 text-xs font-medium transition-colors [-webkit-tap-highlight-color:transparent] " +
                         (studyPlanAnchor === "progress"
-                          ? "bg-sky-500 text-slate-950"
+                          ? "bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950"
                           : "text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800")
                       }
                     >
@@ -1312,7 +1295,7 @@ function PlannerInner() {
                       className={
                         "min-h-[2.5rem] min-w-[5.5rem] touch-manipulation rounded px-3 py-2 text-xs font-medium transition-colors [-webkit-tap-highlight-color:transparent] " +
                         (studyPlanAnchor === "calendar"
-                          ? "bg-sky-500 text-slate-950"
+                          ? "bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950"
                           : "text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800")
                       }
                     >
@@ -1323,7 +1306,7 @@ function PlannerInner() {
                     <button
                       type="button"
                       onClick={() => setShowAllWeeks(!showAllWeeks)}
-                      className="text-xs font-medium text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300"
+                      className="text-xs font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
                     >
                       {showAllWeeks ? "Show less" : `View all ${weekPlan.length} weeks`}
                     </button>
@@ -1351,7 +1334,7 @@ function PlannerInner() {
                       className={
                         "rounded-lg border border-slate-200 bg-slate-100 p-3 dark:border-slate-800 dark:bg-slate-950/40 " +
                         (isFocusWeek
-                          ? "ring-2 ring-sky-500/45 ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-950"
+                          ? "ring-2 ring-emerald-500/45 ring-offset-2 ring-offset-paper dark:ring-offset-slate-950"
                           : "")
                       }
                     >
@@ -1361,7 +1344,7 @@ function PlannerInner() {
                             Week {week.week}
                           </span>
                           {isFocusWeek ? (
-                            <span className="rounded bg-sky-500/15 px-1.5 py-0.5 text-[10px] font-medium text-sky-800 dark:text-sky-300">
+                            <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-800 dark:text-emerald-300">
                               {studyPlanAnchor === "calendar" ? "This week" : "Focus"}
                             </span>
                           ) : null}
@@ -1405,7 +1388,7 @@ function PlannerInner() {
                         <input
                           type="number"
                           min={0}
-                          className="w-full rounded-md border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900 px-2 py-1 text-xs text-slate-900 outline-none focus:border-sky-500 dark:text-slate-100"
+                          className="w-full rounded-md border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900 px-2 py-1 text-xs text-slate-900 outline-none focus:border-emerald-500 dark:text-slate-100"
                           value={actualHours[idx] ?? ""}
                           onChange={(e) => {
                             const value = e.target.value;
@@ -1425,7 +1408,7 @@ function PlannerInner() {
                         <div className="flex gap-2 pt-0.5">
                           <button
                             type="button"
-                            className="text-[10px] font-medium text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300"
+                            className="text-[10px] font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
                             onClick={() => {
                               const next = [...actualHours];
                               while (next.length <= idx) next.push(null);
@@ -1464,7 +1447,7 @@ function PlannerInner() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <button
                   type="button"
-                  className="inline-flex w-full items-center justify-center rounded-md bg-sky-500 px-3 py-1.5 text-xs font-medium text-slate-950 hover:bg-sky-400 sm:w-auto"
+                  className="inline-flex w-full items-center justify-center rounded-md bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400 sm:w-auto"
                   onClick={async () => {
                     if (!weekPlan || !summary) {
                       setRebalanceMessage(
@@ -1661,7 +1644,7 @@ export default function PlannerPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
       </div>
     );
   }

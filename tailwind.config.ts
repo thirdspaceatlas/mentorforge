@@ -16,11 +16,25 @@ const config: Config = {
           hover: "rgb(var(--mf-accent-hover) / <alpha-value>)",
           foreground: "rgb(var(--mf-accent-foreground) / <alpha-value>)",
           subtle: "rgb(var(--mf-accent-subtle) / <alpha-value>)"
-        }
+        },
+        paper: "rgb(var(--mf-paper) / <alpha-value>)",
+        ink: "rgb(var(--mf-ink) / <alpha-value>)",
+        "amber-mf": {
+          DEFAULT: "rgb(var(--mf-amber) / <alpha-value>)",
+          soft: "rgb(var(--mf-amber-soft) / <alpha-value>)"
+        },
+        hair: "rgb(var(--mf-hair) / <alpha-value>)"
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        display: ["var(--font-display)", "Georgia", "ui-serif", "serif"]
+        display: ["var(--font-display)", "Georgia", "ui-serif", "serif"],
+        mono: [
+          "var(--font-mono)",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "monospace"
+        ]
       },
       borderRadius: {
         lg: "0.5rem",

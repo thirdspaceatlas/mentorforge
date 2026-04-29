@@ -242,7 +242,7 @@ export default function SessionPage() {
       }
       if (e.key === "Escape") {
         if (state === "active") interruptSession();
-        else if (state === "ready") router.push("/app");
+        else if (state === "ready") router.push("/app/today");
       }
     };
     window.addEventListener("keydown", handleKey);
@@ -291,7 +291,7 @@ export default function SessionPage() {
           </p>
           <p className="mt-1 text-sm text-slate-500">This study window may have passed.</p>
           <button
-            onClick={() => router.push("/app")}
+            onClick={() => router.push("/app/today")}
             className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-sky-500 hover:text-sky-400"
           >
             Back to dashboard
@@ -361,7 +361,7 @@ export default function SessionPage() {
                 Start Now
               </button>
               <button
-                onClick={() => router.push("/app")}
+                onClick={() => router.push("/app/today")}
                 className="flex min-h-[44px] w-full items-center justify-center rounded-md bg-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 [-webkit-tap-highlight-color:transparent]"
               >
                 Back to dashboard
@@ -419,7 +419,7 @@ export default function SessionPage() {
             )}
             <div className="mt-8">
               <button
-                onClick={() => router.push("/app")}
+                onClick={() => router.push("/app/today")}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M9 3L5 7l4 4" /></svg>

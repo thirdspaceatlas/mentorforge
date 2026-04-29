@@ -100,10 +100,10 @@ export function Navbar() {
                   href="/app"
                   className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 >
-                  Study Plan
+                  Plan
                 </Link>
                 <Link
-                  href="/app#calendar-coach"
+                  href="/app/today"
                   className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 >
                   Calendar Coach
@@ -204,9 +204,9 @@ export function Navbar() {
             {isApp ? (
               <>
                 <Link href="/app" className={mobileNavLinkClass} onClick={closeMobile}>
-                  Study Plan
+                  Plan
                 </Link>
-                <Link href="/app#calendar-coach" className={mobileNavLinkClass} onClick={closeMobile}>
+                <Link href="/app/today" className={mobileNavLinkClass} onClick={closeMobile}>
                   Calendar Coach
                 </Link>
                 <Link href="/app/account" className={mobileNavLinkClass} onClick={closeMobile}>

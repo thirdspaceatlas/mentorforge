@@ -9,7 +9,7 @@ import { getSiteUrl } from "@/lib/site";
 import { Providers } from "./providers";
 import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
-import { fontDisplay, fontSans } from "./fonts";
+import { fontDisplay, fontMono, fontSans } from "./fonts";
 
 const siteDescription =
   "Plan, pace, and rebalance your study path for serious exams and certifications.";
@@ -57,7 +57,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`scroll-smooth ${fontSans.variable} ${fontDisplay.variable}`}
+      className={`scroll-smooth ${fontSans.variable} ${fontDisplay.variable} ${fontMono.variable}`}
     >
       <body className="min-h-screen overflow-x-hidden bg-[#fafaf9] text-slate-900 dark:bg-slate-950 dark:text-slate-100 dark:antialiased">
         <Script
