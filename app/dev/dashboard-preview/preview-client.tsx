@@ -127,7 +127,7 @@ export function DashboardPreviewClient() {
         minutesToday={minutesToday}
       />
 
-      <TrendsDisclosure>
+      <TrendsDisclosure days={heatmap}>
         <RecentConsistencyBars days={heatmap} />
       </TrendsDisclosure>
     </section>

@@ -110,7 +110,7 @@ export function CalendarCoachDashboard({
             <CalendarStatus count={stats.calendarsConnected} />
           )}
         </div>
-        <TrendsDisclosure>
+        <TrendsDisclosure days={stats.heatmap}>
           <RecentConsistencyBars days={stats.heatmap} />
         </TrendsDisclosure>
       </section>
@@ -151,7 +151,7 @@ export function CalendarCoachDashboard({
         minutesToday={stats.minutesToday}
       />
 
-      <TrendsDisclosure>
+      <TrendsDisclosure days={heatmap}>
         <RecentConsistencyBars days={heatmap} />
       </TrendsDisclosure>
     </section>
