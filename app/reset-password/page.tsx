@@ -28,7 +28,8 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[60vh] max-w-sm flex-col justify-center space-y-8 py-12 sm:min-h-[65vh] sm:py-16">
+    <div className="relative left-1/2 -my-8 -ml-[50vw] flex min-h-[calc(100vh-3.65rem)] w-screen flex-col justify-center bg-paper px-4 py-12 sm:-my-14 sm:px-8 sm:py-16">
+      <div className="mx-auto flex w-full max-w-sm flex-col space-y-8">
       <div className="text-center">
         <h1 className="font-display text-3xl font-medium tracking-tight text-slate-900 dark:text-slate-50">
           Choose a new password
@@ -78,6 +79,7 @@ export default function ResetPasswordPage() {
           Back to sign in
         </Link>
       </p>
+      </div>
     </div>
   );
 }

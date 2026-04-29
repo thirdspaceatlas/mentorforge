@@ -61,7 +61,8 @@ function Bullet({ children }: { children: React.ReactNode }) {
 
 export default function PrivacyPage() {
   return (
-    <div className="space-y-14 pb-16 sm:pb-20">
+    <div className="relative left-1/2 -my-8 -ml-[50vw] w-screen bg-paper sm:-my-14">
+      <div className="mx-auto max-w-[1200px] space-y-14 px-4 pb-16 pt-12 sm:px-8 sm:pb-20 sm:pt-16">
       <header className="mx-auto max-w-3xl border-b border-slate-200/70 pb-12 text-center dark:border-slate-800/80 sm:pb-14">
         <p className="mb-5 font-display text-[0.7rem] font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
           Privacy policy
@@ -265,6 +266,7 @@ export default function PrivacyPage() {
           . A real person reads the inbox.
         </P>
       </section>
+      </div>
     </div>
   );
 }

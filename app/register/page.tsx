@@ -112,7 +112,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="mx-auto max-w-sm space-y-8 pt-8 sm:pt-12">
+    <div className="relative left-1/2 -my-8 -ml-[50vw] w-screen bg-paper sm:-my-14">
+      <div className="mx-auto max-w-sm space-y-8 px-4 pb-16 pt-12 sm:px-8 sm:pt-16">
       <div className="text-center">
         <h1 className="font-display text-3xl font-medium tracking-tight text-slate-900 dark:text-slate-50">
           Create your account
@@ -154,7 +155,7 @@ export default function RegisterPage() {
           type="button"
           onClick={() => handleOAuth("azure")}
           disabled={loading || oauthLoading != null || !privacyAccepted}
-          className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200"
+          className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-amber-mf py-3 text-sm font-semibold text-ink shadow-[0_8px_24px_rgb(201_132_43_/_0.35)] transition-colors hover:bg-amber-mf/90 disabled:opacity-50 disabled:shadow-none [-webkit-tap-highlight-color:transparent]"
         >
           {oauthLoading === "azure" ? "Connecting…" : "Continue with Microsoft"}
         </button>
@@ -162,7 +163,7 @@ export default function RegisterPage() {
           type="button"
           onClick={() => handleOAuth("google")}
           disabled={loading || oauthLoading != null || !privacyAccepted}
-          className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200"
+          className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-amber-mf py-3 text-sm font-semibold text-ink shadow-[0_8px_24px_rgb(201_132_43_/_0.35)] transition-colors hover:bg-amber-mf/90 disabled:opacity-50 disabled:shadow-none [-webkit-tap-highlight-color:transparent]"
         >
           {oauthLoading === "google" ? "Connecting…" : "Continue with Google"}
         </button>
@@ -245,7 +246,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading || !privacyAccepted}
-          className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50 [-webkit-tap-highlight-color:transparent] dark:bg-white dark:text-slate-950 dark:hover:bg-stone-200"
+          className="min-h-[2.75rem] w-full touch-manipulation rounded-full bg-amber-mf py-3 text-sm font-semibold text-ink shadow-[0_8px_24px_rgb(201_132_43_/_0.35)] transition-colors hover:bg-amber-mf/90 disabled:opacity-50 disabled:shadow-none [-webkit-tap-highlight-color:transparent]"
         >
           {loading ? "Creating account…" : "Create account"}
         </button>
@@ -260,6 +261,7 @@ export default function RegisterPage() {
           Sign in
         </Link>
       </p>
+      </div>
     </div>
   );
 }

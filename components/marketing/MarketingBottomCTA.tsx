@@ -40,7 +40,7 @@ export function MarketingBottomCTA({
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:mt-12">
             <Link
               href={primaryHref}
-              className="inline-flex min-h-[2.75rem] min-w-[12rem] touch-manipulation items-center justify-center rounded-full border border-transparent bg-slate-900 px-10 py-3.5 text-sm font-medium text-white shadow-md transition-[background-color,color,box-shadow] duration-200 ease-out hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#ebe8e2] [-webkit-tap-highlight-color:transparent] dark:border-transparent dark:bg-white dark:text-slate-950 dark:shadow-md dark:hover:bg-slate-200 dark:hover:text-slate-900 dark:focus-visible:ring-offset-[#0d1420]"
+              className="inline-flex min-h-[2.75rem] min-w-[12rem] touch-manipulation items-center justify-center rounded-full bg-amber-mf px-10 py-3.5 text-sm font-semibold text-ink shadow-[0_8px_24px_rgb(201_132_43_/_0.35)] transition-colors hover:bg-amber-mf/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-mf focus-visible:ring-offset-2 focus-visible:ring-offset-[#ebe8e2] [-webkit-tap-highlight-color:transparent] dark:focus-visible:ring-offset-[#0d1420]"
             >
               {primaryLabel}
             </Link>
@@ -76,7 +76,7 @@ export function MarketingBottomCTA({
       <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
         <Link
           href={primaryHref}
-          className="inline-flex min-h-[2.75rem] min-w-[10rem] touch-manipulation items-center justify-center rounded-full border border-transparent bg-slate-900 px-8 py-3.5 text-sm font-medium text-white shadow-sm transition-[background-color,color,box-shadow] duration-200 ease-out hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f1ec] [-webkit-tap-highlight-color:transparent] dark:border-transparent dark:bg-white dark:text-slate-950 dark:shadow-md dark:hover:bg-slate-200 dark:hover:text-slate-900 dark:focus-visible:ring-offset-[#151b28]"
+          className="inline-flex min-h-[2.75rem] min-w-[10rem] touch-manipulation items-center justify-center rounded-full bg-amber-mf px-8 py-3.5 text-sm font-semibold text-ink shadow-[0_8px_24px_rgb(201_132_43_/_0.35)] transition-colors hover:bg-amber-mf/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-mf focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f1ec] [-webkit-tap-highlight-color:transparent] dark:focus-visible:ring-offset-[#151b28]"
         >
           {primaryLabel}
         </Link>

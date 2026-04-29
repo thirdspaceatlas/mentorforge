@@ -30,7 +30,8 @@ const differentiators: { lead: string; rest: string }[] = [
 
 export default function LearnMorePage() {
   return (
-    <div className="space-y-20 pb-16 sm:space-y-24 sm:pb-20">
+    <div className="relative left-1/2 -my-8 -ml-[50vw] w-screen bg-paper sm:-my-14">
+      <div className="mx-auto max-w-[1200px] space-y-20 px-4 pb-16 pt-12 sm:space-y-24 sm:px-8 sm:pb-20 sm:pt-16">
       <section className="mx-auto max-w-4xl border-b border-slate-200/70 px-4 pb-16 pt-2 text-center dark:border-slate-800/80 sm:pb-16 sm:px-6">
         <p className="mb-4 font-display text-[0.7rem] font-medium uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
           MentorForge
@@ -98,7 +99,7 @@ export default function LearnMorePage() {
           {differentiators.map(({ lead, rest }) => (
             <div
               key={lead}
-              className="rounded-2xl border border-slate-200/90 bg-[#fafaf9] p-6 dark:border-slate-700/80 dark:bg-[#0f1520]"
+              className="rounded-2xl border border-slate-200/90 bg-white p-6 dark:border-slate-700/80 dark:bg-slate-900"
             >
               <p className="font-display text-base font-semibold text-slate-900 dark:text-slate-50">
                 {lead}
@@ -178,6 +179,7 @@ export default function LearnMorePage() {
         </div>
       </section>
 
+      </div>
       <section className="pt-20 sm:pt-24">
         <MarketingBottomCTA
           variant="band"

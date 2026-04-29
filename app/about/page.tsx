@@ -9,7 +9,8 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="space-y-16 pb-16 sm:space-y-20 sm:pb-20">
+    <div className="relative left-1/2 -my-8 -ml-[50vw] w-screen bg-paper sm:-my-14">
+      <div className="mx-auto max-w-[1200px] space-y-16 px-4 pb-16 pt-12 sm:space-y-20 sm:px-8 sm:pb-20 sm:pt-16">
       <header className="mx-auto max-w-3xl border-b border-slate-200/70 pb-14 text-center dark:border-slate-800/80 sm:pb-16">
         <p className="mb-5 font-display text-[0.7rem] font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
           About MentorForge
@@ -57,6 +58,7 @@ export default function AboutPage() {
         </blockquote>
       </figure>
 
+      </div>
       <section className="pt-12 sm:pt-16">
         <MarketingBottomCTA
           variant="band"

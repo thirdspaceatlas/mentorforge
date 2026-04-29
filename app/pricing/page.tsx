@@ -97,7 +97,8 @@ function FeatureList({ items }: { items: readonly string[] }) {
 
 export default function PricingPage() {
   return (
-    <div className="space-y-16 pb-16 sm:space-y-20 sm:pb-20">
+    <div className="relative left-1/2 -my-8 -ml-[50vw] w-screen bg-paper sm:-my-14">
+      <div className="mx-auto max-w-[1200px] space-y-16 px-4 pb-16 pt-12 sm:space-y-20 sm:px-8 sm:pb-20 sm:pt-16">
       <TrackEventOnMount event={Events.pricingViewed} />
       <header className="mx-auto max-w-3xl border-b border-slate-200/70 pb-14 text-center dark:border-slate-800/80 sm:pb-16">
         <p className="mb-5 font-display text-[0.7rem] font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
@@ -129,7 +130,7 @@ export default function PricingPage() {
         </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2 md:items-stretch md:gap-5">
-          <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-[#fafaf9] p-7 shadow-sm dark:border-slate-700/80 dark:bg-slate-950 sm:p-8">
+          <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-white p-7 shadow-sm dark:border-slate-700/80 dark:bg-slate-950 sm:p-8">
             <div>
               <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                 Free
@@ -165,29 +166,29 @@ export default function PricingPage() {
             </div>
           </article>
 
-          <article className="flex min-h-full flex-col rounded-2xl border-2 border-accent bg-white p-7 shadow-lg shadow-slate-900/10 ring-1 ring-accent/20 dark:border-accent dark:bg-[#141c28] dark:shadow-[0_20px_40px_-12px_rgb(0_0_0/0.5)] dark:ring-accent/30 sm:p-8">
+          <article className="relative flex min-h-full flex-col overflow-hidden rounded-2xl bg-ink p-7 shadow-[0_18px_44px_rgb(14_26_43_/_0.18)] sm:p-8">
             <div className="mb-5 text-center">
-              <span className="inline-block rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-slate-800 dark:border-accent/40 dark:bg-accent/15 dark:text-emerald-100">
+              <span className="inline-block rounded-full bg-amber-mf px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.12em] text-ink">
                 Best for the full journey
               </span>
             </div>
             <div>
-              <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+              <p className="font-display text-lg font-semibold tracking-tight text-amber-mf">
                 All Access
               </p>
-              <p className="mt-3 flex items-baseline gap-1.5 font-display text-3xl font-medium tabular-nums tracking-tight text-slate-900 dark:text-slate-50">
+              <p className="mt-3 flex items-baseline gap-1.5 font-display text-3xl font-medium tabular-nums tracking-tight text-white">
                 $8.25
-                <span className="text-base font-normal text-slate-500 dark:text-slate-400">/month</span>
+                <span className="text-base font-normal text-slate-400">/month</span>
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+              <p className="mt-1 text-sm leading-relaxed text-slate-300">
                 Billed yearly at $99. All three levels, unlimited everything.
               </p>
             </div>
-            <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+            <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-400">
               What&apos;s included
             </p>
-            <FeatureList
-              items={[
+            <ul className="mt-6 space-y-2.5 text-sm leading-relaxed text-slate-200">
+              {[
                 "Everything in Free, unlimited",
                 "Unlimited calendars — work, personal, and shared all count against study time",
                 "Unlimited Calendar Coach nudges",
@@ -195,16 +196,21 @@ export default function PricingPage() {
                 "Full session history, heatmap, and forecast",
                 "Levels I, II & III unlocked",
                 "Priority support + direct founder access"
-              ]}
-            />
+              ].map((item) => (
+                <li key={item} className="flex gap-2.5">
+                  <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-amber-mf" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
             <div className="mt-auto pt-8">
               <AllAccessCheckoutButton
                 priceId={priceAllAccess}
-                className="flex w-full min-h-[2.75rem] items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:ring-offset-[#141c28]"
+                className="flex w-full min-h-[2.75rem] items-center justify-center rounded-full bg-amber-mf px-5 py-3 text-sm font-semibold text-ink shadow-[0_8px_24px_rgb(201_132_43_/_0.35)] transition-colors hover:bg-amber-mf/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-mf focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
               >
                 Get All Access — $99/year
               </AllAccessCheckoutButton>
-              <p className="mt-4 text-center text-sm font-medium leading-snug text-slate-700 dark:text-slate-300">
+              <p className="mt-4 text-center text-sm font-medium leading-snug text-slate-300">
                 Less than the cost of one Schweser mock exam.
               </p>
             </div>
@@ -248,6 +254,7 @@ export default function PricingPage() {
         </div>
       </section>
 
+      </div>
       <section className="pt-16 sm:pt-20">
         <MarketingBottomCTA
           variant="band"
