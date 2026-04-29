@@ -71,7 +71,7 @@ export function AppSidebar() {
               key={href}
               href={href}
               className={
-                "relative flex min-h-[2.5rem] items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors " +
+                "relative flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors " +
                 (isActive
                   ? "bg-white font-semibold text-ink dark:bg-slate-800/60 dark:text-slate-100"
                   : "font-medium text-slate-600 hover:bg-white/60 hover:text-ink dark:text-slate-400 dark:hover:bg-slate-800/40 dark:hover:text-slate-200")
@@ -117,8 +117,8 @@ export function AppSidebar() {
         <span className="truncate text-[12.5px]">{userRowLabel}</span>
       </Link>
 
-      <div className="border-t border-hair px-3 py-4 dark:border-slate-800/80">
-        <div className="flex items-center justify-between px-3">
+      <div className="border-t border-hair px-3 py-3 dark:border-slate-800/80">
+        <div className="flex items-center justify-between gap-2 px-1">
           <ThemeToggle />
           <button
             type="button"
@@ -127,7 +127,7 @@ export function AppSidebar() {
               await supabase.auth.signOut();
               window.location.href = "/";
             }}
-            className="text-xs font-medium text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            className="inline-flex min-h-[44px] items-center rounded-md px-3 text-xs font-medium text-slate-500 transition-colors hover:bg-white/60 hover:text-slate-800 [-webkit-tap-highlight-color:transparent] dark:text-slate-400 dark:hover:bg-slate-800/40 dark:hover:text-slate-200"
           >
             Sign out
           </button>
