@@ -12,7 +12,7 @@ import { TrendsDisclosure } from "./TrendsDisclosure";
  */
 
 type StudyType = "review" | "new" | "practice";
-type WindowStatus = "done" | "current" | "upcoming";
+type WindowStatus = "done" | "current" | "upcoming" | "missed";
 
 type DashWindow = {
   id: string;
@@ -212,7 +212,7 @@ export function HeroNextSession({
 
           {/* Title — Fraunces, ink */}
           <h2 className="mt-2.5 font-display text-3xl font-medium leading-[1.05] tracking-tight text-ink dark:text-slate-100 sm:text-4xl">
-            {nextWindow.topicName || "Study session"}
+            {nextWindow.topicName || fallbackTopic(nextWindow.studyType)}
             <span className="text-slate-400 dark:text-slate-500">.</span>
           </h2>
 
@@ -305,12 +305,14 @@ export function HeroNextSession({
             )}
           </div>
 
-          {/* Legend */}
+          {/* Legend — hide done-logged row when nothing logged yet (streak-free) */}
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11.5px] text-slate-600 dark:text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <span aria-hidden className="inline-block h-2 w-2 bg-ink dark:bg-slate-200" />
-              {doneCount} session{doneCount === 1 ? "" : "s"} logged
-            </span>
+            {doneCount > 0 && (
+              <span className="flex items-center gap-1.5">
+                <span aria-hidden className="inline-block h-2 w-2 bg-ink dark:bg-slate-200" />
+                {doneCount} session{doneCount === 1 ? "" : "s"} logged
+              </span>
+            )}
             <span className="flex items-center gap-1.5">
               <span aria-hidden className="inline-block h-2 w-2 bg-amber-mf" />
               Up next <span className="font-mono tabular-nums">· {startTime}</span>
@@ -379,6 +381,24 @@ function formatHM(min: number): string {
   const h = Math.floor(min / 60);
   const m = min % 60;
   return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
+/**
+ * Editorial fallback when the topic recommender hasn't populated topicName.
+ * Uses studyType for context so the Fraunces title carries some signal
+ * instead of the generic "Study session." everyone sees.
+ */
+function fallbackTopic(studyType: string | null): string {
+  switch (studyType) {
+    case "review":
+      return "Review session";
+    case "new":
+      return "New material";
+    case "practice":
+      return "Practice session";
+    default:
+      return "Study session";
+  }
 }
 
 export function TodaysDocket({
@@ -869,7 +889,7 @@ function WindowRow({
   showConnector: boolean;
   isHighlight?: boolean;
 }) {
-  const isDone = window.status === "done";
+  const isMuted = window.status === "done" || window.status === "missed";
   return (
     <div className="relative flex items-start gap-3 py-2.5" role="listitem">
       {showConnector && (
@@ -881,12 +901,12 @@ function WindowRow({
           className={
             (isHighlight ? "font-semibold " : "font-medium ") +
             "text-sm " +
-            (isDone
+            (isMuted
               ? "text-slate-400 dark:text-slate-500"
               : "text-ink dark:text-slate-100")
           }
         >
-          {window.topicName || "Study session"}
+          {window.topicName || fallbackTopic(window.studyType)}
         </p>
         <p className="text-xs text-slate-400 dark:text-slate-500">
           {new Date(window.startTime).toLocaleTimeString([], {
@@ -1011,6 +1031,14 @@ function TimelineDot({
   if (status === "current" || isHighlight) {
     return (
       <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-mf-soft text-amber-mf ring-[3px] ring-amber-mf/15 dark:bg-amber-mf/15">
+        <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="currentColor" /></svg>
+      </div>
+    );
+  }
+  if (status === "missed") {
+    // Streak-free: muted dot, no rust, no warning iconography.
+    return (
+      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-200/60 text-slate-400 dark:bg-slate-700/40 dark:text-slate-500">
         <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="currentColor" /></svg>
       </div>
     );

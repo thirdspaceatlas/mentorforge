@@ -95,13 +95,19 @@ export async function GET() {
     heatmap.push({ date: dateStr, minutes: Math.round(dayMin) });
   }
 
-  // Enrich today's windows with status
+  // Enrich today's windows with status.
+  // "done" = a real StudySession completed.
+  // "current" = right now is inside the window.
+  // "missed" = endTime in the past with no completed session (time passed,
+  //   nothing logged). Streak-free thesis stands: missed is not punished
+  //   visually, but it is NOT counted as "done" on the dashboard.
+  // "upcoming" = future, no session yet.
   const enrichedWindows = todayWindows.map((w) => {
     const session = w.sessions[0] ?? null;
-    let status: "done" | "current" | "upcoming" = "upcoming";
+    let status: "done" | "current" | "upcoming" | "missed" = "upcoming";
     if (session?.completedAt && !session.interrupted) status = "done";
     else if (w.startTime <= now && w.endTime >= now) status = "current";
-    else if (w.endTime < now) status = "done";
+    else if (w.endTime < now) status = "missed";
 
     return {
       id: w.id,
@@ -122,13 +128,17 @@ export async function GET() {
     null;
 
   /**
-   * UX rule: at the start of a day, show only ONE suggested session.
-   * If the user completes extra sessions, keep them visible.
+   * UX rule: at the very start of a day with nothing to show, surface only
+   * the next session — calm default. Once the day is in motion (anything
+   * done OR anything time-passed), show the day's narrative: done +
+   * missed + the next session. Missed renders neutrally on the ribbon
+   * (no rust, no "missed" word) so the streak-free thesis stands.
    */
   const completedToday = enrichedWindows.filter((w) => w.status === "done");
-  const hasCompletedSessionToday = completedToday.length > 0 || minutesToday > 0;
-  const todayWindowsForUI = hasCompletedSessionToday
-    ? [...completedToday, ...(nextWindow ? [nextWindow] : [])]
+  const missedToday = enrichedWindows.filter((w) => w.status === "missed");
+  const dayInMotion = completedToday.length > 0 || missedToday.length > 0 || minutesToday > 0;
+  const todayWindowsForUI = dayInMotion
+    ? [...completedToday, ...missedToday, ...(nextWindow ? [nextWindow] : [])]
     : nextWindow
     ? [nextWindow]
     : [];

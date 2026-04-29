@@ -12,7 +12,7 @@ import {
   xfor,
 } from "@/lib/calendar/ribbon";
 
-type RibbonStatus = "done" | "current" | "upcoming";
+type RibbonStatus = "done" | "current" | "upcoming" | "missed";
 
 export type RibbonWindow = {
   id: string;
@@ -98,7 +98,7 @@ export function DayRibbon({
           isHighlight={w.id === highlightId}
           above={i % 2 === 0}
           onClick={
-            w.status === "done"
+            w.status === "done" || w.status === "missed"
               ? undefined
               : () => router.push(`/app/session/${w.id}`)
           }
@@ -151,6 +151,11 @@ function SessionPill({
   if (w.status === "done") {
     style =
       "bg-ink text-white dark:bg-slate-200 dark:text-slate-900 border border-transparent";
+  } else if (w.status === "missed") {
+    // Streak-free thesis: missed renders neutrally — present, not punished.
+    // Muted slate fill with reduced contrast text. No "missed" word, no rust.
+    style =
+      "bg-slate-300/70 text-slate-600 dark:bg-slate-700/60 dark:text-slate-400 border border-transparent";
   } else if (isHighlight) {
     style =
       "bg-amber-mf text-ink border border-amber-mf shadow-[0_8px_18px_rgb(201_132_43_/_0.35)]";
