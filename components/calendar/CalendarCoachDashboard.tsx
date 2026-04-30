@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DayRibbon } from "./DayRibbon";
 import { RecentConsistencyBars } from "./RecentConsistencyBars";
@@ -10,6 +11,17 @@ import { TrendsDisclosure } from "./TrendsDisclosure";
  * Calendar Coach dashboard section — renders above the study planner.
  * Fetches real data from GET /api/calendar/stats.
  */
+
+function formatExamCoachLabel(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  const dt = new Date(y, m - 1, d);
+  return dt.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 type StudyType = "review" | "new" | "practice";
 type WindowStatus = "done" | "current" | "upcoming" | "missed";
@@ -25,10 +37,18 @@ type DashWindow = {
 
 type HeatmapDay = { date: string; minutes: number };
 
+type StudyPlanSummary = {
+  examLevel: string;
+  examDate: string;
+  weeklyHours: number;
+  weekCount: number;
+};
+
 type DashStats = {
   minutesToday: number;
   pacePercent: number;
   daysToExam: number;
+  studyPlanSummary: StudyPlanSummary | null;
   calendarsConnected: number;
   todayWindows: DashWindow[];
   nextWindow: DashWindow | null;
@@ -72,23 +92,96 @@ export function CalendarCoachDashboard({
     );
   }
 
-  // Show onboarding prompt on error (API may fail if tables are new) or no connections
-  if (error || !stats || stats.calendarsConnected === 0) {
+  if (error || !stats) {
     return (
       <section className="mb-8" aria-label="Calendar Coach">
         <div className="rounded-lg border border-slate-200 bg-white p-6 text-center dark:border-slate-700 dark:bg-slate-900">
           <p className="font-display text-lg font-semibold text-slate-900 dark:text-slate-100">
-            Connect your calendar to get started
+            Calendar Coach couldn&apos;t load
           </p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Calendar Coach finds study windows in your real schedule.
+            Refresh the page or try again in a moment.
           </p>
-          <button
-            onClick={() => router.push("/app/onboarding")}
-            className="mt-4 inline-flex min-h-[44px] items-center rounded-md bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
-          >
-            Set up Calendar Coach
-          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (stats.calendarsConnected === 0) {
+    const sp = stats.studyPlanSummary;
+    const hasWeeks = sp != null && sp.weekCount > 0;
+    return (
+      <section className="mb-8" aria-label="Calendar Coach">
+        <div className="rounded-lg border border-hair bg-white p-6 dark:border-slate-700 dark:bg-slate-900 sm:p-8">
+          <p className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.16em] text-amber-mf">
+            <span aria-hidden className="inline-block h-px w-4 bg-amber-mf" />
+            Calendar Coach
+          </p>
+          <h2 className="mt-2 font-display text-xl font-medium tracking-tight text-ink dark:text-slate-100 sm:text-2xl">
+            {hasWeeks
+              ? "Your study plan is ready"
+              : "Connect a calendar to unlock scheduling"}
+          </h2>
+          {sp != null && (
+            <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              {hasWeeks ? (
+                <>
+                  The plan you built on{" "}
+                  <Link
+                    href="/app"
+                    className="font-medium text-emerald-800 underline decoration-emerald-800/30 underline-offset-2 hover:text-emerald-900 dark:text-emerald-400 dark:decoration-emerald-400/40"
+                  >
+                    Plan
+                  </Link>{" "}
+                  is already saved (Level {sp.examLevel}, exam{" "}
+                  {formatExamCoachLabel(sp.examDate)}, {sp.weeklyHours} hrs/week
+                  {sp.weekCount > 0 ? `, ${sp.weekCount} weeks` : ""}). Connect a
+                  calendar so we can find study windows that fit your real
+                  schedule — nothing to re-enter after you upgrade.
+                </>
+              ) : (
+                <>
+                  We&apos;ve saved your exam preferences. Build your week-by-week
+                  roadmap on{" "}
+                  <Link
+                    href="/app"
+                    className="font-medium text-emerald-800 underline decoration-emerald-800/30 underline-offset-2 hover:text-emerald-900 dark:text-emerald-400"
+                  >
+                    Plan
+                  </Link>
+                  , then connect a calendar here for gap-based sessions.
+                </>
+              )}
+            </p>
+          )}
+          {sp == null && (
+            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+              Calendar Coach finds study windows in your real schedule. Connect a
+              calendar to get started, or{" "}
+              <Link
+                href="/app"
+                className="font-medium text-emerald-800 underline decoration-emerald-800/30 underline-offset-2 dark:text-emerald-400"
+              >
+                build your plan first
+              </Link>
+              .
+            </p>
+          )}
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <button
+              type="button"
+              onClick={() => router.push("/app/onboarding")}
+              className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
+            >
+              Connect calendar
+            </button>
+            <Link
+              href="/app"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-hair px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-paper dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-800"
+            >
+              Review study plan
+            </Link>
+          </div>
         </div>
       </section>
     );

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { targetHoursForLevel } from "@/lib/study-plan/target-hours";
 
 /**
  * GET /api/calendar/stats — Dashboard stats for Calendar Coach.
@@ -29,6 +30,7 @@ export async function GET() {
     connections,
     todayWindows,
     recentSessions,
+    savedStudyPlan,
   ] = await Promise.all([
     // Today's completed sessions (including interrupted — study time still counts)
     prisma.studySession.findMany({
@@ -76,7 +78,56 @@ export async function GET() {
       },
       select: { startedAt: true, actualMin: true },
     }),
+
+    prisma.savedStudyPlan.findUnique({
+      where: { userId: user.id },
+      select: {
+        examLevel: true,
+        examDate: true,
+        weeklyHours: true,
+        weekPlan: true,
+        actualHours: true,
+      },
+    }),
   ]);
+
+  let pacePercent = 0;
+  let daysToExam = 0;
+  let studyPlanSummary: {
+    examLevel: string;
+    examDate: string;
+    weeklyHours: number;
+    weekCount: number;
+  } | null = null;
+
+  if (savedStudyPlan) {
+    const wp = savedStudyPlan.weekPlan;
+    const weekCount = Array.isArray(wp) ? wp.length : 0;
+    studyPlanSummary = {
+      examLevel: savedStudyPlan.examLevel,
+      examDate: savedStudyPlan.examDate,
+      weeklyHours: savedStudyPlan.weeklyHours,
+      weekCount,
+    };
+
+    const target = targetHoursForLevel(savedStudyPlan.examLevel);
+    const actuals = savedStudyPlan.actualHours as unknown;
+    const completed =
+      Array.isArray(actuals)
+        ? actuals.reduce<number>((s, a) => s + (typeof a === "number" ? a : 0), 0)
+        : 0;
+    pacePercent =
+      target > 0 ? Math.min(100, Math.round((completed / target) * 100)) : 0;
+
+    const examIso = savedStudyPlan.examDate;
+    if (typeof examIso === "string" && /^\d{4}-\d{2}-\d{2}$/.test(examIso)) {
+      const [ey, em, ed] = examIso.split("-").map(Number);
+      const exam = new Date(ey, em - 1, ed);
+      exam.setHours(0, 0, 0, 0);
+      const diffMs = exam.getTime() - todayStart.getTime();
+      daysToExam = Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000)));
+    }
+  }
 
   // Minutes today
   const minutesToday = Math.round(
@@ -143,13 +194,11 @@ export async function GET() {
     ? [nextWindow]
     : [];
 
-  // TODO: Calculate pacePercent from study plan progress
-  // TODO: Calculate daysToExam from exam instance
-
   return NextResponse.json({
     minutesToday,
-    pacePercent: 0, // placeholder — needs study plan integration
-    daysToExam: 0,  // placeholder — needs exam instance lookup
+    pacePercent,
+    daysToExam,
+    studyPlanSummary,
     calendarsConnected: connections,
     todayWindows: todayWindowsForUI,
     nextWindow,

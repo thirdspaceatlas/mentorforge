@@ -674,6 +674,9 @@ function PlannerInner() {
     useState<StudyPlanAnchorMode>("progress");
   const [calendarPreferredSessionMin, setCalendarPreferredSessionMin] =
     useState(45);
+  const [forecastDays, setForecastDays] = useState(1);
+  const [dayStartHour, setDayStartHour] = useState(7);
+  const [dayEndHour, setDayEndHour] = useState(22);
 
   const examWindows = useMemo(() => getExamWindowsSorted(examLevel), [examLevel]);
 
@@ -706,6 +709,15 @@ function PlannerInner() {
           setCalendarPreferredSessionMin(
             Math.min(180, Math.max(5, Math.round(p.calendarPreferredSessionMin)))
           );
+        }
+        if (typeof p.forecastDays === "number" && (p.forecastDays === 1 || p.forecastDays === 3 || p.forecastDays === 5)) {
+          setForecastDays(p.forecastDays);
+        }
+        if (typeof p.dayStartHour === "number") {
+          setDayStartHour(Math.min(23, Math.max(0, Math.round(p.dayStartHour))));
+        }
+        if (typeof p.dayEndHour === "number") {
+          setDayEndHour(Math.min(24, Math.max(1, Math.round(p.dayEndHour))));
         }
 
         // If weekPlan has data, restore the full plan; otherwise just pre-fill the form
@@ -759,12 +771,15 @@ function PlannerInner() {
       planStartDate,
       weekStartDay,
       levelIIIPathway: examLevel === "III" ? levelIIIPathway : null,
+      forecastDays,
       calendarPreferredSessionMin,
+      dayStartHour,
+      dayEndHour,
       weekPlan: serializeWeekPlan(weekPlan),
       baseWeekPlan: serializeWeekPlan(baseWeekPlan),
       actualHours,
     };
-  }, [weekPlan, baseWeekPlan, actualHours, examLevel, examDate, weeklyHoursNum, planStartDate, weekStartDay, levelIIIPathway, calendarPreferredSessionMin]);
+  }, [weekPlan, baseWeekPlan, actualHours, examLevel, examDate, weeklyHoursNum, planStartDate, weekStartDay, levelIIIPathway, calendarPreferredSessionMin, forecastDays, dayStartHour, dayEndHour]);
 
   useEffect(() => {
     if (!user || !weekPlan || !planLoaded) return;
@@ -783,7 +798,7 @@ function PlannerInner() {
     }, 1000);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weekPlan, baseWeekPlan, actualHours, examLevel, examDate, weeklyHoursNum, planStartDate, weekStartDay, levelIIIPathway, calendarPreferredSessionMin, planLoaded]);
+  }, [weekPlan, baseWeekPlan, actualHours, examLevel, examDate, weeklyHoursNum, planStartDate, weekStartDay, levelIIIPathway, calendarPreferredSessionMin, forecastDays, dayStartHour, dayEndHour, planLoaded]);
 
   const makeSummaryInput = (plan: WeekPlan[], actuals: (number | null)[]): BuildSummaryInput => ({
     plan,

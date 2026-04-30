@@ -27,6 +27,9 @@ export type SavedStudyPlanPayload = {
   forecastDays?: number;
   /** Minutes — default session chunk for Calendar Coach (5–180). */
   calendarPreferredSessionMin?: number;
+  /** Calendar Coach / gap finder working-hours band (must persist across Plan saves). */
+  dayStartHour?: number;
+  dayEndHour?: number;
   weekPlan: WeekPlanSerialized[];
   baseWeekPlan: WeekPlanSerialized[];
   actualHours: (number | null)[];

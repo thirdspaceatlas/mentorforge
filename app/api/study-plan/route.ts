@@ -55,19 +55,37 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const prefMin = calendarPreferredSessionMin != null ? Number(calendarPreferredSessionMin) : 45;
-  const calendarPreferredSessionMinClamped =
-    Number.isFinite(prefMin) ? Math.min(180, Math.max(5, Math.round(prefMin))) : 45;
+  // Preserve Calendar Coach fields when a client omits them (e.g. Plan auto-save
+  // should not reset forecast range or working hours set from Account / Coach).
+  const existing = await prisma.savedStudyPlan.findUnique({
+    where: { userId: user.id },
+  });
+
+  const rawPref =
+    calendarPreferredSessionMin != null
+      ? Number(calendarPreferredSessionMin)
+      : (existing?.calendarPreferredSessionMin ?? 45);
+  const calendarPreferredSessionMinClamped = Number.isFinite(rawPref)
+    ? Math.min(180, Math.max(5, Math.round(rawPref)))
+    : Math.min(180, Math.max(5, existing?.calendarPreferredSessionMin ?? 45));
+
+  let forecastDaysClamped = existing?.forecastDays ?? 1;
+  if (forecastDays != null) {
+    const n = Number(forecastDays);
+    if (n === 1 || n === 3 || n === 5) forecastDaysClamped = n;
+  }
 
   // Working-hours range: clamp 0-23 for start, ensure end > start, max 24.
-  const startRaw = dayStartHour != null ? Number(dayStartHour) : 7;
-  const endRaw = dayEndHour != null ? Number(dayEndHour) : 22;
+  const startRaw =
+    dayStartHour != null ? Number(dayStartHour) : (existing?.dayStartHour ?? 7);
+  const endRaw =
+    dayEndHour != null ? Number(dayEndHour) : (existing?.dayEndHour ?? 22);
   const dayStartHourClamped = Number.isFinite(startRaw)
     ? Math.min(23, Math.max(0, Math.round(startRaw)))
-    : 7;
+    : (existing?.dayStartHour ?? 7);
   const dayEndHourClamped = Number.isFinite(endRaw)
     ? Math.min(24, Math.max(dayStartHourClamped + 1, Math.round(endRaw)))
-    : Math.max(dayStartHourClamped + 1, 22);
+    : Math.max(dayStartHourClamped + 1, existing?.dayEndHour ?? 22);
 
   const data = {
     examLevel,
@@ -76,7 +94,7 @@ export async function PUT(req: NextRequest) {
     planStartDate,
     weekStartDay,
     levelIIIPathway: levelIIIPathway ?? null,
-    forecastDays: forecastDays != null ? Number(forecastDays) : 1,
+    forecastDays: forecastDaysClamped,
     calendarPreferredSessionMin: calendarPreferredSessionMinClamped,
     dayStartHour: dayStartHourClamped,
     dayEndHour: dayEndHourClamped,
