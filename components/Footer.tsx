@@ -24,7 +24,7 @@ const marketingSignedInTail: FooterLink[] = [
 
 const appLinks: FooterLink[] = [
   { href: "/app", label: "Study Plan" },
-  { href: "/app#calendar-coach", label: "Calendar Coach" }
+  { href: "/app/today", label: "Calendar Coach" },
 ];
 
 export function Footer() {

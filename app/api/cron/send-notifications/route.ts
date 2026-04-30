@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
       const payload = {
         title,
         body,
-        url: "/app#calendar-coach",
+        url: "/app/today",
         tag: `window-${win.id}`
       };
 

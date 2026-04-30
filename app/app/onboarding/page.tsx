@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Events,
@@ -8,19 +8,11 @@ import {
   bucketHoursPerWeek,
   bucketDaysToExam,
 } from "@/lib/analytics";
-import { subscribeToPush } from "@/lib/push/client";
+import { isPushSupported, subscribeToPush } from "@/lib/push/client";
 
 /**
- * Calendar Coach onboarding — 7-step linear wizard.
- * Route: /app/onboarding
- *
- * Renders as a full-viewport overlay (no nav, no footer).
- * Steps: Welcome → Exam Level → Calendar Connect → Study Preferences →
- *        Notifications → Install App → All Set
- *
- * TODO: Wire OAuth buttons to real Google/Outlook flows.
- * TODO: Wire notification enable to push subscription API.
- * TODO: Persist preferences to API on completion.
+ * Calendar Coach onboarding — linear wizard at /app/onboarding.
+ * Pre-fills exam rhythm + CRM fields from SavedStudyPlan and Profile when present.
  */
 
 type CfaLevel = "I" | "II" | "III";
@@ -82,6 +74,66 @@ const ATTRIBUTION_OPTIONS = [
   "Other"
 ] as const;
 
+/** ISO exam dates used by POST /api/onboarding-preferences → window label in step 4. */
+const EXAM_ISO_TO_WINDOW_LABEL: Record<string, string> = {
+  "2026-05-12": "May 2026",
+  "2026-08-18": "August 2026",
+  "2026-11-15": "November 2026",
+  "2027-02-02": "February 2027",
+};
+
+function isCfaLevel(v: string): v is CfaLevel {
+  return v === "I" || v === "II" || v === "III";
+}
+
+function examIsoToWindowLabel(iso: string): string {
+  return EXAM_ISO_TO_WINDOW_LABEL[iso] ?? "May 2026";
+}
+
+function nearestMinSessionOption(minutes: number): string {
+  const opts = [5, 10, 15, 20];
+  const clamped = Math.max(5, Math.min(180, Math.round(minutes)));
+  let best = opts[0]!;
+  let bestDist = Infinity;
+  for (const o of opts) {
+    const d = Math.abs(o - clamped);
+    if (d < bestDist) {
+      bestDist = d;
+      best = o;
+    }
+  }
+  return String(best);
+}
+
+function safeCredentialType(v: string | null): CredentialType {
+  if (!v) return "";
+  if (v === "CFA" || v === "CFP_waitlist" || v === "other") return v;
+  return "";
+}
+
+function safePrimaryChallenge(v: string | null): PrimaryChallenge {
+  if (!v) return "";
+  const ok = PRIMARY_CHALLENGE_OPTIONS.some((o) => o.value === v);
+  return ok ? (v as PrimaryChallenge) : "";
+}
+
+function safeEmployerType(v: string | null): EmployerType {
+  if (!v) return "";
+  const ok = EMPLOYER_OPTIONS.some((o) => o.value === v);
+  return ok ? (v as EmployerType) : "";
+}
+
+function attributionFromDb(raw: string | null): string {
+  if (!raw) return "";
+  if ((ATTRIBUTION_OPTIONS as readonly string[]).includes(raw)) return raw;
+  const lower = raw.trim().toLowerCase();
+  for (const o of ATTRIBUTION_OPTIONS) {
+    if (o.toLowerCase() === lower) return o;
+  }
+  if (lower.startsWith("other")) return "Other";
+  return "";
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -100,6 +152,51 @@ export default function OnboardingPage() {
   const [primaryChallengeOther, setPrimaryChallengeOther] = useState("");
   const [employerOther, setEmployerOther] = useState("");
   const [attributionOther, setAttributionOther] = useState("");
+  /** True once we loaded a saved study plan from the API (used to explain pre-filled rhythm). */
+  const [rhythmFromSavedPlan, setRhythmFromSavedPlan] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      fetch("/api/study-plan").then((r) => (r.ok ? r.json() : null)),
+      fetch("/api/profile/onboarding").then((r) => (r.ok ? r.json() : null)),
+    ])
+      .then(([planRes, profRes]) => {
+        if (!active) return;
+        const plan = planRes?.plan;
+        if (plan && typeof plan.examLevel === "string" && isCfaLevel(plan.examLevel)) {
+          setLevel(plan.examLevel);
+        }
+        if (
+          plan &&
+          typeof plan.weeklyHours === "number" &&
+          plan.weeklyHours >= 1 &&
+          plan.weeklyHours <= 40
+        ) {
+          setHoursPerWeek(plan.weeklyHours);
+        }
+        if (plan && typeof plan.calendarPreferredSessionMin === "number") {
+          setMinSession(nearestMinSessionOption(plan.calendarPreferredSessionMin));
+        }
+        if (plan && typeof plan.examDate === "string") {
+          setExamWindow(examIsoToWindowLabel(plan.examDate));
+          setRhythmFromSavedPlan(true);
+        }
+        const pr = profRes?.profile;
+        if (pr) {
+          if (typeof pr.lastName === "string" && pr.lastName) setLastName(pr.lastName);
+          setCredentialType(safeCredentialType(pr.credentialType));
+          setPrimaryChallenge(safePrimaryChallenge(pr.primaryChallenge));
+          setEmployerType(safeEmployerType(pr.employerType));
+          const att = attributionFromDb(pr.attribution);
+          if (att) setAttribution(att);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     document.title = `${STEP_TITLES[step - 1]} · MentorForge`;
@@ -302,6 +399,12 @@ export default function OnboardingPage() {
               <StepSubtitle>
                 We&apos;ll find windows that fit how you actually work.
               </StepSubtitle>
+              {rhythmFromSavedPlan ? (
+                <p className="-mt-4 mb-6 text-left text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
+                  These fields match your saved study plan from Plan. Adjust only
+                  if something changed — you don&apos;t need to rebuild your roadmap.
+                </p>
+              ) : null}
 
               <Field label="Available hours per week" hint="Be realistic, not ideal.">
                 <input
@@ -362,7 +465,8 @@ export default function OnboardingPage() {
               <StepTitle>Help us make MentorForge better for you.</StepTitle>
               <StepSubtitle>
                 All optional. Skip anything you&apos;d rather not share — you can always update
-                this later in your account.
+                this later in your account. If you already filled this on another device,
+                we&apos;ve pre-filled what we have on file.
               </StepSubtitle>
 
               <Field label="Last name">
@@ -507,10 +611,13 @@ export default function OnboardingPage() {
                 <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
                 Syncing calendars...
               </div>
-              <div className="mt-8">
-                <PrimaryButton onClick={() => router.push("/app")}>
-                  Go to dashboard
+              <div className="mt-8 space-y-2">
+                <PrimaryButton onClick={() => router.push("/app/today")}>
+                  Open Calendar Coach
                 </PrimaryButton>
+                <SecondaryButton onClick={() => router.push("/app")}>
+                  Review study plan
+                </SecondaryButton>
               </div>
             </StepShell>
           )}
@@ -542,11 +649,26 @@ function StepSubtitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PrimaryButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+function PrimaryButton({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
   return (
     <button
+      type="button"
+      disabled={disabled}
       onClick={onClick}
-      className="flex min-h-[48px] w-full items-center justify-center rounded-md bg-emerald-700 px-6 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400 [-webkit-tap-highlight-color:transparent]"
+      className={
+        "flex min-h-[48px] w-full items-center justify-center rounded-md bg-emerald-700 px-6 py-3 text-[15px] font-semibold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:bg-emerald-500 dark:text-emerald-950 [-webkit-tap-highlight-color:transparent] " +
+        (disabled
+          ? "cursor-not-allowed opacity-45"
+          : "hover:bg-emerald-800 dark:hover:bg-emerald-400")
+      }
     >
       {children}
     </button>
@@ -634,6 +756,23 @@ function NotificationsStep({
   >("idle");
   const [message, setMessage] = useState<string | null>(null);
 
+  useLayoutEffect(() => {
+    if (!isPushSupported()) {
+      setState("unsupported");
+      setMessage(
+        "This browser doesn't support push notifications. You'll still get the weekly digest email."
+      );
+      return;
+    }
+    const vapid = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
+    if (!vapid) {
+      setState("unsupported");
+      setMessage(
+        "Push isn't configured on this build. You'll still get the weekly digest email."
+      );
+    }
+  }, []);
+
   async function enable() {
     setState("requesting");
     setMessage(null);
@@ -657,15 +796,18 @@ function NotificationsStep({
       return;
     }
     if (outcome.reason === "not_configured") {
-      setState("error");
+      setState("unsupported");
       setMessage(
-        "Push isn't configured on this build. You can enable notifications after the site updates."
+        "Push isn't configured on this build. You'll still get the weekly digest email."
       );
       return;
     }
     setState("error");
     setMessage(outcome.message ?? "Something went wrong enabling notifications.");
   }
+
+  const showContinueOnly =
+    state === "enabled" || state === "unsupported";
 
   return (
     <StepShell>
@@ -697,16 +839,16 @@ function NotificationsStep({
         </div>
       ) : null}
 
-      {state === "enabled" ? (
+      {showContinueOnly ? (
         <PrimaryButton onClick={onNext}>Continue</PrimaryButton>
       ) : (
-        <PrimaryButton onClick={() => void enable()}>
-          {state === "requesting" ? "Requesting permission…" : "Enable notifications"}
-        </PrimaryButton>
+        <>
+          <PrimaryButton onClick={() => void enable()} disabled={state === "requesting"}>
+            {state === "requesting" ? "Requesting permission…" : "Enable notifications"}
+          </PrimaryButton>
+          <SecondaryButton onClick={onNext}>Maybe later</SecondaryButton>
+        </>
       )}
-      <SecondaryButton onClick={onNext}>
-        {state === "enabled" ? "Skip" : "Maybe later"}
-      </SecondaryButton>
       <SecondaryButton onClick={onBack}>Back</SecondaryButton>
     </StepShell>
   );
@@ -714,11 +856,21 @@ function NotificationsStep({
 
 /* ─── Install Step (browser-adaptive) ─── */
 
-type Browser = "safari" | "chrome" | "edge" | "firefox";
+type Browser = "safari" | "chrome" | "edge" | "edge_ios" | "firefox";
+
+function isAppleMobile(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  return (
+    /iPad|iPhone|iPod/.test(ua) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+}
 
 function detectBrowser(): Browser {
   if (typeof navigator === "undefined") return "chrome";
   const ua = navigator.userAgent;
+  if (/Edg/i.test(ua) && isAppleMobile()) return "edge_ios";
   if (/Edg/i.test(ua)) return "edge";
   if (/Firefox/i.test(ua)) return "firefox";
   if (/Chrome/i.test(ua)) return "chrome";
@@ -729,32 +881,47 @@ function detectBrowser(): Browser {
 const INSTALL_STEPS: Record<Browser, { steps: string[] }> = {
   safari: {
     steps: [
-      'Tap the <strong>Share</strong> button (the square with an arrow)',
-      'Scroll down and tap <strong>Add to Home Screen</strong>',
+      'Tap the <strong>Share</strong> button (square with arrow)',
+      'Scroll the menu and tap <strong>Add to Home Screen</strong>',
       'Tap <strong>Add</strong> in the top right',
     ],
   },
   chrome: {
     steps: [
-      'Tap the <strong>three-dot menu</strong> (top right)',
-      'Tap <strong>Install app</strong> or <strong>Add to Home screen</strong>',
-      'Tap <strong>Install</strong> to confirm',
+      'Tap the <strong>⋮</strong> menu (usually top right on Android; bottom toolbar on some phones)',
+      'Tap <strong>Install app</strong> or <strong>Add to Home screen</strong> if you see it',
+      'Confirm <strong>Install</strong> or <strong>Add</strong>',
     ],
   },
   edge: {
     steps: [
-      'Tap the <strong>three-dot menu</strong> (bottom center on mobile, top right on desktop)',
-      'Tap <strong>Add to phone</strong> on mobile, or <strong>Apps → Install this site as an app</strong> on desktop',
-      'Tap <strong>Install</strong> to confirm',
+      'Tap <strong>⋯</strong> (More) — often bottom bar on Android, top right on Windows',
+      'Choose <strong>Add to phone</strong> or <strong>Install this site as an app</strong> (wording varies by version)',
+      'Confirm <strong>Install</strong> or <strong>Add</strong>',
+    ],
+  },
+  edge_ios: {
+    steps: [
+      'On iPhone and iPad, Edge uses Apple&apos;s WebKit — installing works like Safari',
+      'Tap <strong>⋯</strong> (More) at the bottom, then look for <strong>Add to Phone</strong> or open the share sheet',
+      'If you see <strong>Share</strong>, tap it and choose <strong>Add to Home Screen</strong>, then <strong>Add</strong>',
     ],
   },
   firefox: {
     steps: [
-      'Tap the <strong>three-dot menu</strong>',
-      'Tap <strong>Install</strong> or <strong>Add to Home screen</strong>',
-      'Tap <strong>Add</strong> to confirm',
+      'Tap the <strong>⋮</strong> menu',
+      'Tap <strong>Install</strong> or <strong>Add to Home screen</strong> if shown',
+      'Confirm <strong>Add</strong> or <strong>Install</strong>',
     ],
   },
+};
+
+const BROWSER_SWITCH_LABEL: Record<Browser, string> = {
+  safari: "Safari",
+  chrome: "Chrome",
+  edge: "Edge",
+  edge_ios: "Edge · iOS",
+  firefox: "Firefox",
 };
 
 function InstallStep({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
@@ -794,8 +961,8 @@ function InstallStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
       </div>
 
       {/* Browser switcher — auto-detected, but user can override */}
-      <div className="mb-6 flex justify-center gap-1">
-        {(["safari", "chrome", "edge", "firefox"] as Browser[]).map((b) => (
+      <div className="mb-6 flex flex-wrap justify-center gap-1">
+        {(["safari", "chrome", "edge", "edge_ios", "firefox"] as Browser[]).map((b) => (
           <button
             key={b}
             onClick={() => setBrowser(b)}
@@ -805,7 +972,7 @@ function InstallStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
                 : "border border-slate-200 text-slate-400 hover:text-slate-600 dark:border-slate-700 dark:hover:text-slate-300"
             } [-webkit-tap-highlight-color:transparent]`}
           >
-            {b.charAt(0).toUpperCase() + b.slice(1)}
+            {BROWSER_SWITCH_LABEL[b]}
           </button>
         ))}
       </div>
