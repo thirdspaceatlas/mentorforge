@@ -478,18 +478,6 @@ const getStatusContainerClasses = (status: PlanStatus) => {
   }
 };
 
-const getStatusLabelClasses = (status: PlanStatus) => {
-  switch (status) {
-    case "On Track":
-      return "text-emerald-700 dark:text-emerald-300";
-    case "Tight":
-      return "text-amber-700 dark:text-amber-300";
-    case "At Risk":
-    default:
-      return "text-rose-700 dark:text-rose-300";
-  }
-};
-
 const getStatusValueClasses = (status: PlanStatus) => {
   switch (status) {
     case "On Track":
@@ -1149,114 +1137,109 @@ function PlannerInner() {
 
           <FeatureGate locked={levelGateLocked}>
             <FeatureGate locked={false}>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-3 sm:col-span-2">
-              <div className="text-sm text-slate-500 dark:text-slate-400">
-                Exam window & testing readiness
-              </div>
-              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                {summary.examWindowLabel}
-              </div>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{summary.readinessNote}</p>
-              <div className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-                Final review week (target)
-              </div>
-              <div className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                {summary.finalReviewWeekLabel}
-              </div>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                The week aligned to your &quot;Week starts on&quot; setting that
-                contains the last study days before your exam window opens. Use it
-                for mocks, weak-area drills, and light review&mdash;not new material.
-              </p>
-              {summary.suggestedNextWindowLabel &&
-              summary.status !== "On Track" ? (
-                <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                  Next scheduled window after this one:{" "}
-                  <span className="font-medium text-slate-500 dark:text-slate-400">
-                    {summary.suggestedNextWindowLabel}
-                  </span>
-                </p>
-              ) : null}
-            </div>
-
-            <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-3">
-              <div className="text-sm text-slate-500 dark:text-slate-400">Study weeks in plan</div>
-              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                {summary.planWeeks}
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-3">
-              <div className="text-sm text-slate-500 dark:text-slate-400">
-                Total available study hours
-              </div>
-              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                {summary.totalAvailableHours}
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-3">
-              <div className="text-sm text-slate-500 dark:text-slate-400">Planning benchmark</div>
-              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                {summary.targetHours}
-              </div>
-            </div>
-
-            <div
-              className={
-                "rounded-lg border p-3 " + getStatusContainerClasses(summary.status)
-              }
-            >
-              <div
-                className={"text-sm " + getStatusLabelClasses(summary.status)}
-              >
-                Status
-              </div>
-              <div
-                className={
-                  "text-lg font-semibold " + getStatusValueClasses(summary.status)
-                }
-              >
-                {summary.status}
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-3 sm:col-span-2">
-              <div className="text-sm text-slate-500 dark:text-slate-400">Weekly hours breakdown</div>
-              <div className="mt-2 space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-600 dark:text-slate-300">Benchmark pace</span>
-                  <span className="font-semibold text-slate-900 dark:text-slate-100">{summary.requiredWeeklyHours} hrs/wk</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-600 dark:text-slate-300">Your planned pace</span>
-                  <span className="font-semibold text-slate-900 dark:text-slate-100">{weeklyHoursNum} hrs/wk</span>
-                </div>
-                {futureAvgLoad != null && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600 dark:text-slate-300">Current future load</span>
-                    <span className="font-semibold text-amber-700 dark:text-amber-300">{futureAvgLoad} hrs/wk</span>
+              <div className="mt-5 space-y-5">
+                <div>
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Exam window & testing readiness
+                  </p>
+                  <p className="mt-1 font-display text-xl font-medium tracking-tight text-ink dark:text-slate-100">
+                    {summary.examWindowLabel}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{summary.readinessNote}</p>
+                  <div className="mt-4">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                      Final review week (target)
+                    </p>
+                    <p className="mt-1 text-base font-semibold text-ink dark:text-slate-100">
+                      {summary.finalReviewWeekLabel}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                      The week aligned to your &quot;Week starts on&quot; setting that
+                      contains the last study days before your exam window opens. Use it
+                      for mocks, weak-area drills, and light review&mdash;not new material.
+                    </p>
                   </div>
-                )}
-              </div>
-              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                Benchmark pace is the weekly load to reach the {summary.targetHours}-hour target.
-                {weeklyHoursNum < summary.requiredWeeklyHours
-                  ? ` You need ~${summary.requiredWeeklyHours - weeklyHoursNum} more hour${summary.requiredWeeklyHours - weeklyHoursNum === 1 ? "" : "s"}/wk to match it.`
-                  : weeklyHoursNum === summary.requiredWeeklyHours
-                  ? " Your planned pace matches the benchmark."
-                  : ` You have ~${weeklyHoursNum - summary.requiredWeeklyHours} extra hour${weeklyHoursNum - summary.requiredWeeklyHours === 1 ? "" : "s"}/wk above it.`}
-              </p>
-            </div>
+                  {summary.suggestedNextWindowLabel &&
+                  summary.status !== "On Track" ? (
+                    <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                      Next scheduled window after this one:{" "}
+                      <span className="font-medium text-slate-600 dark:text-slate-300">
+                        {summary.suggestedNextWindowLabel}
+                      </span>
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="border-t border-hair pt-5 dark:border-slate-800">
+                  <div className="grid gap-x-6 gap-y-4 sm:grid-cols-3">
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Study weeks in plan</p>
+                      <p className="mt-1 font-display text-xl font-medium tracking-tight text-ink dark:text-slate-100 tabular-nums">
+                        {summary.planWeeks}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Total available study hours</p>
+                      <p className="mt-1 font-display text-xl font-medium tracking-tight text-ink dark:text-slate-100 tabular-nums">
+                        {summary.totalAvailableHours}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Planning benchmark</p>
+                      <p className="mt-1 flex items-baseline gap-2">
+                        <span className="font-display text-xl font-medium tracking-tight text-ink dark:text-slate-100 tabular-nums">
+                          {summary.targetHours}
+                        </span>
+                        <span
+                          className={
+                            "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium " +
+                            getStatusValueClasses(summary.status) +
+                            " " +
+                            getStatusContainerClasses(summary.status)
+                          }
+                        >
+                          {summary.status}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-hair pt-5 dark:border-slate-800">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Weekly hours breakdown</p>
+                  <div className="mt-2 space-y-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-600 dark:text-slate-300">Benchmark pace</span>
+                      <span className="font-semibold text-ink dark:text-slate-100 tabular-nums">{summary.requiredWeeklyHours} hrs/wk</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-600 dark:text-slate-300">Your planned pace</span>
+                      <span className="font-semibold text-ink dark:text-slate-100 tabular-nums">{weeklyHoursNum} hrs/wk</span>
+                    </div>
+                    {futureAvgLoad != null && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-600 dark:text-slate-300">Current future load</span>
+                        <span className="font-semibold text-amber-mf dark:text-amber-300 tabular-nums">{futureAvgLoad} hrs/wk</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                    Benchmark pace is the weekly load to reach the {summary.targetHours}-hour target.
+                    {weeklyHoursNum < summary.requiredWeeklyHours
+                      ? ` You need ~${summary.requiredWeeklyHours - weeklyHoursNum} more hour${summary.requiredWeeklyHours - weeklyHoursNum === 1 ? "" : "s"}/wk to match it.`
+                      : weeklyHoursNum === summary.requiredWeeklyHours
+                      ? " Your planned pace matches the benchmark."
+                      : ` You have ~${weeklyHoursNum - summary.requiredWeeklyHours} extra hour${weeklyHoursNum - summary.requiredWeeklyHours === 1 ? "" : "s"}/wk above it.`}
+                  </p>
+                </div>
               </div>
             </FeatureGate>
 
-          <div className="mt-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/60 p-3 text-sm text-slate-800 dark:text-slate-200">
-            <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <div className="mt-5 border-t border-hair pt-5 dark:border-slate-800">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Study tactics
-            </h3>
-            <ul className="list-inside list-disc space-y-1 text-slate-600 dark:text-slate-300">
+            </p>
+            <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-slate-600 dark:text-slate-300">
               {getStudyTacticsBullets(
                 summary.cfaLevel,
                 summary.levelIIIPathway

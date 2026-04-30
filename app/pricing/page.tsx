@@ -98,27 +98,23 @@ function FeatureList({ items }: { items: readonly string[] }) {
 export default function PricingPage() {
   return (
     <div className="relative left-1/2 -my-8 -ml-[50vw] w-screen bg-paper sm:-my-14">
-      <div className="mx-auto max-w-[1200px] space-y-16 px-4 pb-16 pt-12 sm:space-y-20 sm:px-8 sm:pb-20 sm:pt-16">
+      <div className="mx-auto max-w-[1200px] space-y-12 px-4 pb-14 pt-10 sm:space-y-14 sm:px-8 sm:pb-16 sm:pt-12">
       <TrackEventOnMount event={Events.pricingViewed} />
-      <header className="mx-auto max-w-3xl border-b border-slate-200/70 pb-14 text-center dark:border-slate-800/80 sm:pb-16">
-        <p className="mb-5 font-display text-[0.7rem] font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+      <header className="mx-auto max-w-3xl border-b border-slate-200/70 pb-10 text-center dark:border-slate-800/80 sm:pb-12">
+        <p className="mb-4 font-display text-[0.7rem] font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
           Pricing
         </p>
         <h1 className="font-display text-[2.1rem] font-medium leading-[1.12] tracking-tight text-slate-900 dark:text-slate-50 sm:text-[2.85rem] sm:leading-[1.08]">
           Stop guessing. Start planning.
         </h1>
-        <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-slate-700 dark:text-slate-200">
-          A CFA study plan built around your life — not a textbook schedule someone else made up.
+        <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-slate-700 dark:text-slate-200">
+          Free forever. Upgrade to All Access when you want unlimited — or never. No trial, no countdown.
         </p>
       </header>
 
-      <p className="mx-auto max-w-2xl text-center text-[0.95rem] font-medium leading-snug text-slate-800 dark:text-slate-200">
-        Free forever. Upgrade to All Access when you want unlimited — or never. No trial, no countdown.
-      </p>
-
       <section
         aria-labelledby="pricing-tiers-heading"
-        className="mx-auto max-w-5xl rounded-2xl border border-slate-200/60 bg-white/50 px-4 py-8 dark:border-transparent dark:bg-transparent sm:px-6 sm:py-10"
+        className="mx-auto max-w-5xl rounded-2xl border border-slate-200/60 bg-white/50 px-4 py-7 dark:border-transparent dark:bg-transparent sm:px-6 sm:py-8"
       >
         <div className="text-center">
           <h2
@@ -129,7 +125,7 @@ export default function PricingPage() {
           </h2>
         </div>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2 md:items-stretch md:gap-5">
+        <div className="mt-8 grid gap-6 md:grid-cols-2 md:items-stretch md:gap-5">
           <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-white p-7 shadow-sm dark:border-slate-700/80 dark:bg-slate-950 sm:p-8">
             <div>
               <p className="font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
@@ -232,11 +228,11 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl scroll-mt-8 rounded-2xl border border-slate-200/85 bg-white/95 px-4 py-12 shadow-[0_1px_3px_rgb(15_23_42/0.06)] dark:border-transparent dark:bg-transparent dark:shadow-none sm:px-8 sm:py-14">
+      <section className="mx-auto max-w-5xl scroll-mt-8 rounded-2xl border border-slate-200/85 bg-white/95 px-4 py-10 shadow-[0_1px_3px_rgb(15_23_42/0.06)] dark:border-transparent dark:bg-transparent dark:shadow-none sm:px-8 sm:py-12">
         <h2 className="text-center font-display text-[1.85rem] font-medium tracking-tight text-slate-900 dark:text-slate-50 sm:text-[2rem]">
           Pricing FAQ
         </h2>
-        <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-slate-200/95 bg-white/95 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 dark:shadow-none">
+        <div className="mx-auto mt-6 max-w-2xl rounded-2xl border border-slate-200/95 bg-white/95 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 dark:shadow-none">
           {pricingFaqs.map((faq) => (
             <details
               key={faq.q}
@@ -255,7 +251,7 @@ export default function PricingPage() {
       </section>
 
       </div>
-      <section className="pt-16 sm:pt-20">
+      <section className="pt-12 sm:pt-14">
         <MarketingBottomCTA
           variant="band"
           headline="Ready to start?"

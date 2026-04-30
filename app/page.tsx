@@ -1,10 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { RevealOnScroll } from "@/components/marketing/RevealOnScroll";
-import { AllAccessCheckoutButton } from "@/components/pricing/AllAccessCheckoutButton";
 import { homepageFaqs } from "./faq-data";
-
-const priceAllAccess = process.env.NEXT_PUBLIC_STRIPE_PRICE_ALL_ACCESS ?? "";
 
 export const metadata: Metadata = {
   title: "MentorForge — CFA study planning & pacing",
@@ -45,13 +42,6 @@ const features = [
     desc: "Ethics appears at sensible intervals, review checkpoints slot in for longer plans, and heavier topics can get a second pass before the exam.",
   },
 ] as const;
-
-const trustAnchors: string[] = [
-  "Built around the CFA Institute's widely cited 300+ study-hour benchmark.",
-  "We're early. Your feedback directly shapes what we build next.",
-  "Free forever. No trial timer, no credit card to start.",
-  "Independent study-planning software. Not affiliated with CFA Institute.",
-];
 
 export default function LandingV2() {
   return (
@@ -146,7 +136,7 @@ export default function LandingV2() {
 
       {/* 3-STAT EDITORIAL ROW — slate big numbers, no amber */}
       <RevealOnScroll>
-        <section className="border-y border-slate-200/70 bg-white/40 px-4 py-12 sm:px-8 sm:py-16">
+        <section className="border-y border-slate-200/70 bg-white/40 px-4 py-10 sm:px-8 sm:py-14">
           <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-y-10 gap-x-12 sm:grid-cols-3">
             <Stat n="300h" label="recommended per level" hint="CFA Institute" />
             <Stat n="13.5%" label="finish all three levels" hint="within four years" />
@@ -160,7 +150,7 @@ export default function LandingV2() {
       <RevealOnScroll>
         <section
           id="features"
-          className="px-4 py-16 sm:px-8 sm:py-20"
+          className="px-4 py-14 sm:px-8 sm:py-16"
           aria-labelledby="features-heading"
         >
           <div className="mx-auto max-w-[1200px]">
@@ -177,7 +167,7 @@ export default function LandingV2() {
             </div>
 
             {/* G: hairline rules between feature rows  ·  H: mono numbering  ·  I: vertical column rule */}
-            <div className="mt-12 grid sm:grid-cols-2">
+            <div className="mt-10 grid sm:grid-cols-2">
               {features.map((f, i) => {
                 const isFirstRow = i < 2;
                 const isLeftCol = i % 2 === 0;
@@ -185,7 +175,7 @@ export default function LandingV2() {
                   <div
                     key={f.title}
                     className={
-                      "max-w-md py-8 sm:py-10 " +
+                      "max-w-md py-7 sm:py-8 " +
                       (isFirstRow ? "" : "border-t border-slate-200/70 ") +
                       (isLeftCol ? "sm:pr-10" : "sm:border-l sm:border-slate-200/70 sm:pl-10")
                     }
@@ -211,7 +201,7 @@ export default function LandingV2() {
       <RevealOnScroll>
         <section
           id="how-it-works"
-          className="border-t border-slate-200/70 px-4 py-16 sm:px-8 sm:py-20"
+          className="border-t border-slate-200/70 px-4 py-14 sm:px-8 sm:py-16"
           aria-labelledby="how-heading"
         >
           <div className="mx-auto max-w-[1200px]">
@@ -223,7 +213,7 @@ export default function LandingV2() {
             </h2>
 
             {/* I: vertical column rules separate steps on desktop, hairline rules between row pairs on tablet */}
-            <ol className="mt-12 grid gap-y-10 sm:grid-cols-2 sm:gap-y-12 lg:grid-cols-4 lg:gap-y-0">
+            <ol className="mt-10 grid gap-y-8 sm:grid-cols-2 sm:gap-y-10 lg:grid-cols-4 lg:gap-y-0">
               {howSteps.map(([title, desc], i) => {
                 const isLeftMobile = i % 2 === 0;
                 const isFirstLg = i === 0;
@@ -257,132 +247,44 @@ export default function LandingV2() {
         </section>
       </RevealOnScroll>
 
-      {/* PRICING — Free + dark ink All Access */}
+      {/* PRICING — slim callout, full tiers live on /pricing */}
       <RevealOnScroll>
         <section
           id="pricing"
-          className="border-t border-slate-200/70 px-4 py-16 sm:px-8 sm:py-20"
+          className="border-t border-slate-200/70 px-4 py-12 sm:px-8 sm:py-14"
           aria-labelledby="pricing-heading"
         >
           <div className="mx-auto max-w-[1200px]">
-            <p className="mx-auto max-w-2xl text-center text-[0.95rem] font-medium leading-snug text-slate-800">
-              Free forever. Upgrade to All Access when you want unlimited — or
-              never. No trial, no countdown.
-            </p>
-            <h2
-              id="pricing-heading"
-              className="mt-5 text-balance text-center font-display text-[clamp(1.65rem,4vw,2.15rem)] font-medium leading-snug tracking-tight text-slate-900"
-            >
-              Pricing tiers
-            </h2>
-
-            <div className="mt-12 grid gap-6 lg:grid-cols-2 lg:gap-5">
-              {/* FREE TIER */}
-              <article className="flex min-h-full flex-col rounded-2xl border border-slate-200/95 bg-white p-7 shadow-sm sm:p-8">
-                <div>
-                  <p className="font-display text-lg font-semibold tracking-tight text-slate-900">
-                    Free
-                  </p>
-                  <p className="mt-3 font-display text-3xl font-medium tabular-nums tracking-tight text-slate-900">
-                    $0
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-slate-600">
-                    Free forever. No card required.
-                  </p>
-                </div>
-                <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-500">
-                  What&apos;s included
-                </p>
-                <ul className="mt-5 space-y-2.5 text-sm leading-relaxed text-slate-700">
-                  {[
-                    "Full Level I plan generation",
-                    "1 calendar connection",
-                    "Gap finder — open windows in your schedule",
-                    "3 Calendar Coach nudges per week",
-                    "Basic progress tracking",
-                    "1 smart rebalance per week",
-                    "Weekly digest email",
-                  ].map((item) => (
-                    <li key={item} className="flex gap-2.5">
-                      <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-emerald-700" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-auto pt-8">
-                  <Link
-                    href="/register"
-                    className="flex w-full min-h-[2.75rem] items-center justify-center rounded-full border-2 border-slate-400/90 bg-white px-5 py-3 text-sm font-medium text-slate-900 transition-colors hover:border-slate-600 hover:bg-slate-50"
-                  >
-                    Get started free — no credit card required
-                  </Link>
-                </div>
-              </article>
-
-              {/* ALL ACCESS — dark ink + amber chip + amber CTA */}
-              <article className="relative flex min-h-full flex-col overflow-hidden rounded-2xl bg-ink p-7 shadow-[0_18px_44px_rgb(14_26_43_/_0.18)] sm:p-8">
-                <div className="mb-5 text-center">
-                  <span className="inline-block rounded-full bg-amber-mf px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.12em] text-ink">
-                    Best for the full journey
-                  </span>
-                </div>
-                <div>
-                  <p className="font-display text-lg font-semibold tracking-tight text-amber-mf">
-                    All Access
-                  </p>
-                  <p className="mt-3 flex items-baseline gap-1.5 font-display text-3xl font-medium tabular-nums tracking-tight text-white">
-                    $8.25
-                    <span className="text-base font-normal text-slate-400">
-                      /month
-                    </span>
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-slate-300">
-                    Billed yearly at $99. All three levels, unlimited
-                    everything.
-                  </p>
-                </div>
-                <p className="mt-6 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-slate-400">
-                  What&apos;s included
-                </p>
-                <ul className="mt-5 space-y-2.5 text-sm leading-relaxed text-slate-200">
-                  {[
-                    "Everything in Free, unlimited",
-                    "Unlimited calendars — work, personal, and shared all count against study time",
-                    "Unlimited Calendar Coach nudges",
-                    "Unlimited smart rebalancing",
-                    "Full session history, heatmap, and forecast",
-                    "Levels I, II & III unlocked",
-                    "Priority support + direct founder access",
-                  ].map((item) => (
-                    <li key={item} className="flex gap-2.5">
-                      <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-amber-mf" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-auto pt-8">
-                  <AllAccessCheckoutButton
-                    priceId={priceAllAccess}
-                    className="flex w-full min-h-[2.75rem] items-center justify-center gap-2 rounded-full bg-amber-mf px-5 py-3 text-sm font-semibold text-ink shadow-[0_8px_24px_rgb(201_132_43_/_0.35)] transition-colors hover:bg-amber-mf/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-mf focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
-                  >
-                    Get All Access — $99/year
-                  </AllAccessCheckoutButton>
-                  <p className="mt-4 text-center text-sm font-medium leading-snug text-slate-300">
-                    Less than the cost of one Schweser mock exam.
-                  </p>
-                </div>
-              </article>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="flex items-center justify-center gap-2 font-mono text-[10.5px] font-bold uppercase tracking-[0.18em] text-amber-mf">
+                <span aria-hidden className="inline-block h-px w-5 bg-amber-mf" />
+                Pricing
+              </p>
+              <h2
+                id="pricing-heading"
+                className="mt-4 text-balance font-display text-[clamp(1.65rem,4vw,2.15rem)] font-medium leading-snug tracking-tight text-slate-900"
+              >
+                Free forever. All Access at $99/yr.
+              </h2>
+              <p className="mt-4 text-[0.95rem] leading-relaxed text-slate-700">
+                No trial timer, no credit card to start. Upgrade when you want
+                unlimited — or never. Less than the cost of one Schweser mock.
+              </p>
+              <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Link
+                  href="/pricing"
+                  className="inline-flex min-h-[2.75rem] items-center justify-center rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-mf focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+                >
+                  See plans &amp; pricing →
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex min-h-[2.75rem] items-center justify-center rounded-full border-2 border-slate-400/90 bg-white px-6 py-3 text-sm font-medium text-slate-900 transition-colors hover:border-slate-600 hover:bg-slate-50"
+                >
+                  Get started free
+                </Link>
+              </div>
             </div>
-
-            {/* Trust anchors below pricing */}
-            <ul className="mx-auto mt-14 max-w-2xl space-y-3 text-[0.92rem] leading-relaxed text-slate-700">
-              {trustAnchors.map((text) => (
-                <li key={text} className="flex gap-3">
-                  <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-amber-mf" />
-                  <span>{text}</span>
-                </li>
-              ))}
-            </ul>
           </div>
         </section>
       </RevealOnScroll>
@@ -391,7 +293,7 @@ export default function LandingV2() {
       <RevealOnScroll>
         <section
           id="faq"
-          className="border-t border-slate-200/70 px-4 py-16 sm:px-8 sm:py-20"
+          className="border-t border-slate-200/70 px-4 py-14 sm:px-8 sm:py-16"
           aria-labelledby="faq-heading"
         >
           <div className="mx-auto max-w-[1200px]">
@@ -404,7 +306,7 @@ export default function LandingV2() {
             </h2>
 
             {/* J: soft white card wrapper — gives FAQ section anchor weight, like the original */}
-            <div className="mx-auto mt-10 max-w-3xl rounded-2xl border border-slate-200/70 bg-white/70 px-1 shadow-sm sm:px-2">
+            <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-slate-200/70 bg-white/70 px-1 shadow-sm sm:px-2">
               {homepageFaqs.map((faq) => (
                 <details
                   key={faq.question}
@@ -431,7 +333,7 @@ export default function LandingV2() {
 
       {/* CLOSER — full-bleed dark ink, amber CTA */}
       <section
-        className="bg-ink px-4 py-20 sm:px-8 sm:py-24"
+        className="bg-ink px-4 py-16 sm:px-8 sm:py-20"
         aria-label="Call to action"
       >
         <div className="mx-auto max-w-3xl text-center">
@@ -441,7 +343,7 @@ export default function LandingV2() {
           <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-slate-300">
             Join candidates who are done winging it.
           </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/register"
               className="inline-flex min-h-[3rem] items-center justify-center gap-2 rounded-full bg-amber-mf px-8 py-3.5 text-[0.95rem] font-semibold text-ink shadow-[0_8px_24px_rgb(201_132_43_/_0.35)] transition-colors hover:bg-amber-mf/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-mf focus-visible:ring-offset-2 focus-visible:ring-offset-ink [-webkit-tap-highlight-color:transparent]"
