@@ -91,7 +91,7 @@ function examIsoToWindowLabel(iso: string): string {
 }
 
 function nearestMinSessionOption(minutes: number): string {
-  const opts = [5, 10, 15, 20];
+  const opts = [5, 10, 15, 20, 25, 30, 45, 60, 90, 120];
   const clamped = Math.max(5, Math.min(180, Math.round(minutes)));
   let best = opts[0]!;
   let bestDist = Infinity;
@@ -136,6 +136,7 @@ function attributionFromDb(raw: string | null): string {
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const [gate, setGate] = useState<"loading" | "wizard" | "ready">("loading");
   const [step, setStep] = useState(1);
   const [level, setLevel] = useState<CfaLevel>("I");
   const [hoursPerWeek, setHoursPerWeek] = useState(8);
@@ -160,8 +161,9 @@ export default function OnboardingPage() {
     Promise.all([
       fetch("/api/study-plan").then((r) => (r.ok ? r.json() : null)),
       fetch("/api/profile/onboarding").then((r) => (r.ok ? r.json() : null)),
+      fetch("/api/calendar/stats").then((r) => (r.ok ? r.json() : null)),
     ])
-      .then(([planRes, profRes]) => {
+      .then(([planRes, profRes, statsRes]) => {
         if (!active) return;
         const plan = planRes?.plan;
         if (plan && typeof plan.examLevel === "string" && isCfaLevel(plan.examLevel)) {
@@ -191,8 +193,13 @@ export default function OnboardingPage() {
           const att = attributionFromDb(pr.attribution);
           if (att) setAttribution(att);
         }
+
+        const weekCount = Array.isArray(plan?.weekPlan) ? plan.weekPlan.length : 0;
+        const calendarsConnected =
+          typeof statsRes?.calendarsConnected === "number" ? statsRes.calendarsConnected : 0;
+        setGate(weekCount > 0 && calendarsConnected > 0 ? "ready" : "wizard");
       })
-      .catch(() => {});
+      .catch(() => setGate("wizard"));
     return () => {
       active = false;
     };
@@ -213,6 +220,7 @@ export default function OnboardingPage() {
         connection_count: "1",
       });
       setStep(4);
+      setGate("wizard");
       // Clean up URL
       window.history.replaceState({}, "", "/app/onboarding");
     }
@@ -312,9 +320,43 @@ export default function OnboardingPage() {
       {/* Step content */}
       <div className="flex flex-1 items-center justify-center px-4 pb-8">
         <div className="w-full max-w-md">
+          {gate === "loading" ? (
+            <StepShell>
+              <StepTitle>Loading your setup…</StepTitle>
+              <StepSubtitle>
+                Checking your saved plan and calendars.
+              </StepSubtitle>
+              <div className="mt-4 flex items-center justify-center gap-2 text-sm text-slate-400">
+                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent dark:border-emerald-500" />
+                Loading…
+              </div>
+            </StepShell>
+          ) : gate === "ready" ? (
+            <StepShell>
+              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-500">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M7 14l5 5 9-9" />
+                </svg>
+              </div>
+              <StepTitle>You&apos;re already set up.</StepTitle>
+              <StepSubtitle>
+                Your plan and at least one calendar connection are already on this account.
+                Jump straight into Calendar Coach — no need to redo setup.
+              </StepSubtitle>
+              <PrimaryButton onClick={() => router.push("/app/today")}>
+                Open Calendar Coach
+              </PrimaryButton>
+              <SecondaryButton onClick={() => router.push("/app")}>
+                Review study plan
+              </SecondaryButton>
+              <SecondaryButton onClick={() => setGate("wizard")}>
+                Review setup steps
+              </SecondaryButton>
+            </StepShell>
+          ) : null}
 
           {/* ── Step 1: Welcome ── */}
-          {step === 1 && (
+          {gate === "wizard" && step === 1 && (
             <StepShell>
               <StepTitle>Your calendar, your study coach.</StepTitle>
               <StepSubtitle>
@@ -326,7 +368,7 @@ export default function OnboardingPage() {
           )}
 
           {/* ── Step 2: Exam Level ── */}
-          {step === 2 && (
+          {gate === "wizard" && step === 2 && (
             <StepShell>
               <StepTitle>Which exam are you preparing for?</StepTitle>
               <StepSubtitle>
@@ -354,7 +396,7 @@ export default function OnboardingPage() {
           )}
 
           {/* ── Step 3: Calendar Connect ── */}
-          {step === 3 && (
+          {gate === "wizard" && step === 3 && (
             <StepShell>
               <StepTitle>Connect your calendars</StepTitle>
               <StepSubtitle>
@@ -393,7 +435,7 @@ export default function OnboardingPage() {
           )}
 
           {/* ── Step 4: Study Preferences ── */}
-          {step === 4 && (
+          {gate === "wizard" && step === 4 && (
             <StepShell>
               <StepTitle>Your study rhythm</StepTitle>
               <StepSubtitle>
@@ -427,6 +469,12 @@ export default function OnboardingPage() {
                   <option value="10">10 minutes</option>
                   <option value="15">15 minutes</option>
                   <option value="20">20 minutes</option>
+                  <option value="25">25 minutes</option>
+                  <option value="30">30 minutes</option>
+                  <option value="45">45 minutes</option>
+                  <option value="60">60 minutes</option>
+                  <option value="90">90 minutes</option>
+                  <option value="120">120 minutes</option>
                 </select>
               </Field>
 
@@ -449,7 +497,7 @@ export default function OnboardingPage() {
           )}
 
           {/* ── Step 5: Notifications ── */}
-          {step === 5 && (
+          {gate === "wizard" && step === 5 && (
             <NotificationsStep
               onNext={() => goTo(6)}
               onBack={() => goTo(4)}
@@ -457,10 +505,10 @@ export default function OnboardingPage() {
           )}
 
           {/* ── Step 6: Install App (browser-adaptive) ── */}
-          {step === 6 && <InstallStep onNext={() => goTo(7)} onBack={() => goTo(5)} />}
+          {gate === "wizard" && step === 6 && <InstallStep onNext={() => goTo(7)} onBack={() => goTo(5)} />}
 
           {/* ── Step 7: About you (all optional) ── */}
-          {step === 7 && (
+          {gate === "wizard" && step === 7 && (
             <StepShell>
               <StepTitle>Help us make MentorForge better for you.</StepTitle>
               <StepSubtitle>
@@ -595,7 +643,7 @@ export default function OnboardingPage() {
           )}
 
           {/* ── Step 8: All Set ── */}
-          {step === 8 && (
+          {gate === "wizard" && step === 8 && (
             <StepShell>
               <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-500">
                 <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -836,6 +884,12 @@ function NotificationsStep({
       {message ? (
         <div className="mb-5 rounded-md border border-slate-200 bg-white px-4 py-3 text-left text-[13px] leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
           {message}
+          {state === "unsupported" && isAppleMobile() ? (
+            <p className="mt-2 text-[12.5px] leading-relaxed text-slate-500 dark:text-slate-400">
+              On many iPhones and iPads, web push isn&apos;t available in the browser.
+              The weekly digest email is the reliable fallback.
+            </p>
+          ) : null}
         </div>
       ) : null}
 

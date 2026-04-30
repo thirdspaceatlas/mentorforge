@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { serializeWeekPlan, deserializeWeekPlan } from "@/lib/study-plan/serialize";
 import type { SavedStudyPlanPayload } from "@/lib/study-plan/serialize";
 import { useSupabaseUser } from "@/lib/supabase/use-supabase-user";
@@ -612,8 +612,16 @@ const buildSummary = (input: BuildSummaryInput): PlanSummary => {
 
 function PlannerInner() {
   const { user } = useSupabaseUser();
+  const router = useRouter();
   const [planLoaded, setPlanLoaded] = useState(false);
   const skipNextSave = useRef(false);
+
+  // Back-compat: older links pointed at /app#calendar-coach; redirect to the real surface.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hash.toLowerCase() !== "#calendar-coach") return;
+    router.replace("/app/today");
+  }, [router]);
 
   const [examDate, setExamDate] = useState(() =>
     getDefaultExamDateForLevel("I")
