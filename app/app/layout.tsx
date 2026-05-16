@@ -6,7 +6,8 @@ import { PlanProvider } from "@/components/app/PlanProvider";
 import { AppSidebar } from "@/components/app/AppSidebar";
 
 /**
- * /app is available to any logged-in user (free tier + paid). Middleware enforces auth only.
+ * /app is available to any logged-in user (free tier + paid).
+ * Auth is enforced by root `proxy.ts` (Next.js Proxy / middleware) and again here via cookies.
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();

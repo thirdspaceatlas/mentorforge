@@ -1,3 +1,10 @@
+/**
+ * Next.js “Proxy” (replaces deprecated `middleware.ts` in Next.js 16).
+ * Runs before routes: canonical host redirect, Supabase cookie session refresh,
+ * and unauthenticated `/app/*` → `/login`.
+ *
+ * @see https://nextjs.org/docs/app/api-reference/file-conventions/proxy
+ */
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "./lib/supabase/env";
