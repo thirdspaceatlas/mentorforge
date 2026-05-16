@@ -44,8 +44,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Only allow same-origin redirects to prevent open-redirect attacks
-  const safeNext = next.startsWith("/") ? next : "/app";
+  // Only allow same-origin relative redirects (blocks open redirects like "//evil.com").
+  const safeNext =
+    next.startsWith("/") && !next.startsWith("//") ? next : "/app";
   const redirect = NextResponse.redirect(new URL(safeNext, url.origin));
   return applyCookiesToResponse(redirect);
 }

@@ -36,8 +36,10 @@ export default function LoginPage() {
     }
 
     const params = new URLSearchParams(window.location.search);
-    const callbackUrl = params.get("callbackUrl") ?? "/app";
-    window.location.href = callbackUrl;
+    const raw = params.get("callbackUrl") ?? "/app";
+    const dest =
+      raw.startsWith("/") && !raw.startsWith("//") ? raw : "/app";
+    window.location.href = dest;
   };
 
   const handleOAuth = async (provider: "google" | "azure") => {
@@ -46,8 +48,9 @@ export default function LoginPage() {
     const supabase = createClient();
 
     const params = new URLSearchParams(window.location.search);
-    const callbackUrl = params.get("callbackUrl") ?? "/app";
-    const callbackPath = callbackUrl.startsWith("/") ? callbackUrl : "/app";
+    const raw = params.get("callbackUrl") ?? "/app";
+    const callbackPath =
+      raw.startsWith("/") && !raw.startsWith("//") ? raw : "/app";
     const redirectTo = new URL(
       `/auth/callback?next=${encodeURIComponent(callbackPath)}`,
       window.location.origin,

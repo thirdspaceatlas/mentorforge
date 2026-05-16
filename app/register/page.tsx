@@ -73,7 +73,11 @@ export default function RegisterPage() {
       });
 
       if (data.session) {
-        window.location.href = "/app";
+        const params = new URLSearchParams(window.location.search);
+        const raw = params.get("callbackUrl") ?? "/app";
+        const dest =
+          raw.startsWith("/") && !raw.startsWith("//") ? raw : "/app";
+        window.location.href = dest;
         return;
       }
 
@@ -95,7 +99,15 @@ export default function RegisterPage() {
     setOauthLoading(provider);
 
     const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=/app`;
+
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get("callbackUrl") ?? "/app";
+    const callbackPath =
+      raw.startsWith("/") && !raw.startsWith("//") ? raw : "/app";
+    const redirectTo = new URL(
+      `/auth/callback?next=${encodeURIComponent(callbackPath)}`,
+      window.location.origin,
+    ).toString();
 
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
