@@ -87,6 +87,9 @@ model Purchase {
   @@map("purchases")
 }
 
+// ─── Legacy normalized study plan (not used by app runtime — see ARCHITECTURE.md) ───
+// Active persistence: SavedStudyPlan JSON blob. Do not add new features here without a migration plan.
+
 model ExamDefinition {
   id     String                @id @default(cuid())
   slug   String                @unique
@@ -173,7 +176,7 @@ model StudyLog {
   topic     ExamTopicDefinition @relation(fields: [examTopicDefinitionId], references: [id])
 }
 
-// ─── Saved Study Plan (JSON blob persistence) ───
+// ─── Saved Study Plan (JSON blob persistence — active) ───
 
 /// Persists the user's active study plan settings, weekly schedule, and progress.
 /// One active plan per user (`userId` is @unique). Plan arrays stored as JSON.
