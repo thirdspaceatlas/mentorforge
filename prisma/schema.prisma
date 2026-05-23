@@ -25,8 +25,8 @@ model Profile {
   /// How they heard about us: "linkedin" | "reddit" | "friend" | "search" | "other".
   attribution      String?
 
-  /// Weekly digest + product update emails (explicit opt-in; default off for new users).
-  emailCommunicationsOptIn Boolean @default(false)
+  /// Weekly digest + product update emails. Default ON (FORGE-19, 2026-05-23) — one-click unsubscribe via /api/email/unsubscribe.
+  emailCommunicationsOptIn Boolean @default(true)
 
   /// Rate-limits account deletion attempts (one try per minute).
   accountDeleteLastAttemptAt DateTime?
