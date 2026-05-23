@@ -56,16 +56,22 @@ npm run test:e2e     # Playwright — browser smoke in e2e/
 
 ## Deploy to GitHub
 
-These steps assume your GitHub remote is `mentorforge`.
+Canonical remote (Third Space Atlas org):
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/dblackwealth/mentorforge.git
+git remote add origin https://github.com/thirdspaceatlas/mentorforge.git
 git push -u origin main
 ```
+
+### Vercel ↔ GitHub mismatch
+
+Production deploys use the Vercel project **`studyforge`** (not the repo folder name). After moving the repo from `dblackwealth/mentorforge` to `thirdspaceatlas/mentorforge`, reconnect Git in the dashboard:
+
+1. [GitHub → Settings → Applications → Vercel](https://github.com/settings/installations) → **Configure** → grant **thirdspaceatlas** org access and select the **mentorforge** repository.
+2. [Vercel → studyforge → Settings → Git](https://vercel.com/thirdspaceatlas/studyforge/settings/git) → **Connect** → `thirdspaceatlas/mentorforge`, production branch `main`.
+3. Trigger **Redeploy** on `main` once connected.
+
+Until Git is reconnected, deploy from CLI: `vercel deploy --prod` (with `.vercel/project.json` linked to `studyforge`).
 
 If the remote already has commits, use `git pull origin main --allow-unrelated-histories` first, then push.
 
