@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [emailCommunicationsOptIn, setEmailCommunicationsOptIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -73,6 +74,13 @@ export default function RegisterPage() {
       });
 
       if (data.session) {
+        if (emailCommunicationsOptIn) {
+          await fetch("/api/profile/communications", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ emailCommunicationsOptIn: true }),
+          }).catch(() => {});
+        }
         const params = new URLSearchParams(window.location.search);
         const raw = params.get("callbackUrl") ?? "/app";
         const dest =
@@ -97,6 +105,14 @@ export default function RegisterPage() {
       return;
     }
     setOauthLoading(provider);
+
+    if (emailCommunicationsOptIn) {
+      try {
+        sessionStorage.setItem("mf_email_comms_opt_in", "1");
+      } catch {
+        // ignore
+      }
+    }
 
     const supabase = createClient();
 
@@ -154,6 +170,18 @@ export default function RegisterPage() {
             privacy policy
           </Link>
           .
+        </span>
+      </label>
+
+      <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200/90 bg-slate-50/60 px-3.5 py-3 text-sm leading-relaxed text-slate-700 transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300 dark:hover:border-slate-600">
+        <input
+          type="checkbox"
+          checked={emailCommunicationsOptIn}
+          onChange={(e) => setEmailCommunicationsOptIn(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-accent focus:ring-2 focus:ring-accent focus:ring-offset-0 dark:border-slate-600 dark:bg-slate-900"
+        />
+        <span>
+          Email me the weekly study digest and occasional product updates (optional).
         </span>
       </label>
 

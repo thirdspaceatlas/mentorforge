@@ -67,6 +67,13 @@ export async function POST(req: NextRequest) {
   const attribution = normalizeString(body.attribution, 80);
   if (attribution) crmUpdate.attribution = attribution;
 
+  if (typeof body.emailCommunicationsOptIn === "boolean") {
+    await prisma.profile.update({
+      where: { id: user.id },
+      data: { emailCommunicationsOptIn: body.emailCommunicationsOptIn },
+    });
+  }
+
   if (Object.keys(crmUpdate).length > 0) {
     await prisma.profile.update({
       where: { id: user.id },

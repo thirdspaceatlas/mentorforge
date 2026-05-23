@@ -51,7 +51,14 @@ export default function AccountPage() {
   const [linking, setLinking] = useState<"azure" | "google" | null>(null);
   const [resetConfirm, setResetConfirm] = useState("");
   const [calendarResetConfirm, setCalendarResetConfirm] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState("");
   const [resetting, setResetting] = useState(false);
+  const [emailCommunicationsOptIn, setEmailCommunicationsOptIn] = useState(false);
+  const [commsLoading, setCommsLoading] = useState(true);
+  const [commsSaving, setCommsSaving] = useState(false);
+  const [commsMessage, setCommsMessage] = useState<string | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -60,10 +67,15 @@ export default function AccountPage() {
       fetch("/api/study-plan").then((r) => r.ok ? r.json() : { plan: null }),
       fetch("/api/usage").then((r) => (r.ok ? r.json() : null)),
       fetch("/api/profile/first-name").then((r) => (r.ok ? r.json() : { firstName: null })),
+      fetch("/api/profile/communications").then((r) =>
+        r.ok ? r.json() : { emailCommunicationsOptIn: false }
+      ),
     ])
-      .then(([calData, planData, usageData, nameData]) => {
+      .then(([calData, planData, usageData, nameData, commsData]) => {
         setCalendars(calData.connections || []);
         setFirstName(nameData?.firstName ?? null);
+        setEmailCommunicationsOptIn(Boolean(commsData?.emailCommunicationsOptIn));
+        setCommsLoading(false);
         if (planData.plan) {
           setStudyPlan({
             examLevel: planData.plan.examLevel,
@@ -78,7 +90,10 @@ export default function AccountPage() {
         if (usageData) setUsage(usageData);
       })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setCommsLoading(false);
+        setLoading(false);
+      });
   }, [user]);
 
   useEffect(() => {
@@ -242,6 +257,59 @@ export default function AccountPage() {
     window.location.href = "/";
   };
 
+  const saveCommunications = async (optIn: boolean) => {
+    setCommsSaving(true);
+    setCommsMessage(null);
+    try {
+      const res = await fetch("/api/profile/communications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailCommunicationsOptIn: optIn }),
+      });
+      if (!res.ok) {
+        setCommsMessage("Couldn't save — try again in a moment.");
+        setCommsSaving(false);
+        return;
+      }
+      setEmailCommunicationsOptIn(optIn);
+      setCommsMessage(optIn ? "You're subscribed to product emails." : "You're unsubscribed from product emails.");
+      setCommsSaving(false);
+    } catch {
+      setCommsMessage("Couldn't reach the server. Check your connection.");
+      setCommsSaving(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    if (deleteConfirm !== "delete") return;
+    const ok = window.confirm(
+      "Delete your MentorForge account permanently?\n\nThis removes your study plan, calendar connections, sessions, and billing data we store. This cannot be undone."
+    );
+    if (!ok) return;
+
+    setDeletingAccount(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch("/api/account", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirm: "delete" }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setDeleteError(data.error ?? "Account deletion failed. Try again in a minute.");
+        setDeletingAccount(false);
+        return;
+      }
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      window.location.href = "/?deleted=1";
+    } catch {
+      setDeleteError("Couldn't reach the server. Check your connection.");
+      setDeletingAccount(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       <h1 className="font-display text-2xl font-medium tracking-tight text-slate-900 dark:text-slate-50">
@@ -381,6 +449,31 @@ export default function AccountPage() {
         </button>
       </section>
 
+      {/* Communications */}
+      <section className="rounded-xl border border-slate-200/90 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 sm:p-6">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Communications
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+          Weekly study digest with one quick question, plus occasional product updates. Off by default for new accounts.
+        </p>
+        <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200/90 bg-slate-50/80 px-3.5 py-3 text-sm leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-300">
+          <input
+            type="checkbox"
+            checked={emailCommunicationsOptIn}
+            disabled={commsLoading || commsSaving}
+            onChange={(e) => void saveCommunications(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-accent focus:ring-2 focus:ring-accent focus:ring-offset-0 dark:border-slate-600 dark:bg-slate-900"
+          />
+          <span>Email me the weekly digest and product updates</span>
+        </label>
+        {commsMessage ? (
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite">
+            {commsMessage}
+          </p>
+        ) : null}
+      </section>
+
       {/* Connected Calendars */}
       <section className="rounded-xl border border-slate-200/90 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 sm:p-6">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Connected Calendars</h2>
@@ -509,6 +602,33 @@ export default function AccountPage() {
               className="rounded-md bg-rose-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-500 disabled:opacity-40"
             >
               Reset Calendar Coach
+            </button>
+          </div>
+        </div>
+
+        {/* Delete account */}
+        <div className="mt-6 border-t border-rose-200/60 pt-5 dark:border-rose-900/30">
+          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Delete account</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Permanently removes your profile, study data, calendar connections, and auth account. Active MentorForge subscriptions are canceled; your Stripe customer is only deleted if you have no other active subscriptions with us.
+          </p>
+          {deleteError ? (
+            <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">{deleteError}</p>
+          ) : null}
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <input
+              type="text"
+              placeholder='Type "delete" to confirm'
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              className="w-48 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            />
+            <button
+              onClick={() => void deleteAccount()}
+              disabled={deleteConfirm !== "delete" || deletingAccount || resetting}
+              className="rounded-md bg-rose-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-600 disabled:opacity-40"
+            >
+              {deletingAccount ? "Deleting…" : "Delete account"}
             </button>
           </div>
         </div>

@@ -153,6 +153,7 @@ export default function OnboardingPage() {
   const [primaryChallengeOther, setPrimaryChallengeOther] = useState("");
   const [employerOther, setEmployerOther] = useState("");
   const [attributionOther, setAttributionOther] = useState("");
+  const [emailCommunicationsOptIn, setEmailCommunicationsOptIn] = useState(false);
   /** True once we loaded a saved study plan from the API (used to explain pre-filled rhythm). */
   const [rhythmFromSavedPlan, setRhythmFromSavedPlan] = useState(false);
 
@@ -279,6 +280,7 @@ export default function OnboardingPage() {
         attribution: attribution === "Other"
           ? (attributionOther ? `Other: ${attributionOther}` : "Other")
           : (attribution || undefined),
+        emailCommunicationsOptIn,
       }),
     }).catch(() => {});
   }
@@ -635,6 +637,18 @@ export default function OnboardingPage() {
                   />
                 </Field>
               ) : null}
+
+              <label className="mb-6 flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200/90 bg-slate-50/80 px-3.5 py-3 text-left text-sm leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={emailCommunicationsOptIn}
+                  onChange={(e) => setEmailCommunicationsOptIn(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-0 dark:border-slate-600 dark:bg-slate-900"
+                />
+                <span>
+                  Email me the weekly study digest and occasional product updates. You can change this anytime in account settings.
+                </span>
+              </label>
 
               <PrimaryButton onClick={() => goTo(8)}>Continue</PrimaryButton>
               <SecondaryButton onClick={() => goTo(8)}>Skip for now</SecondaryButton>

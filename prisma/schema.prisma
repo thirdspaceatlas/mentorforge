@@ -25,6 +25,12 @@ model Profile {
   /// How they heard about us: "linkedin" | "reddit" | "friend" | "search" | "other".
   attribution      String?
 
+  /// Weekly digest + product update emails (explicit opt-in; default off for new users).
+  emailCommunicationsOptIn Boolean @default(false)
+
+  /// Rate-limits account deletion attempts (one try per minute).
+  accountDeleteLastAttemptAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 

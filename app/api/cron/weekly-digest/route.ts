@@ -12,7 +12,7 @@ import { pickQuestionForUser } from "@/lib/survey/questions";
 /**
  * GET /api/cron/weekly-digest — Sunday job (registered in vercel.json).
  *
- * For each profile with an email, builds a one-question weekly digest and sends
+ * For each profile with an email who opted in to communications, builds a one-question weekly digest and sends
  * via Resend. The question rotates based on weeks-since-signup. Answers come
  * back as signed GETs to /api/survey/answer — no login needed.
  *
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
   // Safe for current scale (<1k users); revisit with a queue if we get bigger.
   while (true) {
     const batch = await prisma.profile.findMany({
-      where: { email: { not: null } },
+      where: { email: { not: null }, emailCommunicationsOptIn: true },
       select: { id: true, email: true, firstName: true, createdAt: true },
       orderBy: { id: "asc" },
       take: PAGE_SIZE,

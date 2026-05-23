@@ -1,6 +1,13 @@
 import { createSurveyToken } from "@/lib/survey/signed-link";
 import type { SurveyQuestion } from "@/lib/survey/questions";
 import { getPublicSiteOrigin } from "@/lib/site";
+import { createUnsubscribeToken } from "@/lib/email/unsubscribe-token";
+
+function buildUnsubscribeUrl(userId: string): string {
+  const origin = getPublicSiteOrigin();
+  const token = createUnsubscribeToken(userId);
+  return `${origin}/api/email/unsubscribe?t=${encodeURIComponent(token)}`;
+}
 
 /**
  * Weekly digest email. Minimal text-first markup per DESIGN.md —
@@ -35,6 +42,7 @@ export function buildDigestToneLine(sessionsThisWeek: number): string {
 
 export function buildDigestHtml(input: DigestInput): string {
   const origin = getPublicSiteOrigin();
+  const unsubscribeUrl = buildUnsubscribeUrl(input.userId);
   const greeting = input.firstName ? `Hi ${escapeHtml(input.firstName)},` : "Hi,";
   const { sessionsThisWeek, minutesThisWeek, toneLine } = input.stats;
 
@@ -95,8 +103,9 @@ export function buildDigestHtml(input: DigestInput): string {
       <a href="${origin}/app" style="color:#047857;text-decoration:underline;">Open your plan</a>.
     </p>
     <p style="margin:0 0 0 0;font-size:12px;color:#94a3b8;">
-      You're receiving this because you have a MentorForge account.
-      <a href="${origin}/app/account" style="color:#94a3b8;text-decoration:underline;">Manage preferences</a>.
+      You're receiving this because you opted in to product emails.
+      <a href="${unsubscribeUrl}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a>
+      · <a href="${origin}/app/account" style="color:#94a3b8;text-decoration:underline;">Account settings</a>.
     </p>
   </div>
 </body>
@@ -105,6 +114,7 @@ export function buildDigestHtml(input: DigestInput): string {
 
 export function buildDigestText(input: DigestInput): string {
   const origin = getPublicSiteOrigin();
+  const unsubscribeUrl = buildUnsubscribeUrl(input.userId);
   const greeting = input.firstName ? `Hi ${input.firstName},` : "Hi,";
   const { sessionsThisWeek, minutesThisWeek, toneLine } = input.stats;
   const optionsText = input.question.options
@@ -127,7 +137,8 @@ ${optionsText}
 One click records your answer.
 
 Open your plan: ${origin}/app
-Manage preferences: ${origin}/app/account
+Unsubscribe: ${unsubscribeUrl}
+Account settings: ${origin}/app/account
 `;
 }
 

@@ -4,6 +4,7 @@ import { getUserPlan, serializeUserPlan } from "@/lib/access";
 import type { UserPlan } from "@/lib/access";
 import { PlanProvider } from "@/components/app/PlanProvider";
 import { AppSidebar } from "@/components/app/AppSidebar";
+import { ApplyPendingEmailCommsOptIn } from "@/components/app/ApplyPendingEmailCommsOptIn";
 
 /**
  * /app is available to any logged-in user (free tier + paid).
@@ -31,6 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <PlanProvider value={serialized}>
+      <ApplyPendingEmailCommsOptIn />
       {/* Viewport-escape: break out of the global <main>'s max-w-[1200px] +
           px/py padding so the editorial cream surface fills the entire app
           frame edge-to-edge. */}
