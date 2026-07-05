@@ -52,6 +52,13 @@ export const viewport: Viewport = {
   viewportFit: "cover"
 };
 
+const plausibleDomain =
+  process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN?.trim() || getSiteUrl().hostname;
+
+/** Custom events + props (see lib/analytics.ts). Loaded after hydration so it never blocks first paint. */
+const plausibleScriptSrc =
+  "https://plausible.io/js/script.pageview-props.tagged-events.js";
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
@@ -62,8 +69,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-screen overflow-x-hidden bg-[#fafaf9] text-slate-900 dark:bg-slate-950 dark:text-slate-100 dark:antialiased">
         <Script
           defer
-          data-domain="www.mentorforge.co"
-          src="https://plausible.io/js/script.js"
+          data-domain={plausibleDomain}
+          src={plausibleScriptSrc}
           strategy="afterInteractive"
         />
         <Providers>

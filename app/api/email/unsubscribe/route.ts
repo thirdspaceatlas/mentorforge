@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   try {
     await prisma.profile.update({
       where: { id: verified.payload.u },
-      data: { emailCommunicationsOptIn: false },
+      data: { emailCommunicationsOptIn: false, emailOptOutAt: new Date() },
     });
   } catch {
     return NextResponse.redirect(failUrl);
