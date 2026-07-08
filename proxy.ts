@@ -34,6 +34,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Common alias — no /signup route; bookmarks and external links should land on register.
+  if (pathname === "/signup" || pathname === "/signup/") {
+    return NextResponse.redirect(new URL("/register", request.url), 308);
+  }
+
   // Canonical domain redirect. Keeps Supabase auth cookies + OAuth callbacks on one hostname.
   const canonical = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (canonical) {
