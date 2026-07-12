@@ -18,6 +18,7 @@
     "test:e2e": "playwright test",
     "test:e2e:list": "playwright test --list",
     "guest:yc": "tsx scripts/create-yc-guest.ts",
+    "user:test": "tsx scripts/create-test-user.ts",
     "guest:yc:grant": "tsx scripts/grant-all-access-by-email.ts",
     "revoke:yc": "tsx scripts/revoke-yc-reviewer.ts",
     "seed:demo": "tsx scripts/seed-demo-windows.ts"
