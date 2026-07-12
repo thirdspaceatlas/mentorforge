@@ -117,6 +117,7 @@ Dates are ISO 8601 strings (UTC) unless noted as date-only (`YYYY-MM-DD`).
 | PUT | `/api/study-plan` | full `SavedPlan` payload | updated plan (also re-syncs windows) |
 | DELETE | `/api/study-plan` | — | `{ ok: true }` (resets plan) |
 | POST | `/api/study-plan/rebalance` | rebalance inputs | rebalanced plan (cap-gated) |
+| GET | `/api/insights` | — | `{ readiness, coachTip, cached?, generatedAt? }` — Home blurbs; cached on plan until signals change |
 
 `SavedPlan` fields: `examLevel` ("I"|"II"|"III"), `examDate` (YYYY-MM-DD),
 `weeklyHours`, `planStartDate`, `weekStartDay` ("0"–"6"), `levelIIIPathway`,
@@ -274,9 +275,8 @@ await api("/push/register-mobile", {
 - [ ] Map screens to the endpoints in §4 (plan, windows, stats, sessions, infeasibility).
 - [ ] Replace Emergent push relay with Expo push token registration via
       `POST /api/push/register-mobile` (§6; backend live).
-- [ ] AI "insights": if kept, call an LLM from the shared Next backend (add an
-      `/api/insights` route using the Emergent LLM key) so mobile and web share it,
-      instead of the mobile FastAPI service.
+- [ ] AI "insights": point Home at `GET /api/insights` (live on Next; replaces FastAPI
+      `/api/plans/{id}/insights` when the Home screen migrates).
 - [ ] Retire the Mongo data store — Supabase is the single source of truth.
 
 ---

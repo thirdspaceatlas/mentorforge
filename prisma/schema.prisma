@@ -220,6 +220,13 @@ model SavedStudyPlan {
   weekPlan                    Json // WeekPlan[] with dates as ISO strings
   baseWeekPlan                Json // original unmodified plan for undo
   actualHours                 Json // (number | null)[]
+  /// Cached Home insights — readiness narrative (2 sentences).
+  insightReadiness            String?
+  /// Cached Home insights — one weekly coach action.
+  insightCoachTip             String?
+  /// Hash of insight inputs; regenerate blurbs when this changes.
+  insightSignature            String?
+  insightGeneratedAt          DateTime?
   createdAt                   DateTime @default(now())
   updatedAt                   DateTime @updatedAt
 
