@@ -40,7 +40,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY = <the same anon/publishable key the web app uses>
 
 The web app authenticates with **cookies**; mobile authenticates with the Supabase
 **access token** in the `Authorization` header. The backend now accepts **both**
-(see §7 "What changed"). No per-endpoint difference — just send the header.
+(see §8 "What changed"). No per-endpoint difference — just send the header.
 
 ### 3.1 Supabase client on Expo (SecureStore-backed)
 
@@ -134,7 +134,7 @@ Dates are ISO 8601 strings (UTC) unless noted as date-only (`YYYY-MM-DD`).
 | POST | `/api/calendar/sessions/ad-hoc` | `{ startedAt, actualMin, topicName? }` | created ad-hoc session |
 | POST | `/api/calendar/notifications/snooze` | `{ windowId }` | `{ ok }` |
 | GET/POST/DELETE | `/api/calendar/connections` | connection id | list / add / disconnect |
-| POST | `/api/calendar/sync` | — | triggers a sync + window regen |
+| POST | `/api/calendar/sync` | — *(web)* or `{ busyPeriods: [{start,end}] }` *(mobile)* | OAuth sync or device ingest → window regen |
 | DELETE | `/api/calendar/reset` | — | wipes Calendar Coach history |
 
 `Window` = `{ id, startTime, endTime, durationMin, topicName, studyType,
@@ -164,11 +164,13 @@ todayWindows: Window[], nextWindow: Window|null, heatmap: {date, minutes}[] }`.
 | POST | `/api/survey/answer` | `{ ... }` | `{ ok }` |
 | DELETE | `/api/account` | `{ confirm: "delete" }` | deletes account |
 
-### Push (see §6 for the mobile-specific plan)
-| Method | Path | Body |
-|---|---|---|
-| POST | `/api/push/subscribe` | web-push sub `{ endpoint, p256dh, auth, userAgent? }` |
-| POST | `/api/push/unsubscribe` | `{ endpoint }` |
+### Push
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| POST | `/api/push/subscribe` | web-push sub `{ endpoint, p256dh, auth, userAgent? }` | web/PWA only |
+| POST | `/api/push/unsubscribe` | `{ endpoint }` | web/PWA only |
+| POST | `/api/push/register-mobile` | `{ expoPushToken, platform? }` | mobile; idempotent upsert (§6) |
+| DELETE | `/api/push/register-mobile` | `{ expoPushToken }` | mobile; on sign-out / revoke |
 
 ---
 
@@ -183,7 +185,8 @@ Core tables the mobile app consumes (UUID `userId` = Supabase auth user id):
 - **calendar_connections** `{ id, userId, provider("google"|"outlook"), providerEmail, enabled }`
 - **calendar_events** `{ connectionId, providerEventId, startTime, endTime, busyStatus }`
 - **infeasibility_events** `{ id, userId, unplaceableMinutes, options, resolvedAt?, chosenResolution? }`
-- **push_subscriptions** `{ id, userId, endpoint(unique), p256dh, auth, userAgent? }`
+- **push_subscriptions** `{ id, userId, endpoint(unique), p256dh, auth, userAgent? }` — web/PWA VAPID subs
+- **mobile_push_tokens** `{ id, userId, expoPushToken(unique), platform?, createdAt, updatedAt }` — Expo native tokens
 - **usage_events** `{ userId, action("rebalance"|"nudge_sent"), createdAt }` — powers the rolling-7-day caps (free: 1 calendar, 1 rebalance/wk, 3 nudges/wk).
 
 **IDs are UUID/cuid strings** — never Mongo ObjectIds. All timestamps ISO strings.
@@ -208,12 +211,11 @@ await api("/push/register-mobile", {
 });
 ```
 
-### Backend side (TO BUILD — see §8 open items)
-- New endpoint `POST /api/push/register-mobile` storing the Expo token.
-- Store native tokens alongside web subs (add `type: "web"|"expo"` + nullable
-  `expoPushToken` to `push_subscriptions`, or a sibling `mobile_push_tokens` table).
-- Extend the send path (`send-notifications` cron / `lib/push`) to dispatch:
-  - web subs → existing `sendPush` (VAPID),
+### Backend side (live — see §8)
+- `POST/DELETE /api/push/register-mobile` stores Expo tokens in the sibling
+  `mobile_push_tokens` table (web subs stay in `push_subscriptions`).
+- The `send-notifications` cron dispatches:
+  - web subs → existing VAPID `sendPush`,
   - expo tokens → Expo Push API `POST https://exp.host/--/api/v2/push/send`
     (no server key required; body `{ to, title, body, data }`).
 - The reliable-nudge rule, topic recommender and rolling-7-day cap are shared —
@@ -226,11 +228,11 @@ await api("/push/register-mobile", {
 - **Web** ingests busy times via Google/Outlook **OAuth** (server-side) into
   `calendar_events`, then `regenerateWindows()` runs the gap-finder to produce
   `study_windows`.
-- **Mobile** reads device calendars with **`expo-calendar`**. It should POST the
-  device's busy periods to the backend so the SAME gap-finder produces windows
-  (keeps one algorithm). Recommended: `POST /api/calendar/sync` accepting an
-  optional `{ busyPeriods: {start,end}[] }` payload for mobile-sourced events
-  (TO BUILD — see §8), or reuse OAuth on mobile via `signInWithOAuth`.
+- **Mobile** reads device calendars with **`expo-calendar`** and POSTs busy
+  periods to `POST /api/calendar/sync` with `{ busyPeriods: [{start,end}] }`.
+  The backend stores them under a per-user "device" connection and runs the same
+  gap-finder, so windows match web. Alternatively, mobile can reuse OAuth via
+  `signInWithOAuth` and call sync with no body (same path as web).
 - Writing a completed session is identical on both: `POST /api/calendar/sessions`.
 
 ---
@@ -255,7 +257,7 @@ await api("/push/register-mobile", {
   `(userId,startTime,endTime)` unique constraint (important now that the cron
   runs every 5 min).
 
-### New mobile endpoints
+### New mobile endpoints (also listed in §4)
 | Method | Path | Body | Notes |
 |---|---|---|---|
 | POST | `/api/push/register-mobile` | `{ expoPushToken, platform? }` | idempotent upsert |
@@ -270,8 +272,8 @@ await api("/push/register-mobile", {
 - [ ] Replace session-token auth with Supabase Auth (§3); store token in SecureStore.
 - [ ] Swap `src/api/client.ts` to attach `Authorization: Bearer <supabase token>`.
 - [ ] Map screens to the endpoints in §4 (plan, windows, stats, sessions, infeasibility).
-- [ ] Replace Emergent push relay with Expo push token registration (§6) once
-      the backend endpoints ship.
+- [ ] Replace Emergent push relay with Expo push token registration via
+      `POST /api/push/register-mobile` (§6; backend live).
 - [ ] AI "insights": if kept, call an LLM from the shared Next backend (add an
       `/api/insights` route using the Emergent LLM key) so mobile and web share it,
       instead of the mobile FastAPI service.
