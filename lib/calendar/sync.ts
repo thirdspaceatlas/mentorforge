@@ -18,17 +18,22 @@ const DEFAULT_DAY_END = 22;
 
 async function getWorkingHours(
   userId: string
-): Promise<{ dayStartHour: number; dayEndHour: number }> {
+): Promise<{ dayStartHour: number; dayEndHour: number; timeZone?: string }> {
   const row = await prisma.savedStudyPlan.findUnique({
     where: { userId },
     select: { dayStartHour: true, dayEndHour: true },
+  });
+  // Per-user IANA timezone (Phase 2) so waking-hour boundaries are user-local.
+  const profile = await prisma.profile.findUnique({
+    where: { id: userId },
+    select: { timeZone: true },
   });
   const startRaw = row?.dayStartHour ?? DEFAULT_DAY_START;
   const endRaw = row?.dayEndHour ?? DEFAULT_DAY_END;
   // Clamp to sane bounds and ensure end > start so the gap finder never inverts.
   const dayStartHour = Math.min(23, Math.max(0, startRaw));
   const dayEndHour = Math.min(24, Math.max(dayStartHour + 1, endRaw));
-  return { dayStartHour, dayEndHour };
+  return { dayStartHour, dayEndHour, timeZone: profile?.timeZone ?? undefined };
 }
 
 /**
@@ -47,6 +52,13 @@ export async function syncConnection(connectionId: string): Promise<{
   });
 
   if (!connection.enabled) {
+    return { eventsUpserted: 0 };
+  }
+
+  // Device connections (mobile expo-calendar) are populated by syncDeviceBusy,
+  // not by an OAuth fetch — nothing to sync here, and their token fields are
+  // placeholders that must never be decrypted.
+  if (connection.provider === "device") {
     return { eventsUpserted: 0 };
   }
 
@@ -134,7 +146,7 @@ export async function regenerateWindows(userId: string): Promise<number> {
   sevenDaysOut.setDate(sevenDaysOut.getDate() + 7);
 
   const maxSessionMin = await getPreferredMaxSessionMin(userId);
-  const { dayStartHour, dayEndHour } = await getWorkingHours(userId);
+  const { dayStartHour, dayEndHour, timeZone } = await getWorkingHours(userId);
 
   return prisma.$transaction(
     async (tx) => {
@@ -162,6 +174,7 @@ export async function regenerateWindows(userId: string): Promise<number> {
         maxSessionMin,
         dayStartHour,
         dayEndHour,
+        timeZone,
       });
 
       const existingWindows = await tx.studyWindow.findMany({
@@ -208,14 +221,19 @@ export async function regenerateWindows(userId: string): Promise<number> {
           where: { id: { in: staleWindowIds } },
         });
       }
-      for (const gap of newGaps) {
-        await tx.studyWindow.create({
-          data: {
+      if (newGaps.length > 0) {
+        // Idempotent insert: skipDuplicates guards the (userId, startTime,
+        // endTime) unique constraint so reconciliation never crashes if a gap's
+        // exact slot already exists (e.g. a kept window matched only within the
+        // 60s tolerance, or a boundary window just outside the query range).
+        await tx.studyWindow.createMany({
+          data: newGaps.map((gap) => ({
             userId,
             startTime: gap.start,
             endTime: gap.end,
             durationMin: gap.durationMin,
-          },
+          })),
+          skipDuplicates: true,
         });
       }
 

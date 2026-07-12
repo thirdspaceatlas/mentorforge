@@ -1,10 +1,10 @@
 /**
  * Domain types for the adaptive rebalancing engine — FORGE-6.
  *
- * Mirrors docs/forge-3-rebalancing-spec.md (v1 DRAFT). Pure and DB-agnostic: the
- * Prisma/persistence layer is deliberately deferred until the spec locks
- * (post-FORGE-2 validation), and must be reconciled with the EXISTING Calendar
- * Coach models, which are distinct concepts despite similar names:
+ * Mirrors docs/forge-3-rebalancing-spec.md. Pure and DB-agnostic: the
+ * Prisma/persistence layer is deliberately separate, and must be reconciled with
+ * the EXISTING Calendar Coach models, which are distinct concepts despite similar
+ * names:
  *   - `StudyWindow`  = a *detected* calendar gap (regenerated on sync)
  *   - `StudySession` = a *started* timer (execution layer)
  * The types below are the *planning/availability* layer: what the user configures
@@ -25,7 +25,7 @@ export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type AvailabilityWindow = {
   start: MinuteOfDay;
   end: MinuteOfDay;
-  /** Target study-block length to place inside this window. */
+  /** Target study-block length to place inside this window (the candidate's target). */
   targetSessionMinutes: number;
 };
 
@@ -37,18 +37,23 @@ export type DayAvailability = {
 };
 
 /**
- * Protective pacing rails (spec §4). Compassionate nudges, not silent caps —
- * see the `pacingNudge` and `infeasible` paths in RebalanceResult.
+ * Protective pacing rails (spec §4 + FORGE-3 build-ready constants). The daily and
+ * weekly values are HARD CAPS above the candidate's onboarding target; buffer and
+ * consecutive-day rails protect the review window and force rest.
  */
 export type Guardrails = {
-  /** No single day's planned load exceeds this. */
+  /** No single day's planned load exceeds this (hard cap = MAX_HOURS_PER_DAY). */
   maxDailyMinutes: number;
-  /** Weekly pacing ceiling. */
+  /** Weekly pacing ceiling (hard cap = MAX_HOURS_PER_WEEK). */
   maxWeeklyHours: number;
   /** Floor for a study BLOCK — no sub-threshold fragments. */
   minSessionMinutes: number;
   /** Floor for a WINDOW width so the coach can place/move within it. */
   minWindowMinutes: number;
+  /** Max consecutive study days before a rest day is forced (MAX_CONSECUTIVE_DAYS). */
+  maxConsecutiveDays: number;
+  /** Review/mock buffer before the exam — no new content scheduled here (MIN_BUFFER_DAYS). */
+  minBufferDays: number;
 };
 
 export type AvailabilityProfile = {
@@ -122,4 +127,6 @@ export type RebalanceResult =
       unplaceableMinutes: number;
       options: InfeasibleOption[];
       grade: FeasibilityGrade;
+      /** Honest headline for the infeasibility event (spec §7). */
+      message: string;
     };

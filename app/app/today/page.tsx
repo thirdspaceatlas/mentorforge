@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CalendarCoachDashboard } from "@/components/calendar/CalendarCoachDashboard";
+import { InfeasibilityBanner } from "@/components/calendar/InfeasibilityBanner";
 
 /**
  * Dashboard surface — "what now, what today?". The Calendar Coach hero +
@@ -40,6 +41,8 @@ export default function TodayPage() {
 
   return (
     <div className="min-w-0 max-w-full">
+      {/* FORGE-3: honest "plan at risk" card — shown above the coach in every state */}
+      <InfeasibilityBanner />
       <CalendarCoachDashboard
         calendarPreferredSessionMin={preferredMin}
         onCalendarPreferredSessionMinChange={persistPreferred}
