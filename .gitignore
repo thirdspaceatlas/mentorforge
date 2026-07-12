@@ -13,9 +13,14 @@ dist
 .env
 .env.local
 .env*.local
+.env.bak.*
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Emergent session handoff artifacts (apply then discard)
+emergent-session-changes.tar.gz
+emergent-session.patch
 
 # Debug / logs
 npm-debug.log*
