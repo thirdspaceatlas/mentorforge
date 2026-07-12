@@ -1,17 +1,12 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { recommendTopic } from "@/lib/plan/nudge/recommend-topic";
-import { buildPrompt, fallback, signatureOf, type Signals } from "@/lib/insights/insights";
+import { fallback, signatureOf, type Signals } from "@/lib/insights/insights";
+import { tryLlmBlurbs } from "@/lib/insights/llm";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const anthropic = new Anthropic({
-  apiKey: process.env.EMERGENT_LLM_KEY,
-  baseURL: process.env.EMERGENT_LLM_BASE_URL,
-});
 
 export async function GET() {
   const supabase = await createClient();
@@ -74,26 +69,9 @@ export async function GET() {
     });
   }
 
-  let out = fallback(signals);
-  try {
-    const msg = await anthropic.messages.create({
-      model: process.env.INSIGHTS_MODEL ?? "claude-sonnet-5",
-      max_tokens: 400,
-      system: "Return STRICT JSON only. No markdown.",
-      messages: [{ role: "user", content: buildPrompt(signals) }],
-    });
-    const text = msg.content
-      .filter((b) => b.type === "text")
-      .map((b) => (b.type === "text" ? b.text : ""))
-      .join("\n")
-      .trim();
-    const parsed = JSON.parse(text) as { readiness?: unknown; coachTip?: unknown };
-    if (typeof parsed.readiness === "string" && typeof parsed.coachTip === "string") {
-      out = { readiness: parsed.readiness, coachTip: parsed.coachTip };
-    }
-  } catch {
-    // keep rule-based fallback
-  }
+  const llm = await tryLlmBlurbs(signals);
+  const out = llm ?? fallback(signals);
+  const source = llm ? ("llm" as const) : ("fallback" as const);
 
   await prisma.savedStudyPlan.update({
     where: { userId: user.id },
@@ -105,5 +83,11 @@ export async function GET() {
     },
   });
 
-  return NextResponse.json({ ...out, cached: false, generatedAt: now.toISOString() });
+  return NextResponse.json({
+    readiness: out.readiness,
+    coachTip: out.coachTip,
+    cached: false,
+    generatedAt: now.toISOString(),
+    source,
+  });
 }
