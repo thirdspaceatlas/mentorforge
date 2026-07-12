@@ -3,11 +3,37 @@ import { buildPrompt, type Signals } from "@/lib/insights/insights";
 
 export type InsightBlurbs = { readiness: string; coachTip: string };
 
+const DEFAULT_INSIGHTS_MODEL = "claude-sonnet-4-5";
+
 /** True when both Emergent gateway env vars are present. */
 export function llmConfigured(): boolean {
   return Boolean(
     process.env.EMERGENT_LLM_KEY?.trim() && process.env.EMERGENT_LLM_BASE_URL?.trim(),
   );
+}
+
+/** Parse model output into insight blurbs; handles markdown fences and leading prose. */
+export function parseInsightBlurbsFromText(text: string): InsightBlurbs | null {
+  const cleaned = text
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+  let jsonStr = cleaned;
+  try {
+    JSON.parse(cleaned);
+  } catch {
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if (match) jsonStr = match[0];
+  }
+  try {
+    const parsed = JSON.parse(jsonStr) as { readiness?: unknown; coachTip?: unknown };
+    if (typeof parsed.readiness === "string" && typeof parsed.coachTip === "string") {
+      return { readiness: parsed.readiness, coachTip: parsed.coachTip };
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -22,7 +48,7 @@ export async function tryLlmBlurbs(signals: Signals): Promise<InsightBlurbs | nu
   try {
     const anthropic = new Anthropic({ apiKey, baseURL });
     const msg = await anthropic.messages.create({
-      model: process.env.INSIGHTS_MODEL?.trim() || "claude-sonnet-5",
+      model: process.env.INSIGHTS_MODEL?.trim() || DEFAULT_INSIGHTS_MODEL,
       max_tokens: 400,
       system: "Return STRICT JSON only. No markdown.",
       messages: [{ role: "user", content: buildPrompt(signals) }],
@@ -32,11 +58,7 @@ export async function tryLlmBlurbs(signals: Signals): Promise<InsightBlurbs | nu
       .map((b) => (b.type === "text" ? b.text : ""))
       .join("\n")
       .trim();
-    const parsed = JSON.parse(text) as { readiness?: unknown; coachTip?: unknown };
-    if (typeof parsed.readiness === "string" && typeof parsed.coachTip === "string") {
-      return { readiness: parsed.readiness, coachTip: parsed.coachTip };
-    }
-    return null;
+    return parseInsightBlurbsFromText(text);
   } catch {
     return null;
   }

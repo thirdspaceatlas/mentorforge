@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { llmConfigured, tryLlmBlurbs } from "@/lib/insights/llm";
+import { llmConfigured, tryLlmBlurbs, parseInsightBlurbsFromText } from "@/lib/insights/llm";
 import type { Signals } from "@/lib/insights/insights";
 
 const signals: Signals = {
@@ -36,5 +36,36 @@ describe("insights llm", () => {
     delete process.env.EMERGENT_LLM_KEY;
     delete process.env.EMERGENT_LLM_BASE_URL;
     await expect(tryLlmBlurbs(signals)).resolves.toBeNull();
+  });
+
+  it("parseInsightBlurbsFromText parses plain JSON", () => {
+    const out = parseInsightBlurbsFromText(
+      '{"readiness":"Week 4 of 16.","coachTip":"Block two sessions."}',
+    );
+    expect(out).toEqual({
+      readiness: "Week 4 of 16.",
+      coachTip: "Block two sessions.",
+    });
+  });
+
+  it("parseInsightBlurbsFromText strips markdown fences", () => {
+    const out = parseInsightBlurbsFromText(
+      '```json\n{"readiness":"On track.","coachTip":"Review Ethics."}\n```',
+    );
+    expect(out?.readiness).toBe("On track.");
+    expect(out?.coachTip).toBe("Review Ethics.");
+  });
+
+  it("parseInsightBlurbsFromText extracts JSON from leading prose", () => {
+    const out = parseInsightBlurbsFromText(
+      'Here is the JSON:\n{"readiness":"Pace is steady.","coachTip":"Focus on FRA."}',
+    );
+    expect(out?.readiness).toBe("Pace is steady.");
+    expect(out?.coachTip).toBe("Focus on FRA.");
+  });
+
+  it("parseInsightBlurbsFromText returns null for invalid payloads", () => {
+    expect(parseInsightBlurbsFromText("not json")).toBeNull();
+    expect(parseInsightBlurbsFromText('{"readiness":1}')).toBeNull();
   });
 });
