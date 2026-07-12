@@ -124,7 +124,6 @@ model ExamTopicDefinition {
   recommendedHours Int
 
   examDefinition ExamDefinition @relation(fields: [examDefinitionId], references: [id])
-  studySessions  StudySession[]
 }
 
 model ExamInstance {
@@ -244,21 +243,19 @@ model StudyWindow {
 
 /// Actual study session started from a window. One window → at most one session.
 model StudySession {
-  id                    String    @id @default(cuid())
-  userId                String    @db.Uuid
-  windowId              String    @unique // one session per window (idempotent start)
-  examTopicDefinitionId String? // links session to study plan topic for progress tracking
-  startedAt             DateTime  @default(now())
-  completedAt           DateTime?
-  interrupted           Boolean   @default(false)
+  id                 String    @id @default(cuid())
+  userId             String    @db.Uuid
+  windowId           String    @unique // one session per window (idempotent start)
+  startedAt          DateTime  @default(now())
+  completedAt        DateTime?
+  interrupted        Boolean   @default(false)
   /// Target timer length chosen at start (minutes, <= window duration). Null = use full window.
-  plannedDurationMin    Int?
+  plannedDurationMin Int?
   /// Wall-clock duration in minutes (server-derived: completedAt - startedAt)
-  actualMin             Float?
+  actualMin          Float?
 
-  user   Profile              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  window StudyWindow          @relation(fields: [windowId], references: [id], onDelete: Cascade)
-  topic  ExamTopicDefinition? @relation(fields: [examTopicDefinitionId], references: [id])
+  user   Profile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  window StudyWindow @relation(fields: [windowId], references: [id], onDelete: Cascade)
 
   @@index([userId, startedAt])
   @@map("study_sessions")
