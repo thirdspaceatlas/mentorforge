@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { syncConnection, regenerateWindows } from "@/lib/calendar/sync";
+import { withRetry } from "@/lib/retry";
 
 /**
  * GET /api/cron/sync-calendars — near-real-time calendar sync for all users
@@ -24,11 +25,13 @@ export async function GET(req: NextRequest) {
 
   const startTime = Date.now();
 
-  const connections = await prisma.calendarConnection.findMany({
-    where: { enabled: true },
-    select: { id: true, userId: true, provider: true },
-    orderBy: { id: "asc" },
-  });
+  const connections = await withRetry(() =>
+    prisma.calendarConnection.findMany({
+      where: { enabled: true },
+      select: { id: true, userId: true, provider: true },
+      orderBy: { id: "asc" },
+    }),
+  );
 
   console.log(
     JSON.stringify({
