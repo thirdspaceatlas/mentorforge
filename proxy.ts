@@ -9,6 +9,24 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "./lib/supabase/env";
 
+/**
+ * CORS for /api/* — the mobile app (Expo) and other non-same-origin clients
+ * call the API with a Supabase access token in the Authorization header (never
+ * cookies), so a wildcard origin is safe (we never allow credentials). The web
+ * app is same-origin and unaffected.
+ */
+const CORS_HEADERS: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "Authorization, Content-Type",
+  "Access-Control-Max-Age": "86400"
+};
+
+function withCors<T extends NextResponse>(res: T): T {
+  for (const [k, v] of Object.entries(CORS_HEADERS)) res.headers.set(k, v);
+  return res;
+}
+
 function isLocalDevHost(host: string): boolean {
   const h = host.split(":")[0]?.toLowerCase() ?? "";
   if (!h) return false;
@@ -32,6 +50,11 @@ export async function proxy(request: NextRequest) {
 
   if (pathname.startsWith("/_next") || pathname === "/favicon.ico") {
     return NextResponse.next();
+  }
+
+  // CORS preflight for the API (mobile / cross-origin clients).
+  if (pathname.startsWith("/api") && request.method === "OPTIONS") {
+    return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
   }
 
   // Common alias — no /signup route; bookmarks and external links should land on register.
@@ -111,7 +134,7 @@ export async function proxy(request: NextRequest) {
     return redirectResponse;
   }
 
-  return response;
+  return pathname.startsWith("/api") ? withCors(response) : response;
 }
 
 export const config = {

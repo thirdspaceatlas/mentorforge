@@ -7,6 +7,7 @@ import { useSupabaseUser } from "@/lib/supabase/use-supabase-user";
 import { usePlan } from "@/components/app/PlanProvider";
 import { createClient } from "@/lib/supabase/client";
 import { consumeOAuthHashMessage } from "@/lib/supabase/oauth-client-error";
+import { isPushSupported, subscribeToPush, unsubscribeFromPush } from "@/lib/push/client";
 
 type CalendarConnection = {
   id: string;
@@ -59,6 +60,60 @@ export default function AccountPage() {
   const [commsMessage, setCommsMessage] = useState<string | null>(null);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Push notifications (per-device / per-browser).
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission>("default");
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushMessage, setPushMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isPushSupported()) {
+      setPushSupported(false);
+      return;
+    }
+    setPushSupported(true);
+    setPushPermission(Notification.permission);
+    navigator.serviceWorker
+      .getRegistration("/")
+      .then(async (reg) => {
+        if (!reg) return;
+        const sub = await reg.pushManager.getSubscription();
+        setPushSubscribed(Boolean(sub));
+      })
+      .catch(() => {});
+  }, []);
+
+  const enablePush = async () => {
+    setPushBusy(true);
+    setPushMessage(null);
+    const outcome = await subscribeToPush();
+    if (outcome.ok) {
+      setPushSubscribed(true);
+      setPushPermission("granted");
+      setPushMessage("Notifications are on. We'll nudge this device when a study window opens.");
+    } else if (outcome.reason === "denied") {
+      setPushPermission("denied");
+      setPushMessage("Your browser blocked notifications. Re-enable them for this site in your browser settings, then toggle this back on.");
+    } else if (outcome.reason === "unsupported") {
+      setPushMessage("This browser doesn't support push notifications.");
+    } else if (outcome.reason === "not_configured") {
+      setPushMessage("Notifications aren't configured yet. Please try again later.");
+    } else {
+      setPushMessage(outcome.message ?? "Couldn't enable notifications. Try again in a moment.");
+    }
+    setPushBusy(false);
+  };
+
+  const disablePush = async () => {
+    setPushBusy(true);
+    setPushMessage(null);
+    await unsubscribeFromPush();
+    setPushSubscribed(false);
+    setPushMessage("Notifications are off on this device. You won't receive study-window nudges here.");
+    setPushBusy(false);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -470,6 +525,49 @@ export default function AccountPage() {
         {commsMessage ? (
           <p className="mt-2 text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite">
             {commsMessage}
+          </p>
+        ) : null}
+      </section>
+
+      {/* Notifications */}
+      <section className="rounded-xl border border-slate-200/90 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 sm:p-6">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Notifications
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+          Get a push nudge on this device when a study window opens up on your calendar.
+          Notifications are per-device — turn them on wherever you want the reminders.
+        </p>
+        {!pushSupported ? (
+          <p className="mt-4 rounded-lg border border-slate-200/90 bg-slate-50/80 px-3.5 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400">
+            This browser doesn&apos;t support push notifications. Try installing MentorForge as an app or using a supported browser.
+          </p>
+        ) : (
+          <>
+            <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200/90 bg-slate-50/80 px-3.5 py-3 text-sm leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-300">
+              <input
+                type="checkbox"
+                checked={pushSubscribed}
+                disabled={pushBusy || pushPermission === "denied"}
+                onChange={(e) => (e.target.checked ? void enablePush() : void disablePush())}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-accent focus:ring-2 focus:ring-accent focus:ring-offset-0 dark:border-slate-600 dark:bg-slate-900"
+              />
+              <span>
+                Send study-window nudges to this device
+                {pushBusy ? " — working…" : pushSubscribed ? " — on" : ""}
+              </span>
+            </label>
+            {pushPermission === "denied" ? (
+              <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">
+                Notifications are blocked for this site in your browser. Open your browser&apos;s
+                site settings, allow notifications for MentorForge, then toggle this on.
+              </p>
+            ) : null}
+          </>
+        )}
+        {pushMessage ? (
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite">
+            {pushMessage}
           </p>
         ) : null}
       </section>

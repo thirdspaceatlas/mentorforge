@@ -9,7 +9,13 @@
  * - Minimum gap must be >= minSessionMin (default 5 min)
  * - Merges overlapping busy periods before scanning
  * - Gaps are capped at the day boundary (no overnight windows)
+ *
+ * Timezone correctness (Phase 2): pass `timeZone` (an IANA id) so waking-hour
+ * boundaries are computed in the USER's local wall time rather than the server's.
+ * Without it, behavior is unchanged (server-local `setHours`) for backward compat.
  */
+
+import { getZonedParts, zonedTimeToUtc } from "./timezone";
 
 export type BusyPeriod = {
   start: Date;
@@ -31,6 +37,10 @@ export type GapFinderOptions = {
   dayStartHour?: number;
   /** Latest hour to consider (0-23, default: 22) */
   dayEndHour?: number;
+  /** IANA timezone (e.g. "America/New_York"). When set, waking-hour boundaries
+   *  are computed in the user's local wall time (DST-safe). Omit for legacy
+   *  server-local behavior. */
+  timeZone?: string;
 };
 
 /**
@@ -45,14 +55,22 @@ export function findGapsForDay(
   busyPeriods: BusyPeriod[],
   options: GapFinderOptions = {}
 ): StudyGap[] {
-  const { minSessionMin = 15, maxSessionMin = 45, dayStartHour = 7, dayEndHour = 22 } = options;
+  const { minSessionMin = 15, maxSessionMin = 45, dayStartHour = 7, dayEndHour = 22, timeZone } = options;
 
-  // Day boundaries in the same timezone as the input date
-  const dayStart = new Date(date);
-  dayStart.setHours(dayStartHour, 0, 0, 0);
-
-  const dayEnd = new Date(date);
-  dayEnd.setHours(dayEndHour, 0, 0, 0);
+  // Day boundaries. With a timeZone, anchor to the user's LOCAL calendar day and
+  // wall hours (DST-safe); otherwise fall back to legacy server-local behavior.
+  let dayStart: Date;
+  let dayEnd: Date;
+  if (timeZone) {
+    const p = getZonedParts(date, timeZone);
+    dayStart = zonedTimeToUtc(p.year, p.month, p.day, dayStartHour, 0, timeZone);
+    dayEnd = zonedTimeToUtc(p.year, p.month, p.day, dayEndHour, 0, timeZone);
+  } else {
+    dayStart = new Date(date);
+    dayStart.setHours(dayStartHour, 0, 0, 0);
+    dayEnd = new Date(date);
+    dayEnd.setHours(dayEndHour, 0, 0, 0);
+  }
 
   // Filter to busy periods that overlap this day's window
   const relevant = busyPeriods
@@ -131,6 +149,24 @@ export function findGaps(
 ): StudyGap[] {
   const sorted = [...busyPeriods].sort((a, b) => a.start.getTime() - b.start.getTime());
   const gaps: StudyGap[] = [];
+
+  if (options.timeZone) {
+    // Iterate the user's LOCAL calendar days so day boundaries are tz-correct.
+    const tz = options.timeZone;
+    const s = getZonedParts(startDate, tz);
+    const e = getZonedParts(endDate, tz);
+    const endKey = e.year * 10000 + e.month * 100 + e.day;
+    let [y, m, d] = [s.year, s.month, s.day];
+    for (let guard = 0; guard < 400; guard++) {
+      if (y * 10000 + m * 100 + d > endKey) break;
+      // Noon local is safely inside the day regardless of DST edges.
+      const noonLocal = zonedTimeToUtc(y, m, d, 12, 0, tz);
+      gaps.push(...findGapsForDay(noonLocal, sorted, options));
+      const next = new Date(Date.UTC(y, m - 1, d + 1));
+      [y, m, d] = [next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate()];
+    }
+    return gaps;
+  }
 
   const current = new Date(startDate);
   current.setHours(0, 0, 0, 0);

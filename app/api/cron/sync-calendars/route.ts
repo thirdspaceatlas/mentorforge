@@ -3,7 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { syncConnection, regenerateWindows } from "@/lib/calendar/sync";
 
 /**
- * GET /api/cron/sync-calendars — Hourly calendar sync for all users.
+ * GET /api/cron/sync-calendars — near-real-time calendar sync for all users
+ * (runs every 5 min, Phase 3) so cancelled/shortened meetings surface as fresh
+ * study windows within minutes rather than up to an hour later.
  *
  * Vercel Cron sends GET requests with Authorization: Bearer <CRON_SECRET>.
  *

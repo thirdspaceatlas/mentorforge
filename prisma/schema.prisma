@@ -10,8 +10,8 @@ generator client {
 
 /// App user profile — `id` matches `auth.users.id` (Supabase Auth). Rows are created via SQL trigger (see `supabase/profile-trigger.sql`).
 model Profile {
-  id        String   @id @db.Uuid
-  email     String?
+  id    String  @id @db.Uuid
+  email String?
 
   /// Required at signup from 2026-04-24 onward; nullable for 2 pre-existing users pending backfill (see design doc Open Question #11).
   firstName        String?
@@ -24,6 +24,11 @@ model Profile {
   employerType     String?
   /// How they heard about us: "linkedin" | "reddit" | "friend" | "search" | "other".
   attribution      String?
+
+  /// Per-user IANA timezone, e.g. "America/New_York" (Phase 2). Captured at
+  /// onboarding, overridable in settings. Null = fall back to server/UTC.
+  /// Used to compute Calendar Coach waking-hour windows in the user's local time.
+  timeZone String?
 
   /// Weekly digest + product update emails. Default ON for NEW users (FORGE-19) — one-click unsubscribe via /api/email/unsubscribe.
   emailCommunicationsOptIn Boolean @default(true)
@@ -54,11 +59,17 @@ model Profile {
   snoozedWindows      SnoozedWindow[]
 
   // Phase 1b — usage metering + survey responses
-  usageEvents         UsageEvent[]
-  surveyResponses    UserSurveyResponse[]
+  usageEvents     UsageEvent[]
+  surveyResponses UserSurveyResponse[]
 
   // Web push subscriptions (one user can have multiple devices).
-  pushSubscriptions   PushSubscription[]
+  pushSubscriptions PushSubscription[]
+
+  // Native (Expo) push tokens for the mobile app (one user, many devices).
+  mobilePushTokens MobilePushToken[]
+
+  // FORGE-3 — persisted infeasibility events + chosen resolutions (history/analytics).
+  infeasibilityEvents InfeasibilityEvent[]
 
   @@map("profiles")
 }
@@ -191,26 +202,26 @@ model StudyLog {
 /// Persists the user's active study plan settings, weekly schedule, and progress.
 /// One active plan per user (`userId` is @unique). Plan arrays stored as JSON.
 model SavedStudyPlan {
-  id              String   @id @default(cuid())
-  userId          String   @unique @db.Uuid
-  examLevel       String   // "I" | "II" | "III"
-  examDate        String   // ISO date "2026-11-15"
-  weeklyHours     Int
-  planStartDate   String   // ISO date
-  weekStartDay    String   // "0"-"6" (0=Sunday)
-  levelIIIPathway String?  // null for Level I/II
-  forecastDays    Int      @default(1) // 1, 3, or 5
+  id                          String   @id @default(cuid())
+  userId                      String   @unique @db.Uuid
+  examLevel                   String // "I" | "II" | "III"
+  examDate                    String // ISO date "2026-11-15"
+  weeklyHours                 Int
+  planStartDate               String // ISO date
+  weekStartDay                String // "0"-"6" (0=Sunday)
+  levelIIIPathway             String? // null for Level I/II
+  forecastDays                Int      @default(1) // 1, 3, or 5
   /// Default target length (minutes) for Calendar Coach sessions; also caps how large each generated gap chunk is.
-  calendarPreferredSessionMin Int @default(45)
+  calendarPreferredSessionMin Int      @default(45)
   /// Earliest hour Calendar Coach will suggest a study window (0-23). Default 7 (7am).
-  dayStartHour                Int @default(7)
+  dayStartHour                Int      @default(7)
   /// Latest hour Calendar Coach will suggest a study window (1-24). Default 22 (10pm).
-  dayEndHour                  Int @default(22)
-  weekPlan        Json     // WeekPlan[] with dates as ISO strings
-  baseWeekPlan    Json     // original unmodified plan for undo
-  actualHours     Json     // (number | null)[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  dayEndHour                  Int      @default(22)
+  weekPlan                    Json // WeekPlan[] with dates as ISO strings
+  baseWeekPlan                Json // original unmodified plan for undo
+  actualHours                 Json // (number | null)[]
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
 
   user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -286,7 +297,7 @@ model StudySession {
   id                    String    @id @default(cuid())
   userId                String    @db.Uuid
   windowId              String    @unique // one session per window (idempotent start)
-  examTopicDefinitionId String?   // links session to study plan topic for progress tracking
+  examTopicDefinitionId String? // links session to study plan topic for progress tracking
   startedAt             DateTime  @default(now())
   completedAt           DateTime?
   interrupted           Boolean   @default(false)
@@ -360,6 +371,22 @@ model PushSubscription {
   @@map("push_subscriptions")
 }
 
+model MobilePushToken {
+  id        String   @id @default(cuid())
+  userId    String   @db.Uuid
+  /// Expo push token, e.g. "ExponentPushToken[xxxx]". Natural unique key.
+  expoPushToken String @unique
+  /// Display-only: "iOS" | "Android" | other (from expo-device).
+  platform  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("mobile_push_tokens")
+}
+
 /// One row per survey answer. Questions are rotated in-digest / in-app; answers are analyzed monthly.
 model UserSurveyResponse {
   id         String   @id @default(cuid())
@@ -391,4 +418,34 @@ model SnoozedWindow {
   @@index([snoozeUntil, notified])
   @@index([userId])
   @@map("snoozed_windows")
+}
+
+/// FORGE-3: a first-class infeasibility event raised by the rebalancing engine
+/// when a deficit can't be absorbed within guardrails, plus the resolution the
+/// candidate chose. Persisted for history/analytics (spec §7 "persist and re-surface").
+model InfeasibilityEvent {
+  id                 String    @id @default(cuid())
+  userId             String    @db.Uuid
+  /// Minutes that could not be placed before the exam within guardrails, at event time.
+  unplaceableMinutes Int
+  /// Honest headline shown to the candidate.
+  message            String
+  /// Options offered (comma-separated): extend-exam-window,reduce-scope,raise-capacity,accept-gap.
+  optionsOffered     String
+  grade              String
+  /// Snapshot of engine inputs for reproducibility (examDate, targetMinutes, deficit, guardrails).
+  context            Json?
+  /// Chosen resolution: extend-exam-window | reduce-scope | raise-capacity | accept-gap | null (pending).
+  resolutionKind     String?
+  /// Impact payload of the chosen resolution (added days, new daily target, dropped scope %, etc.).
+  resolutionImpact   Json?
+  /// Whether the chosen resolution recomputed to a feasible plan.
+  resolvedFeasible   Boolean?
+  createdAt          DateTime  @default(now())
+  resolvedAt         DateTime?
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("infeasibility_events")
 }
