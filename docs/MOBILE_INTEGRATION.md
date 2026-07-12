@@ -114,6 +114,7 @@ Dates are ISO 8601 strings (UTC) unless noted as date-only (`YYYY-MM-DD`).
 | Method | Path | Body | Returns |
 |---|---|---|---|
 | GET | `/api/study-plan` | — | `{ plan: SavedPlan \| null }` |
+| POST | `/api/study-plan/generate` | `{ examLevel, examDate, weeklyHours, planStartDate, weekStartDay?, levelIIIPathway?, dayStartHour?, dayEndHour?, calendarPreferredSessionMin? }` | `{ plan: SavedPlan }` — server-side onboarding generation (same `weekPlanBuilder` as web) |
 | PUT | `/api/study-plan` | full `SavedPlan` payload | updated plan (also re-syncs windows) |
 | DELETE | `/api/study-plan` | — | `{ ok: true }` (resets plan) |
 | POST | `/api/study-plan/rebalance` | rebalance inputs | rebalanced plan (cap-gated) |
