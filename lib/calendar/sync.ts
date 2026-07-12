@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { withRetry } from "@/lib/util/retry";
 import { getValidAccessToken, OAuthRevokedError } from "./token-refresh";
 import { fetchGoogleEvents, fetchOutlookEvents, toBusyPeriods } from "./providers";
 import type { ProviderEvent } from "./providers";
@@ -84,9 +85,9 @@ export async function syncConnection(connectionId: string): Promise<{
 
   let events: ProviderEvent[];
   if (connection.provider === "google") {
-    events = await fetchGoogleEvents(accessToken, timeMin, timeMax);
+    events = await withRetry(() => fetchGoogleEvents(accessToken, timeMin, timeMax));
   } else if (connection.provider === "outlook") {
-    events = await fetchOutlookEvents(accessToken, timeMin, timeMax);
+    events = await withRetry(() => fetchOutlookEvents(accessToken, timeMin, timeMax));
   } else {
     return { eventsUpserted: 0, error: `Unknown provider: ${connection.provider}` };
   }

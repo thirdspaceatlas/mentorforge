@@ -1,4 +1,5 @@
 import type { BusyPeriod } from "./gap-finder";
+import { HttpStatusError } from "@/lib/util/retry";
 
 /**
  * Provider-specific calendar event fetching.
@@ -37,7 +38,7 @@ export async function fetchGoogleEvents(
 
   if (!res.ok) {
     const body = await res.text();
-    throw new ProviderParseError(`Google freeBusy failed (${res.status}): ${body}`);
+    throw new HttpStatusError(`Google freeBusy failed (${res.status}): ${body}`, res.status);
   }
 
   const data = await res.json();
@@ -78,7 +79,7 @@ export async function fetchOutlookEvents(
 
   if (!res.ok) {
     const body = await res.text();
-    throw new ProviderParseError(`Outlook calendarView failed (${res.status}): ${body}`);
+    throw new HttpStatusError(`Outlook calendarView failed (${res.status}): ${body}`, res.status);
   }
 
   const data = await res.json();

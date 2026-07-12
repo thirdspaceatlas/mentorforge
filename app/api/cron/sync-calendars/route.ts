@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { finishCronRun } from "@/lib/cron/summary";
 import { syncConnection, regenerateWindows } from "@/lib/calendar/sync";
 
 /**
@@ -30,14 +31,6 @@ export async function GET(req: NextRequest) {
     orderBy: { id: "asc" },
   });
 
-  console.log(
-    JSON.stringify({
-      event: "cron_sync_start",
-      connections: connections.length,
-      ts: new Date().toISOString(),
-    })
-  );
-
   const BATCH_SIZE = 10;
   const eventResults: {
     connectionId: string;
@@ -45,12 +38,13 @@ export async function GET(req: NextRequest) {
     eventsUpserted: number;
     error?: string;
   }[] = [];
+  const errors: { connectionId?: string; userId?: string; error: string }[] = [];
 
   for (let i = 0; i < connections.length; i += BATCH_SIZE) {
     const batch = connections.slice(i, i + BATCH_SIZE);
 
     const batchResults = await Promise.allSettled(
-      batch.map((c) => syncConnection(c.id))
+      batch.map((c) => syncConnection(c.id)),
     );
 
     for (let j = 0; j < batch.length; j++) {
@@ -58,30 +52,27 @@ export async function GET(req: NextRequest) {
       const result = batchResults[j];
 
       if (result.status === "fulfilled") {
-        eventResults.push({ connectionId: conn.id, userId: conn.userId, ...result.value });
+        const row = { connectionId: conn.id, userId: conn.userId, ...result.value };
+        eventResults.push(row);
+        if (row.error) {
+          errors.push({ connectionId: conn.id, userId: conn.userId, error: row.error });
+        }
       } else {
-        const errorMsg = result.reason instanceof Error ? result.reason.message : String(result.reason);
+        const errorMsg =
+          result.reason instanceof Error ? result.reason.message : String(result.reason);
         eventResults.push({
           connectionId: conn.id,
           userId: conn.userId,
           eventsUpserted: 0,
           error: errorMsg,
         });
-        console.error(
-          JSON.stringify({
-            event: "cron_sync_error",
-            connectionId: conn.id,
-            userId: conn.userId,
-            error: errorMsg,
-          })
-        );
+        errors.push({ connectionId: conn.id, userId: conn.userId, error: errorMsg });
       }
     }
   }
 
-  // Phase 2: regenerate windows once per user whose event sync didn't fail wholesale.
   const affectedUserIds = Array.from(
-    new Set(eventResults.filter((r) => !r.error).map((r) => r.userId))
+    new Set(eventResults.filter((r) => !r.error).map((r) => r.userId)),
   );
 
   let totalWindows = 0;
@@ -89,7 +80,7 @@ export async function GET(req: NextRequest) {
   for (let i = 0; i < affectedUserIds.length; i += BATCH_SIZE) {
     const batch = affectedUserIds.slice(i, i + BATCH_SIZE);
     const regenResults = await Promise.allSettled(
-      batch.map((uid) => regenerateWindows(uid))
+      batch.map((uid) => regenerateWindows(uid)),
     );
     for (let j = 0; j < batch.length; j++) {
       const r = regenResults[j];
@@ -97,42 +88,41 @@ export async function GET(req: NextRequest) {
         totalWindows += r.value;
       } else {
         regenErrors++;
-        console.error(
-          JSON.stringify({
-            event: "cron_regen_error",
-            userId: batch[j],
-            error: r.reason instanceof Error ? r.reason.message : String(r.reason),
-          })
-        );
+        const errorMsg =
+          r.reason instanceof Error ? r.reason.message : String(r.reason);
+        errors.push({ userId: batch[j], error: errorMsg });
       }
     }
   }
 
-  const duration = Date.now() - startTime;
+  const durationMs = Date.now() - startTime;
   const totalEvents = eventResults.reduce((s, r) => s + r.eventsUpserted, 0);
   const eventErrors = eventResults.filter((r) => r.error).length;
+  const errorCount = errors.length;
 
-  console.log(
-    JSON.stringify({
-      event: "cron_sync_complete",
+  return finishCronRun(
+    {
+      route: "/api/cron/sync-calendars",
+      durationMs,
+      processed: connections.length,
+      sent: totalWindows,
+      errorCount,
       connections: connections.length,
       users: affectedUserIds.length,
-      events_upserted: totalEvents,
-      windows_created: totalWindows,
-      event_errors: eventErrors,
-      regen_errors: regenErrors,
-      duration_ms: duration,
-      ts: new Date().toISOString(),
-    })
+      events: totalEvents,
+      windows: totalWindows,
+      eventErrors,
+      regenErrors,
+    },
+    {
+      synced: connections.length,
+      users: affectedUserIds.length,
+      events: totalEvents,
+      windows: totalWindows,
+      eventErrors,
+      regenErrors,
+      durationMs,
+      errors,
+    },
   );
-
-  return NextResponse.json({
-    synced: connections.length,
-    users: affectedUserIds.length,
-    events: totalEvents,
-    windows: totalWindows,
-    eventErrors,
-    regenErrors,
-    durationMs: duration,
-  });
 }

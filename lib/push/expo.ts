@@ -4,6 +4,8 @@
  * cron can dispatch web (VAPID) and native (Expo) from one payload.
  */
 
+import { HttpStatusError, withRetry } from "@/lib/util/retry";
+
 export type ExpoPushPayload = {
   title: string;
   body: string;
@@ -37,18 +39,22 @@ export async function sendExpoPush(
 
   let res: Response;
   try {
-    res = await fetch(EXPO_PUSH_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(messages),
-    });
+    res = await withRetry(() =>
+      fetch(EXPO_PUSH_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(messages),
+      }),
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return tokens.map((token) => ({ token, ok: false, removable: false, error: msg }));
   }
 
   if (!res.ok) {
-    return tokens.map((token) => ({ token, ok: false, removable: false, error: `HTTP ${res.status}` }));
+    const err = new HttpStatusError(`HTTP ${res.status}`, res.status);
+    const msg = err.message;
+    return tokens.map((token) => ({ token, ok: false, removable: false, error: msg }));
   }
 
   const json = (await res.json().catch(() => ({}))) as {

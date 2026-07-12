@@ -43,9 +43,6 @@ model Profile {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  exams      ExamInstance[]
-  studyPlans StudyPlan[]
-  studyLogs  StudyLog[]
   purchases  Purchase[]
 
   // Study plan persistence
@@ -106,95 +103,6 @@ model Purchase {
   @@index([userId])
   @@index([stripeSubscriptionId])
   @@map("purchases")
-}
-
-// ─── Legacy normalized study plan (not used by app runtime — see ARCHITECTURE.md) ───
-// Active persistence: SavedStudyPlan JSON blob. Do not add new features here without a migration plan.
-
-model ExamDefinition {
-  id     String                @id @default(cuid())
-  slug   String                @unique
-  name   String
-  topics ExamTopicDefinition[]
-  exams  ExamInstance[]
-}
-
-model ExamTopicDefinition {
-  id               String @id @default(cuid())
-  examDefinitionId String
-  name             String
-  recommendedHours Int
-
-  examDefinition ExamDefinition @relation(fields: [examDefinitionId], references: [id])
-  planItems      PlanItem[]
-  studyLogs      StudyLog[]
-  studySessions  StudySession[]
-}
-
-model ExamInstance {
-  id               String   @id @default(cuid())
-  userId           String   @db.Uuid
-  examDefinitionId String
-  examDate         DateTime
-  weeklyHours      Int
-  createdAt        DateTime @default(now())
-
-  user           Profile        @relation(fields: [userId], references: [id])
-  examDefinition ExamDefinition @relation(fields: [examDefinitionId], references: [id])
-  studyPlans     StudyPlan[]
-}
-
-model StudyPlan {
-  id             String   @id @default(cuid())
-  userId         String   @db.Uuid
-  examInstanceId String
-  generatedAt    DateTime @default(now())
-  totalWeeks     Int
-  totalHours     Int
-  version        Int      @default(1)
-
-  user         Profile      @relation(fields: [userId], references: [id])
-  examInstance ExamInstance @relation(fields: [examInstanceId], references: [id])
-  weeks        PlanWeek[]
-  studyLogs    StudyLog[]
-}
-
-model PlanWeek {
-  id           String   @id @default(cuid())
-  studyPlanId  String
-  weekIndex    Int
-  startDate    DateTime
-  endDate      DateTime
-  plannedHours Int
-
-  studyPlan StudyPlan  @relation(fields: [studyPlanId], references: [id])
-  items     PlanItem[]
-}
-
-model PlanItem {
-  id                    String @id @default(cuid())
-  planWeekId            String
-  examTopicDefinitionId String
-  plannedHours          Int
-
-  planWeek  PlanWeek            @relation(fields: [planWeekId], references: [id])
-  topic     ExamTopicDefinition @relation(fields: [examTopicDefinitionId], references: [id])
-  studyLogs StudyLog[]
-}
-
-model StudyLog {
-  id                    String   @id @default(cuid())
-  userId                String   @db.Uuid
-  studyPlanId           String
-  planItemId            String?
-  examTopicDefinitionId String
-  date                  DateTime
-  actualHours           Float // Changed from Int — sub-hour sessions (7-25 min) round to 0 as Int
-
-  user      Profile             @relation(fields: [userId], references: [id])
-  studyPlan StudyPlan           @relation(fields: [studyPlanId], references: [id])
-  planItem  PlanItem?           @relation(fields: [planItemId], references: [id])
-  topic     ExamTopicDefinition @relation(fields: [examTopicDefinitionId], references: [id])
 }
 
 // ─── Saved Study Plan (JSON blob persistence — active) ───
@@ -296,26 +204,25 @@ model StudyWindow {
 
   @@unique([userId, startTime, endTime], name: "study_windows_user_time_unique")
   @@index([userId, startTime])
+  @@index([notified, startTime])
   @@map("study_windows")
 }
 
 /// Actual study session started from a window. One window → at most one session.
 model StudySession {
-  id                    String    @id @default(cuid())
-  userId                String    @db.Uuid
-  windowId              String    @unique // one session per window (idempotent start)
-  examTopicDefinitionId String? // links session to study plan topic for progress tracking
-  startedAt             DateTime  @default(now())
-  completedAt           DateTime?
-  interrupted           Boolean   @default(false)
+  id                 String    @id @default(cuid())
+  userId             String    @db.Uuid
+  windowId           String    @unique // one session per window (idempotent start)
+  startedAt          DateTime  @default(now())
+  completedAt        DateTime?
+  interrupted        Boolean   @default(false)
   /// Target timer length chosen at start (minutes, <= window duration). Null = use full window.
-  plannedDurationMin    Int?
+  plannedDurationMin Int?
   /// Wall-clock duration in minutes (server-derived: completedAt - startedAt)
-  actualMin             Float?
+  actualMin          Float?
 
-  user   Profile              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  window StudyWindow          @relation(fields: [windowId], references: [id], onDelete: Cascade)
-  topic  ExamTopicDefinition? @relation(fields: [examTopicDefinitionId], references: [id])
+  user   Profile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  window StudyWindow @relation(fields: [windowId], references: [id], onDelete: Cascade)
 
   @@index([userId, startedAt])
   @@map("study_sessions")

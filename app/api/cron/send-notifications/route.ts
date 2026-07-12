@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserPlan, canUseFeature, recordUsage } from "@/lib/access";
+import { finishCronRun } from "@/lib/cron/summary";
 import { sendPush, isSubscriptionGone } from "@/lib/push/vapid";
 import { sendExpoPush } from "@/lib/push/expo";
 import { buildNudgePayload } from "@/lib/plan/nudge/micro-dose";
 import { recommendTopic } from "@/lib/plan/nudge/recommend-topic";
+import { withRetry } from "@/lib/util/retry";
 
 /**
  * GET /api/cron/send-notifications — fires Calendar Coach nudges for study windows
@@ -35,15 +37,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const startTime = Date.now();
   const now = new Date();
   const deadline = new Date(now.getTime() + LOOKAHEAD_MS);
 
   const windows = await prisma.studyWindow.findMany({
     where: {
       notified: false,
-      startTime: { gte: now, lte: deadline }
+      startTime: { gte: now, lte: deadline },
     },
-    orderBy: { startTime: "asc" }
+    orderBy: { startTime: "asc" },
   });
 
   let sent = 0;
@@ -53,8 +56,6 @@ export async function GET(req: NextRequest) {
   let removedDead = 0;
   const errors: { windowId: string; error: string }[] = [];
 
-  // Cache saved plans per user across this run — the recommender only needs the
-  // plan's start/exam dates and we may touch several windows for one user.
   const planCache = new Map<string, { planStartDate: string; examDate: string } | null>();
   async function getPlanDates(userId: string) {
     if (planCache.has(userId)) return planCache.get(userId)!;
@@ -73,10 +74,9 @@ export async function GET(req: NextRequest) {
       const capCheck = await canUseFeature(win.userId, userPlan.plan, "nudge_sent");
 
       if (!capCheck.allowed) {
-        // Mark notified so we don't churn this window forever; we're out of nudges this week.
         await prisma.studyWindow.update({
           where: { id: win.id },
-          data: { notified: true }
+          data: { notified: true },
         });
         skippedCap++;
         continue;
@@ -84,12 +84,12 @@ export async function GET(req: NextRequest) {
 
       const [subs, mobileTokens] = await Promise.all([
         prisma.pushSubscription.findMany({ where: { userId: win.userId } }),
-        prisma.mobilePushToken.findMany({ where: { userId: win.userId } })
+        prisma.mobilePushToken.findMany({ where: { userId: win.userId } }),
       ]);
       if (subs.length === 0 && mobileTokens.length === 0) {
         await prisma.studyWindow.update({
           where: { id: win.id },
-          data: { notified: true }
+          data: { notified: true },
         });
         skippedNoSubscription++;
         continue;
@@ -97,12 +97,9 @@ export async function GET(req: NextRequest) {
 
       const minutesUntil = Math.max(
         0,
-        Math.round((win.startTime.getTime() - now.getTime()) / 60000)
+        Math.round((win.startTime.getTime() - now.getTime()) / 60000),
       );
 
-      // Reliable-nudge rule (Phase 3): resolve a topic (the window's own, else a
-      // recommendation from the user's saved-plan timeline) and try to build a
-      // micro-dose payload. If none can be reliably generated, decline to nudge.
       let topicName = win.topicName;
       let studyType = win.studyType;
       if (!topicName) {
@@ -129,11 +126,9 @@ export async function GET(req: NextRequest) {
       });
 
       if (!payload) {
-        // No reliable micro-dose → honor the reliable-nudge rule and skip.
-        // Mark notified so this window doesn't churn every 5 min.
         await prisma.studyWindow.update({
           where: { id: win.id },
-          data: { notified: true }
+          data: { notified: true },
         });
         skippedUnreliable++;
         continue;
@@ -142,9 +137,11 @@ export async function GET(req: NextRequest) {
       let anyDelivered = false;
       for (const sub of subs) {
         try {
-          await sendPush(
-            { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
-            payload
+          await withRetry(() =>
+            sendPush(
+              { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
+              payload,
+            ),
           );
           anyDelivered = true;
         } catch (err) {
@@ -154,13 +151,12 @@ export async function GET(req: NextRequest) {
           } else {
             errors.push({
               windowId: win.id,
-              error: err instanceof Error ? err.message : String(err)
+              error: err instanceof Error ? err.message : String(err),
             });
           }
         }
       }
 
-      // Native (Expo) push to the user's mobile devices — same payload.
       if (mobileTokens.length > 0) {
         const results = await sendExpoPush(
           mobileTokens.map((t) => t.expoPushToken),
@@ -168,8 +164,8 @@ export async function GET(req: NextRequest) {
             title: payload.title,
             body: payload.body,
             url: payload.url,
-            data: { tag: payload.tag, actions: payload.actions }
-          }
+            data: { tag: payload.tag, actions: payload.actions },
+          },
         );
         for (const r of results) {
           if (r.ok) {
@@ -186,11 +182,9 @@ export async function GET(req: NextRequest) {
       }
 
       if (anyDelivered) {
-        // Persist the resolved topic so the dashboard / session page show the
-        // same suggestion (fulfils the schema's "set by the topic recommender").
         await prisma.studyWindow.update({
           where: { id: win.id },
-          data: { notified: true, topicName, studyType }
+          data: { notified: true, topicName, studyType },
         });
         await recordUsage(win.userId, "nudge_sent");
         sent++;
@@ -198,19 +192,35 @@ export async function GET(req: NextRequest) {
     } catch (e) {
       errors.push({
         windowId: win.id,
-        error: e instanceof Error ? e.message : String(e)
+        error: e instanceof Error ? e.message : String(e),
       });
     }
   }
 
-  return NextResponse.json({
-    ok: true,
-    considered: windows.length,
-    sent,
-    skippedCap,
-    skippedNoSubscription,
-    skippedUnreliable,
-    removedDead,
-    errors
-  });
+  const durationMs = Date.now() - startTime;
+
+  return finishCronRun(
+    {
+      route: "/api/cron/send-notifications",
+      durationMs,
+      processed: windows.length,
+      sent,
+      skippedCap,
+      skippedNoSubscription,
+      skippedUnreliable,
+      removedDead,
+      errorCount: errors.length,
+    },
+    {
+      ok: true,
+      considered: windows.length,
+      sent,
+      skippedCap,
+      skippedNoSubscription,
+      skippedUnreliable,
+      removedDead,
+      durationMs,
+      errors,
+    },
+  );
 }
