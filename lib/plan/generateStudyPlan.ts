@@ -24,8 +24,8 @@ export const generateStudyPlanBodySchema = z
       .regex(/^\d{4}-\d{2}-\d{2}$/, "planStartDate must be YYYY-MM-DD"),
     weekStartDay: weekStartDaySchema.optional().default("1"),
     levelIIIPathway: levelIIIPathwaySchema.optional(),
-    dayStartHour: z.number().int().min(0).max(23).optional(),
-    dayEndHour: z.number().int().min(1).max(24).optional(),
+    dayStartHour: z.number().min(0).lt(24).optional(),
+    dayEndHour: z.number().gt(0).max(24).optional(),
     calendarPreferredSessionMin: z.number().int().min(5).max(180).optional(),
   })
   .superRefine((data, ctx) => {

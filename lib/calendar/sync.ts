@@ -3,6 +3,11 @@ import { getValidAccessToken, OAuthRevokedError } from "./token-refresh";
 import { fetchGoogleEvents, fetchOutlookEvents, toBusyPeriods } from "./providers";
 import type { ProviderEvent } from "./providers";
 import { findGaps } from "./gap-finder";
+import {
+  DEFAULT_DAY_END,
+  DEFAULT_DAY_START,
+  clampWorkingHours,
+} from "@/lib/study-plan/working-hours";
 
 async function getPreferredMaxSessionMin(userId: string): Promise<number> {
   const row = await prisma.savedStudyPlan.findUnique({
@@ -12,9 +17,6 @@ async function getPreferredMaxSessionMin(userId: string): Promise<number> {
   const n = row?.calendarPreferredSessionMin ?? 45;
   return Math.min(180, Math.max(5, n));
 }
-
-const DEFAULT_DAY_START = 7;
-const DEFAULT_DAY_END = 22;
 
 async function getWorkingHours(
   userId: string
@@ -30,9 +32,7 @@ async function getWorkingHours(
   });
   const startRaw = row?.dayStartHour ?? DEFAULT_DAY_START;
   const endRaw = row?.dayEndHour ?? DEFAULT_DAY_END;
-  // Clamp to sane bounds and ensure end > start so the gap finder never inverts.
-  const dayStartHour = Math.min(23, Math.max(0, startRaw));
-  const dayEndHour = Math.min(24, Math.max(dayStartHour + 1, endRaw));
+  const { dayStartHour, dayEndHour } = clampWorkingHours(startRaw, endRaw);
   return { dayStartHour, dayEndHour, timeZone: profile?.timeZone ?? undefined };
 }
 

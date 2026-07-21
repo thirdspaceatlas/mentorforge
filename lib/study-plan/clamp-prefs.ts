@@ -1,3 +1,9 @@
+import {
+  DEFAULT_DAY_END,
+  DEFAULT_DAY_START,
+  clampWorkingHours,
+} from "./working-hours";
+
 type ExistingPrefs = {
   forecastDays?: number;
   calendarPreferredSessionMin?: number;
@@ -28,15 +34,13 @@ export function clampStudyPlanPrefs(input: PrefsInput, existing?: ExistingPrefs)
   }
 
   const startRaw =
-    input.dayStartHour != null ? Number(input.dayStartHour) : (existing?.dayStartHour ?? 7);
+    input.dayStartHour != null ? Number(input.dayStartHour) : (existing?.dayStartHour ?? DEFAULT_DAY_START);
   const endRaw =
-    input.dayEndHour != null ? Number(input.dayEndHour) : (existing?.dayEndHour ?? 22);
-  const dayStartHour = Number.isFinite(startRaw)
-    ? Math.min(23, Math.max(0, Math.round(startRaw)))
-    : (existing?.dayStartHour ?? 7);
-  const dayEndHour = Number.isFinite(endRaw)
-    ? Math.min(24, Math.max(dayStartHour + 1, Math.round(endRaw)))
-    : Math.max(dayStartHour + 1, existing?.dayEndHour ?? 22);
+    input.dayEndHour != null ? Number(input.dayEndHour) : (existing?.dayEndHour ?? DEFAULT_DAY_END);
+  const { dayStartHour, dayEndHour } = clampWorkingHours(
+    Number.isFinite(startRaw) ? startRaw : DEFAULT_DAY_START,
+    Number.isFinite(endRaw) ? endRaw : DEFAULT_DAY_END
+  );
 
   return { forecastDays, calendarPreferredSessionMin, dayStartHour, dayEndHour };
 }

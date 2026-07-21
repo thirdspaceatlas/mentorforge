@@ -16,6 +16,7 @@
  */
 
 import { getZonedParts, zonedTimeToUtc } from "./timezone";
+import { splitFractionalHour } from "@/lib/study-plan/working-hours";
 
 export type BusyPeriod = {
   start: Date;
@@ -33,9 +34,9 @@ export type GapFinderOptions = {
   minSessionMin?: number;
   /** Maximum session length in minutes (default: 45). Longer gaps are split. */
   maxSessionMin?: number;
-  /** Earliest hour to consider (0-23, default: 7) */
+  /** Earliest time as fractional hour (0–23.99, default: 7). e.g. 7.5 = 7:30am */
   dayStartHour?: number;
-  /** Latest hour to consider (0-23, default: 22) */
+  /** Latest time as fractional hour (up to 24 = midnight, default: 22) */
   dayEndHour?: number;
   /** IANA timezone (e.g. "America/New_York"). When set, waking-hour boundaries
    *  are computed in the user's local wall time (DST-safe). Omit for legacy
@@ -61,15 +62,26 @@ export function findGapsForDay(
   // wall hours (DST-safe); otherwise fall back to legacy server-local behavior.
   let dayStart: Date;
   let dayEnd: Date;
+  const startParts = splitFractionalHour(dayStartHour);
+  const endParts = splitFractionalHour(dayEndHour);
   if (timeZone) {
     const p = getZonedParts(date, timeZone);
-    dayStart = zonedTimeToUtc(p.year, p.month, p.day, dayStartHour, 0, timeZone);
-    dayEnd = zonedTimeToUtc(p.year, p.month, p.day, dayEndHour, 0, timeZone);
+    dayStart = zonedTimeToUtc(p.year, p.month, p.day, startParts.h, startParts.m, timeZone);
+    if (endParts.h >= 24) {
+      // Midnight end-of-day → start of next calendar day in user TZ
+      const next = new Date(Date.UTC(p.year, p.month - 1, p.day + 1));
+      const ny = next.getUTCFullYear();
+      const nm = next.getUTCMonth() + 1;
+      const nd = next.getUTCDate();
+      dayEnd = zonedTimeToUtc(ny, nm, nd, 0, 0, timeZone);
+    } else {
+      dayEnd = zonedTimeToUtc(p.year, p.month, p.day, endParts.h, endParts.m, timeZone);
+    }
   } else {
     dayStart = new Date(date);
-    dayStart.setHours(dayStartHour, 0, 0, 0);
+    dayStart.setHours(startParts.h, startParts.m, 0, 0);
     dayEnd = new Date(date);
-    dayEnd.setHours(dayEndHour, 0, 0, 0);
+    dayEnd.setHours(endParts.h, endParts.m, 0, 0);
   }
 
   // Filter to busy periods that overlap this day's window

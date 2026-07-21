@@ -468,10 +468,10 @@ function PlannerInner() {
           setForecastDays(p.forecastDays);
         }
         if (typeof p.dayStartHour === "number") {
-          setDayStartHour(Math.min(23, Math.max(0, Math.round(p.dayStartHour))));
+          setDayStartHour(Math.min(23 + 59 / 60, Math.max(0, p.dayStartHour)));
         }
         if (typeof p.dayEndHour === "number") {
-          setDayEndHour(Math.min(24, Math.max(1, Math.round(p.dayEndHour))));
+          setDayEndHour(Math.min(24, Math.max(1 / 60, p.dayEndHour)));
         }
 
         // If weekPlan has data, restore the full plan; otherwise just pre-fill the form
