@@ -70,8 +70,9 @@ export function buildRebalanceInput(saved: SavedPlanLike, asOf: Date): Rebalance
 
   // --- availability profile: weekly hours spread across 7 days, capped by rails ---
   const dailyTargetMin = Math.round((weeklyHours * 60) / 7);
-  const winStart = Math.max(0, Math.min(23, saved.dayStartHour)) * 60;
-  const winEnd = Math.max(1, Math.min(24, saved.dayEndHour)) * 60;
+  // Fractional hours → minutes from midnight (e.g. 7.5 → 450).
+  const winStart = Math.round(Math.max(0, Math.min(23 + 59 / 60, saved.dayStartHour)) * 60);
+  const winEnd = Math.round(Math.max(1, Math.min(24, saved.dayEndHour)) * 60);
   const days = Array.from({ length: 7 }, (_, dow) => ({
     dayOfWeek: dow as DayOfWeek,
     available: dailyTargetMin > 0,

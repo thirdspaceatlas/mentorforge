@@ -899,13 +899,13 @@ function CalendarStatus({ count }: { count: number }) {
       ) : (
         <span className="flex items-center gap-3">
           <a
-            href="/api/calendar/oauth/google?returnTo=/app"
+            href="/api/calendar/oauth/google?returnTo=/app/today"
             className="inline-flex min-h-[44px] items-center font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
             Google
           </a>
           <a
-            href="/api/calendar/oauth/outlook?returnTo=/app"
+            href="/api/calendar/oauth/outlook?returnTo=/app/today"
             className="inline-flex min-h-[44px] items-center font-medium text-emerald-700 transition-colors hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
             Outlook

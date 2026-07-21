@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { clampStudyPlanPrefs } from "@/lib/study-plan/clamp-prefs";
 
 /**
  * GET /api/study-plan — Load the user's saved study plan.
@@ -61,31 +62,10 @@ export async function PUT(req: NextRequest) {
     where: { userId: user.id },
   });
 
-  const rawPref =
-    calendarPreferredSessionMin != null
-      ? Number(calendarPreferredSessionMin)
-      : (existing?.calendarPreferredSessionMin ?? 45);
-  const calendarPreferredSessionMinClamped = Number.isFinite(rawPref)
-    ? Math.min(180, Math.max(5, Math.round(rawPref)))
-    : Math.min(180, Math.max(5, existing?.calendarPreferredSessionMin ?? 45));
-
-  let forecastDaysClamped = existing?.forecastDays ?? 1;
-  if (forecastDays != null) {
-    const n = Number(forecastDays);
-    if (n === 1 || n === 3 || n === 5) forecastDaysClamped = n;
-  }
-
-  // Working-hours range: clamp 0-23 for start, ensure end > start, max 24.
-  const startRaw =
-    dayStartHour != null ? Number(dayStartHour) : (existing?.dayStartHour ?? 7);
-  const endRaw =
-    dayEndHour != null ? Number(dayEndHour) : (existing?.dayEndHour ?? 22);
-  const dayStartHourClamped = Number.isFinite(startRaw)
-    ? Math.min(23, Math.max(0, Math.round(startRaw)))
-    : (existing?.dayStartHour ?? 7);
-  const dayEndHourClamped = Number.isFinite(endRaw)
-    ? Math.min(24, Math.max(dayStartHourClamped + 1, Math.round(endRaw)))
-    : Math.max(dayStartHourClamped + 1, existing?.dayEndHour ?? 22);
+  const prefs = clampStudyPlanPrefs(
+    { forecastDays, calendarPreferredSessionMin, dayStartHour, dayEndHour },
+    existing
+  );
 
   const data = {
     examLevel,
@@ -94,10 +74,10 @@ export async function PUT(req: NextRequest) {
     planStartDate,
     weekStartDay,
     levelIIIPathway: levelIIIPathway ?? null,
-    forecastDays: forecastDaysClamped,
-    calendarPreferredSessionMin: calendarPreferredSessionMinClamped,
-    dayStartHour: dayStartHourClamped,
-    dayEndHour: dayEndHourClamped,
+    forecastDays: prefs.forecastDays,
+    calendarPreferredSessionMin: prefs.calendarPreferredSessionMin,
+    dayStartHour: prefs.dayStartHour,
+    dayEndHour: prefs.dayEndHour,
     weekPlan,
     baseWeekPlan,
     actualHours,

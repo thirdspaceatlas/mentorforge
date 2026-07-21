@@ -7,6 +7,11 @@ import { useSupabaseUser } from "@/lib/supabase/use-supabase-user";
 import { usePlan } from "@/components/app/PlanProvider";
 import { createClient } from "@/lib/supabase/client";
 import { consumeOAuthHashMessage } from "@/lib/supabase/oauth-client-error";
+import {
+  formatFractionalHourLabel,
+  hourToTimeValue,
+  timeValueToHour,
+} from "@/lib/study-plan/working-hours";
 import { isPushSupported, subscribeToPush, unsubscribeFromPush } from "@/lib/push/client";
 
 type CalendarConnection = {
@@ -47,6 +52,11 @@ export default function AccountPage() {
   const [nameDraft, setNameDraft] = useState("");
   const [savingName, setSavingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [emailDraft, setEmailDraft] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailMessage, setEmailMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [authMessage, setAuthMessage] = useState<string | null>(null);
   const [linking, setLinking] = useState<"azure" | "google" | null>(null);
@@ -193,6 +203,51 @@ export default function AccountPage() {
     setEditingName(false);
     setNameDraft("");
     setNameError(null);
+  };
+
+  const startEditEmail = () => {
+    setEmailDraft(user?.email ?? "");
+    setEmailError(null);
+    setEmailMessage(null);
+    setEditingEmail(true);
+  };
+
+  const cancelEditEmail = () => {
+    setEditingEmail(false);
+    setEmailDraft("");
+    setEmailError(null);
+  };
+
+  const saveEmail = async () => {
+    const trimmed = emailDraft.trim().toLowerCase();
+    if (!trimmed || !trimmed.includes("@")) {
+      setEmailError("Enter a valid email address.");
+      return;
+    }
+    if (trimmed === (user?.email ?? "").toLowerCase()) {
+      setEmailError("That’s already your email.");
+      return;
+    }
+    setSavingEmail(true);
+    setEmailError(null);
+    setEmailMessage(null);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({ email: trimmed });
+      if (error) {
+        setEmailError(error.message || "Couldn't update email. Try again.");
+        setSavingEmail(false);
+        return;
+      }
+      setEditingEmail(false);
+      setEmailMessage(
+        "Check your inbox — confirm the change from both the new and current email if prompted."
+      );
+      setSavingEmail(false);
+    } catch {
+      setEmailError("Couldn't reach the server. Check your connection.");
+      setSavingEmail(false);
+    }
   };
 
   const saveName = async () => {
@@ -430,9 +485,59 @@ export default function AccountPage() {
           {nameError ? (
             <p className="text-xs text-rose-600 dark:text-rose-400">{nameError}</p>
           ) : null}
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-500 dark:text-slate-400">Email</span>
-            <span className="font-medium text-slate-900 dark:text-slate-100">{user?.email}</span>
+          <div className="space-y-1.5 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-slate-500 dark:text-slate-400">Email</span>
+              {editingEmail ? (
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <input
+                    type="email"
+                    value={emailDraft}
+                    autoFocus
+                    onChange={(e) => setEmailDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") void saveEmail();
+                      if (e.key === "Escape") cancelEditEmail();
+                    }}
+                    className="min-h-[2rem] w-52 max-w-full rounded-md border border-slate-200 bg-white px-2.5 py-1 text-sm text-slate-900 outline-none focus:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void saveEmail()}
+                    disabled={savingEmail || emailDraft.trim().length === 0}
+                    className="rounded-md bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent-hover disabled:opacity-50"
+                  >
+                    {savingEmail ? "Saving…" : "Save"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelEditEmail}
+                    className="text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-slate-900 dark:text-slate-100">
+                    {user?.email}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={startEditEmail}
+                    className="text-xs font-medium text-accent transition-colors hover:text-accent-hover"
+                  >
+                    Change
+                  </button>
+                </div>
+              )}
+            </div>
+            {emailError ? (
+              <p className="text-xs text-rose-600 dark:text-rose-400">{emailError}</p>
+            ) : null}
+            {emailMessage ? (
+              <p className="text-xs text-emerald-700 dark:text-emerald-300">{emailMessage}</p>
+            ) : null}
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-slate-500 dark:text-slate-400">Plan</span>
@@ -745,15 +850,6 @@ export default function AccountPage() {
   );
 }
 
-function formatHourLabel(hour: number): string {
-  // 0 → "12am", 7 → "7am", 12 → "12pm", 22 → "10pm", 24 → "12am (next day)"
-  if (hour === 0) return "12am";
-  if (hour === 12) return "12pm";
-  if (hour === 24) return "12am";
-  if (hour < 12) return `${hour}am`;
-  return `${hour - 12}pm`;
-}
-
 function StudyHoursSection({
   dayStartHour,
   dayEndHour,
@@ -767,6 +863,11 @@ function StudyHoursSection({
   const [end, setEnd] = useState(dayEndHour);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setStart(dayStartHour);
+    setEnd(dayEndHour);
+  }, [dayStartHour, dayEndHour]);
 
   const dirty = start !== dayStartHour || end !== dayEndHour;
   const invalid = end <= start;
@@ -800,52 +901,58 @@ function StudyHoursSection({
           Study hours
         </h2>
         <span className="text-xs text-slate-500 dark:text-slate-400">
-          {formatHourLabel(dayStartHour)}–{formatHourLabel(dayEndHour)}
+          {formatFractionalHourLabel(dayStartHour)}–{formatFractionalHourLabel(dayEndHour)}
         </span>
       </div>
 
       <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
         Calendar Coach will only suggest study windows inside this range. Set it to
         match when you actually want to study — sleep, family time, and dinner stay
-        protected.
+        protected. Enter any time (for example 7:30).
       </p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <label
+            htmlFor="study-hours-start"
+            className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400"
+          >
             Earliest start
           </label>
-          <select
-            value={start}
-            onChange={(e) => setStart(Number(e.target.value))}
+          <input
+            id="study-hours-start"
+            type="time"
+            step={60}
+            value={hourToTimeValue(start)}
+            onChange={(e) => {
+              const next = timeValueToHour(e.target.value, false);
+              if (next != null) setStart(next);
+            }}
             className="min-h-[2.75rem] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-          >
-            {Array.from({ length: 24 }, (_, h) => (
-              <option key={h} value={h}>
-                {formatHourLabel(h)}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <label
+            htmlFor="study-hours-end"
+            className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400"
+          >
             Latest end
           </label>
-          <select
-            value={end}
-            onChange={(e) => setEnd(Number(e.target.value))}
+          <input
+            id="study-hours-end"
+            type="time"
+            step={60}
+            value={hourToTimeValue(end)}
+            onChange={(e) => {
+              const next = timeValueToHour(e.target.value, true);
+              if (next != null) setEnd(next);
+            }}
             className="min-h-[2.75rem] w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-          >
-            {Array.from({ length: 24 }, (_, i) => {
-              const h = i + 1; // 1 through 24
-              return (
-                <option key={h} value={h}>
-                  {formatHourLabel(h)}
-                </option>
-              );
-            })}
-          </select>
+          />
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            12:00 AM means midnight (end of day).
+          </p>
         </div>
       </div>
 

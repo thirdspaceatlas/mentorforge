@@ -109,6 +109,16 @@ describe("findGapsForDay", () => {
     expect(gaps[0].durationMin).toBe(8 * 60); // 9am to 5pm = 480 min
   });
 
+  it("respects fractional (minute-precision) day bounds", () => {
+    const gaps = findGapsForDay(DAY, [], {
+      ...NO_CHUNK,
+      dayStartHour: 7.5,
+      dayEndHour: 8.25,
+    });
+    expect(gaps).toHaveLength(1);
+    expect(gaps[0].durationMin).toBe(45); // 7:30–8:15
+  });
+
   it("handles busy period that spans entire available window", () => {
     const gaps = findGapsForDay(DAY, [
       { start: at(7), end: at(22) },
