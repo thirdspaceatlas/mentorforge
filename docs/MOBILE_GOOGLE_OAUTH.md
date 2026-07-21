@@ -1,9 +1,10 @@
 ---
 # MentorForge — Mobile Google Sign-In (Expo + Supabase)
 
-> **Flow:** `@react-native-google-signin/google-signin` → `supabase.auth.signInWithIdToken()` → Supabase session.
+> **Flow (EAS / production build):** `@react-native-google-signin/google-signin` → `supabase.auth.signInWithIdToken()` → Supabase session.
+> **Flow (Expo Go):** browser OAuth via `expo-web-browser` → session from redirect (`mentorforge://auth/callback`). Native Google module is **not** loaded in Expo Go (avoids `RNGoogleSignin` crash).
 > The Next.js backend (https://www.mentorforge.co) already validates Supabase Bearer tokens — **no backend changes needed**.
-> **Expo Go will NOT work** — native code requires an EAS development build.
+> Prefer an EAS development build for production-like Google Sign-In; Expo Go uses the browser fallback.
 
 ## Supabase project
 - Project ref: `dgooxbxnyaoallvwdsxq`
