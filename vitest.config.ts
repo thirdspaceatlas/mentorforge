@@ -4,7 +4,7 @@ import path from "path";
 export default defineConfig({
   test: {
     globals: true,
-    include: ["__tests__/**/*.test.ts"],
+    include: ["__tests__/**/*.test.ts", "__amplitude_verify__.test.ts"],
     exclude: ["e2e/**", "node_modules/**"],
   },
   resolve: {

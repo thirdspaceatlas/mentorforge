@@ -69,7 +69,10 @@ export async function GET() {
     });
   }
 
-  const llm = await tryLlmBlurbs(signals);
+  const llm = await tryLlmBlurbs(signals, {
+    userId: user.id,
+    sessionId: `insights-${user.id}-${sig}`,
+  });
   const out = llm ?? fallback(signals);
   const source = llm ? ("llm" as const) : ("fallback" as const);
 

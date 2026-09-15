@@ -4,10 +4,10 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Privacy Policy — MentorForge",
   description:
-    "What MentorForge collects, how calendar data is handled, and how to delete your account. Plain-English version of the policy."
+    "What MentorForge collects, how calendar data is handled, and step-by-step instructions to delete your data or account."
 };
 
-const lastUpdated = "2026-04-24";
+const lastUpdated = "2026-08-27";
 
 type Section = { id: string; heading: string };
 
@@ -17,7 +17,8 @@ const toc: Section[] = [
   { id: "calendar-data", heading: "Calendar data" },
   { id: "how-we-use", heading: "How we use your data" },
   { id: "third-parties", heading: "Third parties" },
-  { id: "your-rights", heading: "Your rights & account deletion" },
+  { id: "delete-data", heading: "How to delete your data" },
+  { id: "your-rights", heading: "Your legal rights" },
   { id: "retention", heading: "Retention" },
   { id: "security", heading: "Security" },
   { id: "children", heading: "Children" },
@@ -56,6 +57,22 @@ function Bullet({ children }: { children: React.ReactNode }) {
       <span className="mt-[0.65em] h-1 w-1 shrink-0 rounded-full bg-accent" aria-hidden />
       <span>{children}</span>
     </li>
+  );
+}
+
+function H3({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 className="font-display text-[1.1rem] font-medium leading-snug tracking-tight text-slate-900 dark:text-slate-50">
+      {children}
+    </h3>
+  );
+}
+
+function OrderedList({ children }: { children: React.ReactNode }) {
+  return (
+    <ol className="list-decimal space-y-2.5 pl-5 text-[0.97rem] leading-[1.7] text-slate-700 dark:text-slate-300 marker:font-medium marker:text-slate-500 dark:marker:text-slate-400">
+      {children}
+    </ol>
   );
 }
 
@@ -124,7 +141,16 @@ export default function PrivacyPage() {
         <List>
           <Bullet>Study sessions you log, rebalances you run, and Calendar Coach windows you accept or skip.</Bullet>
           <Bullet>Survey responses you choose to answer in weekly digests or cap-hit prompts.</Bullet>
-          <Bullet>Privacy-respecting page analytics via Plausible — no cookies, no cross-site tracking, aggregate only.</Bullet>
+          <Bullet>
+            Product analytics: Plausible (aggregate page views, no cookies) and Amplitude (events, session
+            context, and optional Session Replay of how you use the site so we can fix friction). Amplitude may
+            use cookies or similar identifiers.
+          </Bullet>
+          <Bullet>
+            If AI insights are enabled for your account, prompts and model responses for those blurbs may be
+            sent to Amplitude Agent Analytics (with automated PII redaction) so we can monitor quality and cost —
+            not to train public models.
+          </Bullet>
         </List>
       </section>
 
@@ -189,7 +215,21 @@ export default function PrivacyPage() {
             <strong className="font-semibold text-slate-900 dark:text-slate-100">Google &amp; Microsoft</strong> — OAuth providers for calendar sync and sign-in.
           </Bullet>
           <Bullet>
-            <strong className="font-semibold text-slate-900 dark:text-slate-100">Plausible</strong> — privacy-respecting analytics (no cookies, no IP storage).
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">Plausible</strong> — privacy-respecting page analytics (no cookies, no IP storage).
+          </Bullet>
+          <Bullet>
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">Amplitude</strong> — product analytics, Session Replay, and Agent Analytics for AI insights.
+            Used to understand product usage and improve MentorForge; not for advertising. Session Replay may
+            capture on-page interactions (we do not use it to sell ads). See{" "}
+            <a
+              href="https://amplitude.com/privacy"
+              className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Amplitude&apos;s privacy policy
+            </a>
+            .
           </Bullet>
           <Bullet>
             <strong className="font-semibold text-slate-900 dark:text-slate-100">OpenPhone</strong> — the phone number we use for direct support. Only used if you reach out to us.
@@ -197,24 +237,156 @@ export default function PrivacyPage() {
         </List>
       </section>
 
+      <section aria-labelledby="delete-data" className="mx-auto max-w-3xl space-y-6">
+        <H2 id="delete-data">How to delete your data</H2>
+        <P>
+          MentorForge lets you delete specific data without closing your account, or delete your entire account
+          and associated data. These steps work on the web app and for mobile users who sign in at{" "}
+          <Link href="/login" className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">
+            mentorforge.co
+          </Link>
+          .
+        </P>
+
+        <div className="space-y-3">
+          <H3>Delete some data (keep your account)</H3>
+          <P>Use this when you want to remove part of your MentorForge data but keep signing in.</P>
+          <OrderedList>
+            <li>
+              Sign in at{" "}
+              <Link href="/login" className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">
+                mentorforge.co/login
+              </Link>
+              .
+            </li>
+            <li>
+              Open{" "}
+              <Link href="/app/account" className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">
+                Account settings
+              </Link>
+              .
+            </li>
+            <li>
+              <strong className="font-semibold text-slate-900 dark:text-slate-100">Remove calendar data:</strong> under{" "}
+              <em>Connected Calendars</em>, click <strong>Disconnect</strong> next to a calendar. We stop syncing
+              immediately and delete stored busy/free windows for that connection. Your account and study plan stay.
+            </li>
+            <li>
+              <strong className="font-semibold text-slate-900 dark:text-slate-100">Reset Calendar Coach history:</strong> in{" "}
+              <em>Danger Zone</em>, choose <strong>Reset Calendar Coach</strong>, type <code className="rounded bg-slate-100 px-1.5 py-0.5 text-[0.9em] dark:bg-slate-800">reset</code>, and confirm.
+              This disconnects all calendars and deletes study windows, logged sessions, and sync data. Your study plan stays.
+            </li>
+            <li>
+              <strong className="font-semibold text-slate-900 dark:text-slate-100">Reset your study plan:</strong> in{" "}
+              <em>Danger Zone</em>, choose <strong>Reset study plan</strong>, type <code className="rounded bg-slate-100 px-1.5 py-0.5 text-[0.9em] dark:bg-slate-800">reset</code>, and confirm.
+              This clears your saved plan and logged hours. Calendar connections stay unless you disconnect them separately.
+            </li>
+            <li>
+              <strong className="font-semibold text-slate-900 dark:text-slate-100">Stop marketing email:</strong> use the unsubscribe link in any weekly digest footer, or turn off email communications in Account settings.
+            </li>
+            <li>
+              <strong className="font-semibold text-slate-900 dark:text-slate-100">Other requests:</strong> email{" "}
+              <a
+                href="mailto:privacy@mentorforge.co"
+                className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent"
+              >
+                privacy@mentorforge.co
+              </a>{" "}
+              to correct or remove a specific data point. We respond within 30 days.
+            </li>
+          </OrderedList>
+        </div>
+
+        <div className="space-y-3">
+          <H3>Delete your entire account</H3>
+          <P>Use this when you want to permanently close your MentorForge account.</P>
+          <OrderedList>
+            <li>
+              Sign in at{" "}
+              <Link href="/login" className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">
+                mentorforge.co/login
+              </Link>
+              .
+            </li>
+            <li>
+              Open{" "}
+              <Link href="/app/account" className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">
+                Account settings
+              </Link>
+              .
+            </li>
+            <li>
+              Scroll to <em>Delete account</em> at the bottom of the page.
+            </li>
+            <li>
+              Type <code className="rounded bg-slate-100 px-1.5 py-0.5 text-[0.9em] dark:bg-slate-800">delete</code> and
+              click <strong>Delete account</strong>. Deletion is immediate and cannot be undone.
+            </li>
+          </OrderedList>
+        </div>
+
+        <div className="space-y-3 rounded-2xl border border-slate-200/95 bg-white/90 px-5 py-5 dark:border-slate-700/75 dark:bg-slate-900/55 sm:px-6">
+          <H3>What we delete vs. what we keep</H3>
+          <P>
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">Deleted when you remove specific data:</strong>{" "}
+            calendar busy/free windows, Calendar Coach history (windows, sessions, heatmap, sync data), and/or your saved study plan — depending on which action you choose above.
+          </P>
+          <P>
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">Deleted when you delete your account:</strong>{" "}
+            your profile, email and auth account, study plan, calendar connections and cached calendar data, study sessions,
+            survey responses, push notification tokens, and other app data tied to your user ID.
+          </P>
+          <P>
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">Kept after account deletion:</strong>{" "}
+            payment and billing records that Stripe or applicable law requires us to retain (see{" "}
+            <a href="#retention" className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">
+              Retention
+            </a>
+            ). Active subscriptions are canceled when you delete your account.
+          </P>
+          <P>
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">Retention timing:</strong> self-service
+            deletions above take effect immediately. Email requests are handled within 30 days. See{" "}
+            <a href="#retention" className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">
+              Retention
+            </a>{" "}
+            for category-by-category details.
+          </P>
+        </div>
+      </section>
+
       <section aria-labelledby="your-rights" className="mx-auto max-w-3xl space-y-4">
-        <H2 id="your-rights">Your rights &amp; account deletion</H2>
-        <P>You can, at any time:</P>
+        <H2 id="your-rights">Your legal rights</H2>
+        <P>
+          For step-by-step deletion instructions, see{" "}
+          <a href="#delete-data" className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">
+            How to delete your data
+          </a>
+          .
+        </P>
+        <P>You can also:</P>
         <List>
-          <Bullet>Export or download the personal data we hold on you by emailing us.</Bullet>
           <Bullet>
-            Delete your account from{" "}
-            <Link href="/app/account" className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">
-              /app/account
-            </Link>
-            . Deletion cascades through our database and removes your profile, plan, calendar connections, study sessions, survey responses, and stored tokens.
+            Export or download the personal data we hold on you by emailing{" "}
+            <a
+              href="mailto:privacy@mentorforge.co"
+              className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent"
+            >
+              privacy@mentorforge.co
+            </a>
+            .
           </Bullet>
-          <Bullet>Disconnect a calendar without deleting your account — we stop syncing and remove cached busy/free windows immediately.</Bullet>
           <Bullet>Unsubscribe from the weekly digest via the link in the email footer.</Bullet>
-          <Bullet>Email us to correct or remove a specific data point.</Bullet>
         </List>
         <P>
-          If you&apos;re in the EU, UK, or California and want to exercise formal rights under GDPR, UK-GDPR, or the CCPA, email us with your request and we&apos;ll respond within 30 days.
+          If you&apos;re in the EU, UK, or California and want to exercise formal rights under GDPR, UK-GDPR, or the CCPA, email{" "}
+          <a
+            href="mailto:privacy@mentorforge.co"
+            className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent"
+          >
+            privacy@mentorforge.co
+          </a>{" "}
+          with your request and we&apos;ll respond within 30 days.
         </P>
       </section>
 

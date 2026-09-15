@@ -24,6 +24,8 @@
     "seed:demo": "tsx scripts/seed-demo-windows.ts"
   },
   "dependencies": {
+    "@amplitude/ai": "^0.16.0",
+    "@amplitude/unified": "^1.1.30",
     "@anthropic-ai/sdk": "^0.111.0",
     "@prisma/client": "^6.12.0",
     "@stripe/stripe-js": "^8.11.0",

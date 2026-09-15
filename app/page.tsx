@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { RevealOnScroll } from "@/components/marketing/RevealOnScroll";
+import { TrackAmplitudeOnMount } from "@/components/analytics/TrackAmplitudeOnMount";
 import { homepageFaqs } from "./faq-data";
 
 export const metadata: Metadata = {
@@ -46,6 +47,7 @@ const features = [
 export default function LandingV2() {
   return (
     <div className="relative left-1/2 -my-8 -ml-[50vw] w-screen bg-paper sm:-my-14">
+      <TrackAmplitudeOnMount event="Viewed Home Page" />
       {/* HERO — asymmetric (v1 look), 2 floating previews on right */}
       <section className="relative overflow-x-hidden px-4 pb-16 pt-12 sm:px-8 sm:pb-20 sm:pt-16 lg:pt-20">
         <div className="mx-auto grid max-w-[1200px] gap-12 lg:grid-cols-[1.05fr_minmax(0,1fr)] lg:items-start lg:gap-14">

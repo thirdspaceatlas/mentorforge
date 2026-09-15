@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
+import { AmplitudeInit } from "@/components/analytics/AmplitudeInit";
 
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -18,6 +19,7 @@ export function Providers({ children }: { children: ReactNode }) {
       enableSystem={isThemeable}
       forcedTheme={isThemeable ? undefined : "light"}
     >
+      <AmplitudeInit />
       {children}
     </ThemeProvider>
   );
