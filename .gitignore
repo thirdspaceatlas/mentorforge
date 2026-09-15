@@ -21,6 +21,7 @@ dist
 # Emergent session handoff artifacts (apply then discard)
 emergent-session-changes.tar.gz
 emergent-session.patch
+handoff/
 
 # Debug / logs
 npm-debug.log*
