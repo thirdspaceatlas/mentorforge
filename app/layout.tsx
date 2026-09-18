@@ -8,6 +8,7 @@ import { ogImage } from "@/lib/og";
 import { getSiteUrl } from "@/lib/site";
 import { Providers } from "./providers";
 import { Footer } from "../components/Footer";
+import { AppWaitlistBanner } from "../components/marketing/AppWaitlistBanner";
 import { Navbar } from "../components/Navbar";
 import { fontDisplay, fontMono, fontSans } from "./fonts";
 
@@ -83,6 +84,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Providers>
           <div className="flex min-h-screen flex-col">
             <Navbar />
+            <AppWaitlistBanner />
             <main className="flex w-full min-w-0 flex-1 justify-center px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-14 sm:pb-14">
               <div className="w-full min-w-0 max-w-[1200px]">{children}</div>
             </main>
