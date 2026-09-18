@@ -135,6 +135,12 @@ export function Navbar() {
                   About
                 </Link>
                 <Link
+                  href="/learn-more"
+                  className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+                >
+                  Learn More
+                </Link>
+                <Link
                   href="/pricing"
                   className="inline-flex min-h-[2.75rem] items-center text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                 >
@@ -229,6 +235,9 @@ export function Navbar() {
               <>
                 <Link href="/about" className={mobileNavLinkClass} onClick={closeMobile}>
                   About
+                </Link>
+                <Link href="/learn-more" className={mobileNavLinkClass} onClick={closeMobile}>
+                  Learn More
                 </Link>
                 <Link href="/pricing" className={mobileNavLinkClass} onClick={closeMobile}>
                   Pricing
