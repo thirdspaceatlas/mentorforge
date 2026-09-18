@@ -115,42 +115,42 @@ export default function LearnMorePage() {
           How MentorForge compares
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-          Planning and pacing built for long exam runways — not a generic chat or a static sheet.
+          Planning and pacing built for long exam runways \u2014 not a generic chat or a static sheet.
         </p>
         <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200/95 bg-white/95 dark:border-slate-700/85 dark:bg-slate-900/65">
           <table className="w-full min-w-[320px] text-left text-sm">
             <thead>
               <tr className="border-b border-slate-200/90 dark:border-slate-700/80">
-                <th className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100">{""}</th>
-                <th className="px-4 py-3 font-semibold text-accent dark:text-accent">MentorForge</th>
-                <th className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Spreadsheet</th>
-                <th className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">General AI</th>
+                <th className="min-w-[140px] whitespace-nowrap px-4 py-3 font-semibold text-slate-900 dark:text-slate-100">{""}</th>
+                <th className="whitespace-nowrap px-4 py-3 font-semibold text-accent dark:text-accent">MentorForge</th>
+                <th className="whitespace-nowrap px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Spreadsheet</th>
+                <th className="whitespace-nowrap px-4 py-3 font-medium text-slate-700 dark:text-slate-300">General AI</th>
               </tr>
             </thead>
             <tbody className="text-slate-700 dark:text-slate-300">
               <tr className="border-b border-slate-200/70 dark:border-slate-800/80">
-                <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Exam windows &amp; pacing</td>
-                <td className="px-4 py-3 text-accent">Core</td>
-                <td className="px-4 py-3">Manual</td>
-                <td className="px-4 py-3">Ad hoc</td>
+                <td className="min-w-[140px] whitespace-nowrap px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Exam windows &amp; pacing</td>
+                <td className="whitespace-nowrap px-4 py-3 text-accent">Core</td>
+                <td className="whitespace-nowrap px-4 py-3">Manual</td>
+                <td className="whitespace-nowrap px-4 py-3">Ad hoc</td>
               </tr>
               <tr className="border-b border-slate-200/70 dark:border-slate-800/80">
-                <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Rebalance when life shifts</td>
-                <td className="px-4 py-3 text-accent">Built in</td>
-                <td className="px-4 py-3">Manual</td>
-                <td className="px-4 py-3">One-off</td>
+                <td className="min-w-[140px] whitespace-nowrap px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Rebalance when life shifts</td>
+                <td className="whitespace-nowrap px-4 py-3 text-accent">Built in</td>
+                <td className="whitespace-nowrap px-4 py-3">Manual</td>
+                <td className="whitespace-nowrap px-4 py-3">One-off</td>
               </tr>
               <tr className="border-b border-slate-200/70 dark:border-slate-800/80">
-                <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Progress vs. plan</td>
-                <td className="px-4 py-3 text-accent">Tracked</td>
-                <td className="px-4 py-3">DIY</td>
-                <td className="px-4 py-3">Varies</td>
+                <td className="min-w-[140px] whitespace-nowrap px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Progress vs. plan</td>
+                <td className="whitespace-nowrap px-4 py-3 text-accent">Tracked</td>
+                <td className="whitespace-nowrap px-4 py-3">DIY</td>
+                <td className="whitespace-nowrap px-4 py-3">Varies</td>
               </tr>
               <tr>
-                <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Partial week handling</td>
-                <td className="px-4 py-3 text-accent">Built in</td>
-                <td className="px-4 py-3">Manual</td>
-                <td className="px-4 py-3">Not addressed</td>
+                <td className="min-w-[140px] whitespace-nowrap px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Partial week handling</td>
+                <td className="whitespace-nowrap px-4 py-3 text-accent">Built in</td>
+                <td className="whitespace-nowrap px-4 py-3">Manual</td>
+                <td className="whitespace-nowrap px-4 py-3">Not addressed</td>
               </tr>
             </tbody>
           </table>
@@ -169,7 +169,7 @@ export default function LearnMorePage() {
             >
               <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center pr-8 text-left text-[0.97rem] font-medium leading-relaxed text-slate-900 marker:content-none [-webkit-tap-highlight-color:transparent] dark:text-slate-100">
                 <span className="flex-1">{faq.question}</span>
-                <span className="ml-2 shrink-0 text-slate-500 transition-transform duration-200 ease group-open:rotate-90 dark:text-slate-400" aria-hidden>›</span>
+                <span className="ml-2 shrink-0 text-slate-500 transition-transform duration-200 ease group-open:rotate-90 dark:text-slate-400" aria-hidden>\u203a</span>
               </summary>
               <p className="mt-3.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                 {faq.answer}
@@ -184,7 +184,7 @@ export default function LearnMorePage() {
         <MarketingBottomCTA
           variant="band"
           headline="You've seen how it works."
-          supporting="Build a plan that holds — and stays honest when life gets in the way."
+          supporting="Build a plan that holds \u2014 and stays honest when life gets in the way."
           primaryLabel="Create your free account"
         />
       </section>
