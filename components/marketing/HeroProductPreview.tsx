@@ -70,7 +70,7 @@ function OverviewCard() {
         <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200/85 bg-[#fafaf9] px-3 py-2.5 dark:border-slate-700/75 dark:bg-slate-950/55">
           <div>
             <p className="text-xs font-medium text-slate-800 dark:text-slate-100">
-              Week 9–15
+              Weeks 9 to 15
             </p>
             <p className="text-[0.7rem] text-slate-600 dark:text-slate-400">
               18h planned · Quant &amp; Econ
@@ -83,7 +83,7 @@ function OverviewCard() {
         <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200/85 bg-[#fafaf9] px-3 py-2.5 dark:border-slate-700/75 dark:bg-slate-950/55">
           <div>
             <p className="text-xs font-medium text-slate-800 dark:text-slate-100">
-              Week 16–22
+              Weeks 16 to 22
             </p>
             <p className="text-[0.7rem] text-slate-600 dark:text-slate-400">
               20h planned · FRA focus
@@ -96,7 +96,7 @@ function OverviewCard() {
       </div>
 
       <p className="mt-4 border-t border-slate-200/90 pt-3.5 text-center text-[0.7rem] leading-relaxed text-slate-600 dark:border-slate-700/80 dark:text-slate-400">
-        Missed hours roll forward — rebalance keeps future weeks honest.
+        Missed hours roll forward. Rebalance keeps future weeks honest.
       </p>
     </>
   );
@@ -111,7 +111,7 @@ function FocusCard() {
             Week focus
           </p>
           <p className="mt-1.5 font-display text-lg font-medium tracking-tight text-slate-900 dark:text-slate-50">
-            Week 9–15
+            Weeks 9 to 15
           </p>
           <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
             Quant · Econ · Portfolio Mgmt
@@ -139,7 +139,7 @@ function FocusCard() {
             Rebalance
           </p>
           <p className="mt-1 text-xs leading-relaxed text-slate-700 dark:text-slate-200">
-            +2.5h rolled forward to Week 16–22 so your runway stays realistic.
+            +2.5h rolled forward to weeks 16 to 22 so the remaining plan stays realistic.
           </p>
         </div>
       </div>
@@ -164,7 +164,7 @@ function FocusCard() {
       </div>
 
       <p className="mt-4 border-t border-slate-200/90 pt-3.5 text-center text-[0.7rem] leading-relaxed text-slate-600 dark:border-slate-700/80 dark:text-slate-400">
-        Follow your first incomplete week — or jump to a calendar window near your exam.
+        Follow your first incomplete week, or jump to a calendar window near your exam.
       </p>
     </>
   );

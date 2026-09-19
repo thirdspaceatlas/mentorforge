@@ -4,42 +4,44 @@ import { RevealOnScroll } from "@/components/marketing/RevealOnScroll";
 import { homepageFaqs } from "./faq-data";
 
 export const metadata: Metadata = {
-  title: "MentorForge — CFA study planning & pacing",
+  title: {
+    absolute: "MentorForge: CFA study planning and pacing",
+  },
   description:
-    "Week-by-week CFA study plans, rebalancing, and calendar-aware progress tracking — free forever, with All Access at $99/yr for unlimited usage.",
+    "Week-by-week CFA study plans that fit the hours you actually have. Free for Level I. All Access is $99 a year if you want Levels II and III plus unlimited use.",
 };
 
 const howSteps = [
-  ["Enter your details", "Pick your CFA level, exam window, start date, and weekly hours."],
-  ["Build your plan", "MentorForge sequences topics by exam weight, spaces ethics reviews, and prorates partial weeks."],
-  ["Study & track", "Log actual hours each week. Mark weeks complete. Rebalance if you fall behind."],
-  ["Stay on pace", "Your summary, plan status, readiness note, and focus window stay aligned as you log hours and move through the weeks."],
+  ["Enter your details", "Level, exam window, start date, and the hours you can keep most weeks."],
+  ["Build your plan", "Topics land by exam weight. Short weeks stay short. Ethics comes back more than once."],
+  ["Study and track", "Log the hours you actually did. Mark a week done when it's done."],
+  ["Adjust when you slip", "A bad week doesn't trash the plan. Remaining hours move into the weeks you still have."],
 ] as const;
 
 const features = [
   {
     title: "Realistic weekly plans",
-    desc: "Calendar-anchored from your exam window, available hours, and start date — grounded in widely used study-hour benchmarks, not guesswork.",
+    desc: "Your exam window, start date, and weekly hours set the calendar. We use the usual study-hour benchmarks so the weeks look like something a working week can hold.",
   },
   {
     title: "Smart rebalancing",
-    desc: "Log actual hours when life gets in the way. Missed load rolls forward into remaining weeks so your runway stays honest and achievable.",
+    desc: "Log what you actually studied. Missed hours move into the weeks still ahead, so you are not doing that math by hand.",
   },
   {
     title: "Progress tracking",
-    desc: "Mark weeks complete, scan status pills, and watch your plan status and readiness narrative stay in sync with what you log.",
+    desc: "Mark weeks done. Status and readiness come from what you logged, not from a plan you wrote in January and never opened again.",
   },
   {
     title: "Levels I, II & III",
-    desc: "Topic sequencing, exam weights, and level-specific tactics update when you switch levels. Level III reflects all three pathways.",
+    desc: "Topic order and weights change with the level. Switch levels and the plan updates. Level III covers all three pathways.",
   },
   {
-    title: "Calendar & progress views",
-    desc: "Choose a calendar-anchored window or follow your first incomplete week — so the planner stays where you are, not stuck on week one.",
+    title: "Stay on the week you're in",
+    desc: "The planner follows your first unfinished week, or a window near the exam. It doesn't dump you back on week one every time you open it.",
   },
   {
-    title: "Ethics & review spacing",
-    desc: "Ethics appears at sensible intervals, review checkpoints slot in for longer plans, and heavier topics can get a second pass before the exam.",
+    title: "Ethics and review spacing",
+    desc: "Ethics shows up more than once. Longer plans get review checkpoints. Heavier topics can get a second pass before exam week.",
   },
 ] as const;
 
@@ -52,7 +54,7 @@ export default function LandingV2() {
           <div className="min-w-0">
             <p className="landing-hero-in landing-hero-d0 flex items-center gap-2 font-mono text-[10.5px] font-bold uppercase tracking-[0.18em] text-amber-mf">
               <span aria-hidden className="inline-block h-px w-5 bg-amber-mf" />
-              CFA Study Planning, Made Calm
+              CFA study planning for working weeks
             </p>
             <h1 className="landing-hero-in landing-hero-d1 mt-4 text-balance font-display text-[clamp(1.85rem,5.5vw,3.5rem)] font-medium leading-[1.1] tracking-tight text-slate-900">
               More than half of CFA candidates don&apos;t pass their exam.
@@ -65,20 +67,18 @@ export default function LandingV2() {
                   ¹
                 </a>
               </sup>
-              <span className="mt-3 block">The ones who do have a plan.</span>
             </h1>
             <p className="landing-hero-in landing-hero-d2 mt-7 max-w-xl text-[1rem] leading-relaxed text-slate-700">
-              Poor planning — not poor effort — is the silent killer of CFA
-              attempts. MentorForge turns your exam date and available hours
-              into a week-by-week study plan built for real life, so you never
-              run out of road.
+              A lot of them studied. They still ran out of weeks. MentorForge
+              turns your exam date and the hours you can actually spare into a
+              week-by-week plan that can survive a normal job.
             </p>
             <div className="landing-hero-in landing-hero-d3 mt-8 flex flex-wrap items-center gap-4">
               <Link
                 href="/register"
                 className="inline-flex min-h-[3rem] items-center justify-center gap-2 rounded-full bg-amber-mf px-7 py-3.5 text-[0.95rem] font-semibold text-ink shadow-[0_8px_24px_rgb(201_132_43_/_0.35)] transition-colors hover:bg-amber-mf/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-mf focus-visible:ring-offset-2 focus-visible:ring-offset-paper [-webkit-tap-highlight-color:transparent]"
               >
-                Get started — free
+                Get started free
                 <svg
                   width="14"
                   height="14"
@@ -101,7 +101,7 @@ export default function LandingV2() {
               </a>
             </div>
             <p className="landing-hero-in landing-hero-d4 mt-5 text-xs leading-relaxed text-slate-600">
-              No credit card. Under 2 minutes to your first plan.
+              No credit card. First plan in under two minutes.
             </p>
 
             {/* Footnote (Option D) — left-aligned in left column,
@@ -209,7 +209,7 @@ export default function LandingV2() {
               id="how-heading"
               className="max-w-3xl font-display text-[clamp(1.65rem,4vw,2.35rem)] font-medium leading-[1.18] tracking-tight text-slate-900"
             >
-              Up and running in under 2 minutes.
+              Four things to fill in. Then you have a plan.
             </h2>
 
             {/* I: vertical column rules separate steps on desktop, hairline rules between row pairs on tablet */}
@@ -264,11 +264,11 @@ export default function LandingV2() {
                 id="pricing-heading"
                 className="mt-4 text-balance font-display text-[clamp(1.65rem,4vw,2.15rem)] font-medium leading-snug tracking-tight text-slate-900"
               >
-                Free forever. All Access at $99/yr.
+                Free forever. All Access is $99 a year.
               </h2>
               <p className="mt-4 text-[0.95rem] leading-relaxed text-slate-700">
-                No trial timer, no credit card to start. Upgrade when you want
-                unlimited — or never. Less than the cost of one Schweser mock.
+                No trial. No card to start. Upgrade if you want unlimited, or
+                don&apos;t. It&apos;s less than one Schweser mock.
               </p>
               <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link
@@ -338,10 +338,10 @@ export default function LandingV2() {
       >
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-balance font-display text-[clamp(1.85rem,4.5vw,2.85rem)] font-medium leading-[1.12] tracking-tight text-white">
-            Map a study runway you can defend week to week.
+            Get a plan you can still follow in week 12.
           </p>
           <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-slate-300">
-            Join candidates who are done winging it.
+            Make a free account. Bring the materials you already have.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link

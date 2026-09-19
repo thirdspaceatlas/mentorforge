@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — MentorForge",
+  title: "Privacy Policy",
   description:
     "What MentorForge collects, how calendar data is handled, and how to delete your account. Plain-English version of the policy."
 };
@@ -117,14 +117,14 @@ export default function PrivacyPage() {
         </List>
         <P>During onboarding (all optional unless marked otherwise):</P>
         <List>
-          <Bullet>CFA level, exam date, weekly hours, preferred study times — required for plan generation.</Bullet>
-          <Bullet>Last name, credential type, primary study challenge, employer type, and how you heard about us — all optional, used to improve the product and personalize communications.</Bullet>
+          <Bullet>CFA level, exam date, weekly hours, preferred study times: required for plan generation.</Bullet>
+          <Bullet>Last name, credential type, primary study challenge, employer type, and how you heard about us: all optional, used to improve the product and personalize communications.</Bullet>
         </List>
         <P>As you use the product:</P>
         <List>
           <Bullet>Study sessions you log, rebalances you run, and Calendar Coach windows you accept or skip.</Bullet>
           <Bullet>Survey responses you choose to answer in weekly digests or cap-hit prompts.</Bullet>
-          <Bullet>Privacy-respecting page analytics via Plausible — no cookies, no cross-site tracking, aggregate only.</Bullet>
+          <Bullet>Privacy-respecting page analytics via Plausible: no cookies, no cross-site tracking, aggregate only.</Bullet>
         </List>
       </section>
 
@@ -149,7 +149,7 @@ export default function PrivacyPage() {
           <Link href="/app/account" className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">
             your account settings
           </Link>{" "}
-          at any time — we immediately stop syncing and delete the stored busy/free windows.
+          at any time. We immediately stop syncing and delete the stored busy/free windows.
         </P>
       </section>
 
@@ -174,25 +174,25 @@ export default function PrivacyPage() {
         <P>We use a small number of service providers to run MentorForge:</P>
         <List>
           <Bullet>
-            <strong className="font-semibold text-slate-900 dark:text-slate-100">Supabase</strong> — authentication and database hosting.
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">Supabase</strong>: authentication and database hosting.
           </Bullet>
           <Bullet>
-            <strong className="font-semibold text-slate-900 dark:text-slate-100">Vercel</strong> — application hosting.
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">Vercel</strong>: application hosting.
           </Bullet>
           <Bullet>
-            <strong className="font-semibold text-slate-900 dark:text-slate-100">Stripe</strong> — payment processing for All Access subscriptions. We never see your full card number.
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">Stripe</strong>: payment processing for All Access subscriptions. We never see your full card number.
           </Bullet>
           <Bullet>
-            <strong className="font-semibold text-slate-900 dark:text-slate-100">Resend</strong> — transactional and digest email delivery.
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">Resend</strong>: transactional and digest email delivery.
           </Bullet>
           <Bullet>
-            <strong className="font-semibold text-slate-900 dark:text-slate-100">Google &amp; Microsoft</strong> — OAuth providers for calendar sync and sign-in.
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">Google &amp; Microsoft</strong>: OAuth providers for calendar sync and sign-in.
           </Bullet>
           <Bullet>
-            <strong className="font-semibold text-slate-900 dark:text-slate-100">Plausible</strong> — privacy-respecting analytics (no cookies, no IP storage).
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">Plausible</strong>: privacy-respecting analytics (no cookies, no IP storage).
           </Bullet>
           <Bullet>
-            <strong className="font-semibold text-slate-900 dark:text-slate-100">OpenPhone</strong> — the phone number we use for direct support. Only used if you reach out to us.
+            <strong className="font-semibold text-slate-900 dark:text-slate-100">OpenPhone</strong>: the phone number we use for direct support. Only used if you reach out to us.
           </Bullet>
         </List>
       </section>
@@ -209,7 +209,7 @@ export default function PrivacyPage() {
             </Link>
             . Deletion cascades through our database and removes your profile, plan, calendar connections, study sessions, survey responses, and stored tokens.
           </Bullet>
-          <Bullet>Disconnect a calendar without deleting your account — we stop syncing and remove cached busy/free windows immediately.</Bullet>
+          <Bullet>Disconnect a calendar without deleting your account. We stop syncing and remove cached busy/free windows immediately.</Bullet>
           <Bullet>Unsubscribe from the weekly digest via the link in the email footer.</Bullet>
           <Bullet>Email us to correct or remove a specific data point.</Bullet>
         </List>
@@ -232,7 +232,7 @@ export default function PrivacyPage() {
         <H2 id="security">Security</H2>
         <P>
           All traffic is served over HTTPS. Passwords are hashed; we never see them in plain text. OAuth tokens are encrypted at rest.
-          Our database enforces row-level security so a user can only read their own rows. No system is perfect — if you discover a security issue,
+          Our database enforces row-level security so a user can only read their own rows. No system is perfect. If you discover a security issue,
           please email us at the address below and we&apos;ll respond quickly.
         </P>
       </section>

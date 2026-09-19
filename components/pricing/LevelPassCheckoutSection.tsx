@@ -85,7 +85,7 @@ export function LevelPassCheckoutSection({ priceId, buttonClassName, footnote }:
               id="level-pass-modal-title"
               className="font-display text-lg font-semibold text-slate-900 dark:text-slate-50"
             >
-              Level Pass — exam details
+              Level Pass: exam details
             </h2>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
               Access expires two weeks after your exam window month ends. Choose the level and window you&apos;re

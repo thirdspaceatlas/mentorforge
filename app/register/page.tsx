@@ -147,7 +147,7 @@ export default function RegisterPage() {
           Create your account
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-          Open the planner to build and rebalance your CFA study runway.
+          Build a week-by-week CFA plan from the hours you actually have.
         </p>
       </div>
 

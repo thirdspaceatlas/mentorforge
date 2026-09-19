@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   metadataBase: getSiteUrl(),
   title: {
     default: "MentorForge",
-    template: "%s — MentorForge"
+    template: "%s | MentorForge"
   },
   description: siteDescription,
   applicationName: "MentorForge",
