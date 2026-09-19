@@ -29,7 +29,7 @@ export default function AboutPage() {
         </p>
         <div className="space-y-6 text-base leading-[1.75] text-slate-700 dark:text-slate-300">
           <p>
-            I&apos;ve spent years earning the licenses this industry demands. Each one felt like an epic battle — the kind that leaves a mark. At some point, those battles stopped feeling like a résumé and started feeling like something else. The word that came to mind was forged. It stayed with me.
+            I&apos;ve spent years earning the licenses this industry demands. Each one felt like an epic battle, the kind that leaves a mark. At some point, those battles stopped feeling like a résumé and started feeling like something else. The word that came to mind was forged. It stayed with me.
           </p>
           <p>
             I&apos;ve spent most of my career in wealth management and financial services, in environments where real clients, real money, and real decisions do not wait for a convenient moment. I know what this career actually demands because I&apos;ve lived it.
@@ -41,7 +41,7 @@ export default function AboutPage() {
             Every tool I tried seemed built for someone with clean time, clear focus, and a predictable schedule. That wasn&apos;t me.
           </p>
           <p>
-            At forty-three, I was diagnosed with Inattentive ADHD. It didn&apos;t slow me down. It gave me better information. And it pushed me to build the tool I had always needed — the one that didn&apos;t exist.
+            At forty-three, I was diagnosed with Inattentive ADHD. It didn&apos;t slow me down. It gave me better information. And it pushed me to build the tool I had always needed: the one that didn&apos;t exist.
           </p>
           <p className="font-medium text-slate-900 dark:text-slate-100">
             MentorForge is that tool.
@@ -62,8 +62,8 @@ export default function AboutPage() {
       <section className="pt-12 sm:pt-16">
         <MarketingBottomCTA
           variant="band"
-          headline="Ready to build a plan that actually holds?"
-          supporting="Start free — no credit card required."
+          headline="Ready to try the thing I couldn't find?"
+          supporting="Start free. No credit card."
           primaryLabel="Create your free account"
           secondaryLabel="Learn how it works"
           secondaryHref="/learn-more"

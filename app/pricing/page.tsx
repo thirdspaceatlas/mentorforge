@@ -8,34 +8,34 @@ import { TrackEventOnMount } from "@/components/analytics/TrackEventOnMount";
 const priceAllAccess = process.env.NEXT_PUBLIC_STRIPE_PRICE_ALL_ACCESS ?? "";
 
 export const metadata: Metadata = {
-  title: "Pricing — MentorForge",
+  title: "Pricing",
   description:
-    "Free forever for CFA Level I with calendar-aware scheduling. All Access unlocks unlimited usage and all three levels for $99 a year."
+    "Free forever for CFA Level I. All Access is $99 a year for all three levels and unlimited use."
 };
 
 const pricingFaqs = [
   {
     q: "What's the catch with free?",
-    a: "No catch, no trial timer. Free stays free — you get the full Level I plan, one calendar connection, a few Calendar Coach nudges per week, and basic progress tracking. All Access removes the caps and unlocks Levels II and III."
+    a: "There isn't one. No trial clock. Free includes a full Level I plan, one calendar, a few Calendar Coach nudges each week, and basic progress tracking. All Access lifts the caps and unlocks Levels II and III."
   },
   {
     q: "What if I fail and need to retake?",
-    a: "All Access is a yearly subscription — if you're still studying next year, just renew. You keep everything you've built and can keep iterating on your plan through the next exam window."
+    a: "All Access is yearly. If you're sitting again next year, renew. Your plan stays on the account, and you can keep editing it for the next window."
   },
   {
     q: "Is this a tutoring or prep course?",
-    a: "No. MentorForge is purely a planning and pacing tool. It tells you when to study what — you supply the materials."
+    a: "No. This is planning and pacing. It tells you when to study what. You bring the books and the Q-bank."
   }
 ] as const;
 
 const trustAnchors: { text: string; icon: "benchmark" | "feedback" | "independent" | "cancel" }[] = [
   {
     icon: "benchmark",
-    text: "Built around the CFA Institute’s widely cited 300+ study-hour benchmark — grounded in your calendar, not guesswork."
+    text: "We use the CFA Institute's 300+ hour benchmark, then fit it to your calendar."
   },
   {
     icon: "feedback",
-    text: "We’re early. Your feedback directly shapes what we build next — and we read every message."
+    text: "We're early. If you write in, a person reads it."
   },
   {
     icon: "independent",
@@ -105,10 +105,10 @@ export default function PricingPage() {
           Pricing
         </p>
         <h1 className="font-display text-[2.1rem] font-medium leading-[1.12] tracking-tight text-slate-900 dark:text-slate-50 sm:text-[2.85rem] sm:leading-[1.08]">
-          Stop guessing. Start planning.
+          Free for Level I. $99 a year if you want the rest.
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-slate-700 dark:text-slate-200">
-          Free forever. Upgrade to All Access when you want unlimited — or never. No trial, no countdown.
+          No trial clock. No card required. Stay on free as long as you want.
         </p>
       </header>
 
@@ -145,7 +145,7 @@ export default function PricingPage() {
               items={[
                 "Full Level I plan generation",
                 "1 calendar connection",
-                "Gap finder — open windows in your schedule",
+                "Gap finder: open windows in your schedule",
                 "3 Calendar Coach nudges per week",
                 "Basic progress tracking",
                 "1 smart rebalance per week",
@@ -157,7 +157,7 @@ export default function PricingPage() {
                 href="/register"
                 className="flex w-full items-center justify-center rounded-full border-2 border-slate-400/90 bg-white px-5 py-3 text-center text-sm font-medium text-slate-900 transition-colors hover:border-slate-600 hover:bg-slate-50 dark:border-slate-500 dark:bg-slate-900/60 dark:text-slate-100 dark:hover:border-slate-400 dark:hover:bg-slate-900"
               >
-                Get started free — no credit card required
+                Get started free. No credit card.
               </Link>
             </div>
           </article>
@@ -186,7 +186,7 @@ export default function PricingPage() {
             <ul className="mt-6 space-y-2.5 text-sm leading-relaxed text-slate-200">
               {[
                 "Everything in Free, unlimited",
-                "Unlimited calendars — work, personal, and shared all count against study time",
+                "Unlimited calendars: work, personal, and shared all count against study time",
                 "Unlimited Calendar Coach nudges",
                 "Unlimited smart rebalancing",
                 "Full session history, heatmap, and forecast",
@@ -204,7 +204,7 @@ export default function PricingPage() {
                 priceId={priceAllAccess}
                 className="flex w-full min-h-[2.75rem] items-center justify-center rounded-full bg-amber-mf px-5 py-3 text-sm font-semibold text-ink shadow-[0_8px_24px_rgb(201_132_43_/_0.35)] transition-colors hover:bg-amber-mf/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-mf focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
               >
-                Get All Access — $99/year
+                Get All Access, $99/year
               </AllAccessCheckoutButton>
               <p className="mt-4 text-center text-sm font-medium leading-snug text-slate-300">
                 Less than the cost of one Schweser mock exam.
@@ -255,7 +255,7 @@ export default function PricingPage() {
         <MarketingBottomCTA
           variant="band"
           headline="Ready to start?"
-          supporting="Start free and upgrade when you're ready — your plan carries over."
+          supporting="Start free. Upgrade later if you need to. Your plan carries over."
           primaryLabel="Create your free account"
         />
       </section>

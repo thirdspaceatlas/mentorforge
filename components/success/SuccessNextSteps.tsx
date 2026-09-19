@@ -55,14 +55,14 @@ export function SuccessNextSteps() {
       />
     ) : hint.kind === "weeks" ? (
       <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-        Your week-by-week roadmap is still here — Level {hint.examLevel},{" "}
+        Your week-by-week roadmap is still here: Level {hint.examLevel},{" "}
         {hint.examDateLabel}, {hint.weekCount} week
-        {hint.weekCount === 1 ? "" : "s"} — exactly as you built it on Plan.
+        {hint.weekCount === 1 ? "" : "s"}, exactly as you built it on Plan.
       </p>
     ) : hint.kind === "prefs" ? (
       <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
         Your exam preferences are saved. Add your week-by-week roadmap on Plan
-        whenever you&apos;re ready — then Calendar Coach can slot sessions around
+        whenever you&apos;re ready. Then Calendar Coach can slot sessions around
         your calendar.
       </p>
     ) : (
@@ -82,8 +82,8 @@ export function SuccessNextSteps() {
         Your study plan wasn&apos;t reset
       </h2>
       <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-        Everything you set up on Plan — exam window, weekly hours, and your
-        roadmap — stays on your account. Upgrading only unlocks more; it
+        Everything you set up on Plan (exam window, weekly hours, and your
+        roadmap) stays on your account. Upgrading only unlocks more; it
         doesn&apos;t wipe your work.
       </p>
       {detail}

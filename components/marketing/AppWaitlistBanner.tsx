@@ -80,8 +80,8 @@ export function AppWaitlistBanner() {
       <div className="mx-auto flex max-w-[1200px] gap-2 px-4 py-3 sm:items-center sm:gap-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <p className="min-w-0 flex-1 text-sm leading-snug text-slate-700 dark:text-slate-200">
-            📱 The MentorForge app is coming to iOS &amp; Android — join the waitlist to be first in
-            line.
+            📱 The MentorForge app is coming to iOS and Android. Join the waitlist if you want first
+            in line.
           </p>
 
           {submitted ? (

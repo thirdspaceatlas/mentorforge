@@ -9,7 +9,7 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "MentorForge — CFA Study Planner",
+    name: "MentorForge: CFA Study Planner",
     short_name: "MentorForge",
     description: "Plan, pace, and rebalance your CFA study path.",
     id: "/",
