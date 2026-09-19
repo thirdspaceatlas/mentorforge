@@ -17,7 +17,7 @@ export default function SuccessPage() {
             You&apos;re all set
           </h1>
           <p className="mt-3 text-slate-600 dark:text-slate-400">
-            Thanks for upgrading. Your subscription is linked to this account.
+            Thanks for upgrading — your subscription is linked to this account.
           </p>
         </div>
 

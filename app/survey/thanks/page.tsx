@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Thanks",
+  title: "Thanks — MentorForge",
   robots: { index: false, follow: false }
 };
 
@@ -12,7 +12,7 @@ type Props = {
 
 const COPY: Record<string, { title: string; body: string }> = {
   ok: {
-    title: "Thanks. Recorded.",
+    title: "Thanks — recorded.",
     body: "Your answer is saved. We look at the pattern across replies, not any single one."
   },
   missing: {
@@ -21,7 +21,7 @@ const COPY: Record<string, { title: string; body: string }> = {
   },
   malformed: {
     title: "Link didn't check out.",
-    body: "The survey token couldn't be parsed. It may have been copied incorrectly. Try clicking the link again from the original email."
+    body: "The survey token couldn't be parsed. It may have been copied incorrectly — try clicking the link again from the original email."
   },
   bad_signature: {
     title: "Link didn't check out.",
@@ -29,7 +29,7 @@ const COPY: Record<string, { title: string; body: string }> = {
   },
   expired: {
     title: "That link expired.",
-    body: "Survey links are good for 14 days. The next weekly digest will have a fresh question, or reply to the original email directly."
+    body: "Survey links are good for 14 days. The next weekly digest will have a fresh question — or reply to the original email directly."
   }
 };
 

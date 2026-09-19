@@ -6,5 +6,5 @@ export const ogImage = {
   path: "/opengraph-image",
   width: 1200,
   height: 630,
-  alt: "MentorForge: CFA study planning and pacing"
+  alt: "MentorForge — CFA study planning and pacing"
 } as const;

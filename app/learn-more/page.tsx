@@ -1,29 +1,30 @@
+import Link from "next/link";
 import { MarketingBottomCTA } from "@/components/marketing/MarketingBottomCTA";
 import { fullFaqs } from "../faq-data";
 
 const howSteps = [
-  "Pick your level, exam window, start date, and a weekly hour number you can actually keep.",
-  "Get a full plan with a topic focus for each week.",
-  "Log what you did. Mark weeks done as you go.",
-  "When a week falls apart, rebalance the weeks still ahead."
+  "Set level, exam window, start date, and realistic weekly capacity.",
+  "Build a full plan with pacing and week-by-week topic focus.",
+  "Track actual progress and mark completion as weeks pass.",
+  "Rebalance future weeks when life interrupts your schedule."
 ] as const;
 
 const differentiators: { lead: string; rest: string }[] = [
   {
-    lead: "Built backward from the sitting",
-    rest: "The plan starts from the exam window you chose, not from a generic 18-week template."
+    lead: "Exam-window pacing",
+    rest: "Built around exam windows and realistic weekly pacing, not one-time static planning."
   },
   {
-    lead: "Short weeks stay short",
-    rest: "The first and last weeks are often partial. The plan treats them that way instead of pretending you have seven full days."
+    lead: "Calendar-accurate weeks",
+    rest: "Handles partial first and last weeks so plans match actual calendar reality."
   },
   {
-    lead: "Hours vs. the plan",
-    rest: "You see how you're doing against the hours you meant to do, not a vibe check."
+    lead: "Readiness + progress",
+    rest: "Combines benchmark readiness with real progress tracking and status visibility."
   },
   {
-    lead: "Rebalance without starting over",
-    rest: "Miss a week, keep the plan. Future weeks absorb what's left."
+    lead: "Rebalance without reset",
+    rest: "Rebalances future weeks so candidates can recover without starting over."
   }
 ];
 
@@ -36,10 +37,10 @@ export default function LearnMorePage() {
           MentorForge
         </p>
         <h1 className="font-display text-4xl font-medium tracking-tight text-slate-900 dark:text-slate-50 sm:text-[3.2rem]">
-          How this actually works
+          Learn More
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-700 dark:text-slate-200">
-          If you&apos;ve ever built a CFA schedule in a spreadsheet and abandoned it by March, you already know the problem. The plan has to survive the weeks that don&apos;t go as written.
+          MentorForge helps candidates plan, pace, and rebalance their study process for serious exams and certifications.
         </p>
       </section>
 
@@ -49,16 +50,16 @@ export default function LearnMorePage() {
             What MentorForge does
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-            You give it a level, an exam window, and the hours you can spare. It turns that into a week-by-week plan. When you log real hours, the remaining weeks update instead of pretending nothing happened.
+            MentorForge turns exam timing, available weekly hours, and real progress into a structured study runway. It keeps plans practical, visible, and adaptable instead of static.
           </p>
         </article>
 
         <article className="rounded-2xl border border-slate-200/95 bg-white/95 p-7 shadow-sm dark:border-slate-700/85 dark:bg-slate-900/65 dark:shadow-none">
           <h2 className="font-display text-[1.95rem] font-medium tracking-tight text-slate-900 dark:text-slate-50">
-            Why it exists
+            Why MentorForge exists
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-            People rarely fail CFA because they couldn&apos;t find a textbook. They fail because the calendar won. This is here so a bad week doesn&apos;t kill the rest of the plan.
+            Most candidates do not fail because they lack materials. They fall behind on pacing and execution. MentorForge exists to help users recover from disruption and still finish strong.
           </p>
         </article>
       </section>
@@ -68,7 +69,7 @@ export default function LearnMorePage() {
           How it works
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-          Four steps. The useful part is what happens after week one.
+          A simple flow designed to keep candidates moving when schedules shift.
         </p>
         <ol className="mt-8 grid gap-5 sm:grid-cols-2">
           {howSteps.map((step, idx) => (
@@ -89,10 +90,10 @@ export default function LearnMorePage() {
 
       <section className="mx-auto max-w-4xl border-t border-slate-200/70 pt-14 dark:border-slate-800/80 sm:pt-16">
         <h2 className="font-display text-[1.95rem] font-medium tracking-tight text-slate-900 dark:text-slate-50">
-          What this does that a spreadsheet doesn&apos;t
+          What makes MentorForge different
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-          The first draft of a plan is easy. Keeping it honest is the work.
+          Designed for execution, not just initial planning.
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           {differentiators.map(({ lead, rest }) => (
@@ -114,7 +115,7 @@ export default function LearnMorePage() {
           How MentorForge compares
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-          A spreadsheet and a chatbot can start a plan. They don&apos;t stay with you when the week goes sideways.
+          Planning and pacing built for long exam runways \u2014 not a generic chat or a static sheet.
         </p>
         <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200/95 bg-white/95 dark:border-slate-700/85 dark:bg-slate-900/65">
           <table className="w-full min-w-[320px] text-left text-sm">
@@ -168,7 +169,7 @@ export default function LearnMorePage() {
             >
               <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center pr-8 text-left text-[0.97rem] font-medium leading-relaxed text-slate-900 marker:content-none [-webkit-tap-highlight-color:transparent] dark:text-slate-100">
                 <span className="flex-1">{faq.question}</span>
-                <span className="ml-2 shrink-0 text-slate-500 transition-transform duration-200 ease group-open:rotate-90 dark:text-slate-400" aria-hidden>›</span>
+                <span className="ml-2 shrink-0 text-slate-500 transition-transform duration-200 ease group-open:rotate-90 dark:text-slate-400" aria-hidden>\u203a</span>
               </summary>
               <p className="mt-3.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                 {faq.answer}
@@ -183,7 +184,7 @@ export default function LearnMorePage() {
         <MarketingBottomCTA
           variant="band"
           headline="You've seen how it works."
-          supporting="Make a free account and build the first plan. Adjust it when a week goes sideways."
+          supporting="Build a plan that holds \u2014 and stays honest when life gets in the way."
           primaryLabel="Create your free account"
         />
       </section>
